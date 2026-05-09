@@ -16,7 +16,13 @@ async def vapi_webhook(request: Request):
     raw = await request.body()
     try:
         payload = json.loads(raw)
-        print(json.dumps(payload, indent=2), flush=True)
+        msg = payload.get("message", {}) if isinstance(payload, dict) else {}
+        event_type = msg.get("type", "<unknown>")
+        call_id = (msg.get("call") or {}).get("id", "<no-call-id>")
+        if event_type == "end-of-call-report":
+            print(json.dumps(payload, indent=2), flush=True)
+        else:
+            print(f"[vapi] {event_type} call={call_id} bytes={len(raw)}", flush=True)
     except Exception as e:
         print(f"[vapi/webhook] failed to parse JSON: {e}", flush=True)
         print(f"[vapi/webhook] raw body: {raw!r}", flush=True)
