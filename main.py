@@ -46,8 +46,8 @@ def _build_call_row(payload):
     msg = payload.get("message", {})
     call = msg.get("call") or {}
     analysis = msg.get("analysis") or {}
-    structured = analysis.get("structuredOutputs") or {}
     artifact = msg.get("artifact") or {}
+    structured = artifact.get("structuredOutputs") or {}
 
     started_raw = msg.get("startedAt") or call.get("createdAt")
     ended_raw = msg.get("endedAt")
@@ -66,7 +66,21 @@ def _build_call_row(payload):
         "transcript": _build_transcript(artifact.get("messages")),
     }
     for field in STRUCTURED_FIELDS:
-        row[field] = structured.get(field) if isinstance(structured, dict) else None
+        row[field] = None
+    if isinstance(structured, dict):
+        for entry in structured.values():
+            if not isinstance(entry, dict):
+                continue
+            name = entry.get("name")
+            if not isinstance(name, str):
+                continue
+            field = name.strip().lower().replace(" ", "_")
+            if field not in STRUCTURED_FIELDS:
+                continue
+            result = entry.get("result")
+            if isinstance(result, str) and result.strip().lower() == "null":
+                result = None
+            row[field] = result
     return row
 
 
