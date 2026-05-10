@@ -30,7 +30,7 @@ else:
     print("[startup] Twilio creds not set — SMS disabled", flush=True)
 
 STRUCTURED_FIELDS = ("caller_name", "service_address", "door_type", "damage_description", "urgency", "vehicle_info", "outcome")
-SMS_MAX_LEN = 480
+SMS_MAX_LEN = 160
 SMS_STALE_AFTER = timedelta(hours=1)
 PHONE_RE = re.compile(r"^\+\d{10,15}$")
 
@@ -125,30 +125,29 @@ def _compose_sms_body(row):
     call_id = row.get("vapi_call_id") or ""
     ref = f"ref:{call_id[-6:]}" if call_id else "ref:?"
 
-    lines = [f"New call — {urgency}"]
-    for label, key, default in (
-        ("Name", "caller_name", "unknown"),
-        ("Phone", "caller_phone", "unknown"),
-        ("Address", "service_address", None),
-        ("Door", "door_type", None),
-        ("Damage", "damage_description", None),
-        ("Vehicle", "vehicle_info", None),
-        ("Outcome", "outcome", None),
-    ):
-        value = row.get(key) or default
+    lines = [f"[{urgency}] {row.get('caller_name') or 'unknown'}"]
+    for key in ("caller_phone", "service_address"):
+        value = row.get(key)
         if value:
-            lines.append(f"{label}: {value}")
+            lines.append(value)
+    detail = row.get("damage_description") or row.get("door_type")
+    if detail:
+        lines.append(detail)
 
     summary = row.get("summary")
     if summary:
         non_summary = "\n".join(lines + [ref])
-        budget = SMS_MAX_LEN - len(non_summary) - len("\nSummary: ")
-        if budget > 20:
+        budget = SMS_MAX_LEN - len(non_summary) - 1
+        if budget > 10:
             if len(summary) > budget:
-                summary = summary[: budget - 1] + "…"
-            lines.append(f"Summary: {summary}")
+                summary = summary[: budget - 2] + ".."
+            lines.append(summary)
     lines.append(ref)
-    return "\n".join(lines)
+
+    body = "\n".join(lines)
+    if len(body) > SMS_MAX_LEN:
+        body = body[: SMS_MAX_LEN - 2] + ".."
+    return body
 
 
 def _send_dispatch_sms(client_id, call_id, row):
