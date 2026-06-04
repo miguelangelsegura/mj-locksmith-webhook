@@ -12,3 +12,7 @@ env/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
