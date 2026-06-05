@@ -21,6 +21,8 @@ const STRUCTURED_FIELDS = [
 ];
 const SMS_STALE_AFTER_MS = 60 * 60 * 1000;
 const PHONE_RE = /^\+\d{10,15}$/;
+const DISPATCH_TZ = "America/Edmonton";
+const DISPATCH_TZ_LABEL = "MT";
 
 function constantTimeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -108,20 +110,35 @@ function buildCallRow(payload: any): Record<string, unknown> {
   return row;
 }
 
+function formatDispatchTime(iso: unknown): string | null {
+  const d = parseIso(iso);
+  if (!d) return null;
+  const t = new Intl.DateTimeFormat("en-CA", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: DISPATCH_TZ,
+  }).format(d);
+  return `${t} ${DISPATCH_TZ_LABEL}`;
+}
+
 function composeSmsBody(row: Record<string, any>): string {
-  const urgency = row.urgency ?? "normal";
+  const urgency = String(row.urgency ?? "normal").toUpperCase();
   const callId = row.vapi_call_id ?? "";
   const ref = callId ? `ref:${String(callId).slice(-6)}` : "ref:?";
 
-  const lines: string[] = [urgency];
-  for (const key of ["caller_name", "caller_phone", "service_address"]) {
-    if (row[key]) lines.push(row[key]);
-  }
-  const detail = row.damage_description ?? row.door_type;
-  if (detail) lines.push(detail);
-  if (row.summary) lines.push(row.summary);
+  const lines = [`NEW LEAD — ${urgency}`];
+  lines.push(`Call back: ${row.caller_phone ?? "not captured"}`);
+  const job = row.damage_description ??
+    (row.door_type ? String(row.door_type).replace(/_/g, " ") : null);
+  if (job) lines.push(`Job: ${job}`);
+  if (row.service_address) lines.push(`Where: ${row.service_address}`);
+  if (row.caller_name) lines.push(`Name: ${row.caller_name}`);
+  const time = formatDispatchTime(row.ended_at);
+  if (time) lines.push(`Time: ${time}`);
+  if (row.summary) lines.push(`Notes: ${row.summary}`);
+  lines.push(ref);
 
-  return lines.join("\n") + "\n" + ref;
+  return lines.join("\n");
 }
 
 async function sendSms(to: string, body: string): Promise<string | null> {
