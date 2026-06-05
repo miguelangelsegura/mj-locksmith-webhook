@@ -7,7 +7,16 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v3 — 2026-06-04 (current)
+## v4 — 2026-06-04 (current)
+Snapshot: [versions/system-prompt-v4.md](versions/system-prompt-v4.md)
+
+Tone/accuracy refinements on v3 (kept lean):
+- **No company-name hallucination** — close must sign off simply, never thank for "scheduling," never name any company but M and J (the model had said "thank you for scheduling with Wellness Printers").
+- **Don't repeat canned lines** — vary phrasing; for un-pin-downable questions (ETA), reassure naturally and differently each time.
+- **Don't push for the exact address** — if they give just a street or hesitate, accept it and offer that they can give it to the locksmith on the callback; never insist.
+- **Urgency reassurance** — if the caller sounds urgent, reassure them someone will be dispatched as fast as possible.
+
+## v3 — 2026-06-04
 Snapshot: [versions/system-prompt-v3.md](versions/system-prompt-v3.md)
 
 Refinements on v2 after a strong test call ("by far the best one"):
