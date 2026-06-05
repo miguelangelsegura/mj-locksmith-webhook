@@ -21,8 +21,8 @@ const STRUCTURED_FIELDS = [
 ];
 const SMS_STALE_AFTER_MS = 60 * 60 * 1000;
 const PHONE_RE = /^\+\d{10,15}$/;
-const DISPATCH_TZ = "America/Edmonton";
-const DISPATCH_TZ_LABEL = "MT";
+const DEFAULT_TZ = "America/Edmonton";
+const NON_LEAD_OUTCOMES = new Set(["wrong_number", "spam", "info_only"]);
 
 function constantTimeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -110,30 +110,32 @@ function buildCallRow(payload: any): Record<string, unknown> {
   return row;
 }
 
-function formatDispatchTime(iso: unknown): string | null {
+function formatDispatchTime(iso: unknown, tz: string): string | null {
   const d = parseIso(iso);
   if (!d) return null;
-  const t = new Intl.DateTimeFormat("en-CA", {
+  return new Intl.DateTimeFormat("en-CA", {
     hour: "numeric",
     minute: "2-digit",
-    timeZone: DISPATCH_TZ,
+    timeZone: tz,
+    timeZoneName: "short",
   }).format(d);
-  return `${t} ${DISPATCH_TZ_LABEL}`;
 }
 
-function composeSmsBody(row: Record<string, any>): string {
+function composeSmsBody(row: Record<string, any>, tz: string): string {
   const urgency = String(row.urgency ?? "normal").toUpperCase();
   const callId = row.vapi_call_id ?? "";
   const ref = callId ? `ref:${String(callId).slice(-6)}` : "ref:?";
 
-  const lines = [`NEW LEAD — ${urgency}`];
+  const door = row.door_type ? String(row.door_type).replace(/_/g, " ") : null;
+  const job = [door, row.damage_description].filter(Boolean).join(" — ");
+
+  const lines = [door ? `${urgency} — ${door}` : `NEW LEAD — ${urgency}`];
   lines.push(`Call back: ${row.caller_phone ?? "not captured"}`);
-  const job = row.damage_description ??
-    (row.door_type ? String(row.door_type).replace(/_/g, " ") : null);
   if (job) lines.push(`Job: ${job}`);
+  if (row.vehicle_info) lines.push(`Vehicle: ${row.vehicle_info}`);
   if (row.service_address) lines.push(`Where: ${row.service_address}`);
   if (row.caller_name) lines.push(`Name: ${row.caller_name}`);
-  const time = formatDispatchTime(row.ended_at);
+  const time = formatDispatchTime(row.ended_at, tz);
   if (time) lines.push(`Time: ${time}`);
   if (row.summary) lines.push(`Notes: ${row.summary}`);
   lines.push(ref);
@@ -174,9 +176,15 @@ async function notifyOps(message: string): Promise<void> {
 
 async function sendDispatchSms(clientId: string, callId: string, row: Record<string, any>): Promise<void> {
   if (!twilioReady || !supabase) return;
+  const outcome = String(row.outcome ?? "").trim().toLowerCase().replace(/ /g, "_");
+  if (NON_LEAD_OUTCOMES.has(outcome)) {
+    console.log(`[vapi] skipping non-lead sms call=${callId} outcome=${outcome}`);
+    return;
+  }
   const { data: clientRows } = await supabase
-    .from("clients").select("dispatch_phone").eq("id", clientId).limit(1);
+    .from("clients").select("*").eq("id", clientId).limit(1);
   const rawPhone = clientRows?.[0]?.dispatch_phone;
+  const tz = clientRows?.[0]?.timezone || DEFAULT_TZ;
   if (!rawPhone) {
     console.log(`[vapi] no dispatch_phone for client=${clientId} call=${callId}`);
     return;
@@ -201,7 +209,7 @@ async function sendDispatchSms(clientId: string, callId: string, row: Record<str
     console.log(`[vapi] sms already sent call=${callId}`);
     return;
   }
-  const sid = await sendSms(dispatchPhone, composeSmsBody(row));
+  const sid = await sendSms(dispatchPhone, composeSmsBody(row, tz));
   console.log(`[vapi] sms sent call=${callId} to=${dispatchPhone} sid=${sid}`);
 }
 
