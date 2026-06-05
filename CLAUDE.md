@@ -35,6 +35,21 @@ Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres
 - `clients`: `id`, `vapi_assistant_id`, `active`, `dispatch_phone`, plus routing columns `cell_number`, `answer_mode` (`human_first | ai_first | scheduled`), `ring_timeout_seconds`, `business_hours`.
 - `calls`: keyed by `vapi_call_id` (upsert), stores structured fields, transcript, summary, `raw_payload`, and the `notified_at`/`notified_phone` dispatch markers.
 
+## Cold outreach (the `/locksmith-outreach` skill)
+
+A **separate subsystem** from the call→SMS pipeline above: a Claude Code skill that finds locksmith businesses by city, scrapes their published email, and creates ready-to-send Gmail drafts pitching the dispatch service. Lives in [.claude/skills/locksmith-outreach/SKILL.md](.claude/skills/locksmith-outreach/SKILL.md); email copy in [outreach/templates.md](outreach/templates.md); dedup ledger in `outreach/contacted.csv` (gitignored — scraped business PII). Built deliberately **lean** (no paid APIs, no DB, no LLM personalization, no agent fan-out) — keep it that way unless asked.
+
+Invariants / traps (learned building it):
+- **CASL implied-consent is the legal basis** (targets are Canadian): only email an address **conspicuously published on the business's own website**, and record its `email_source_url`. **Never guess `info@domain`** — a guessed address isn't "published" and weakens the CASL footing. Skip sites stating "no unsolicited email."
+- **Every email carries the CASL footer** from templates.md (sender identity + physical mailing address + working unsubscribe). Preflight **refuses to draft while any `{{...}}` placeholder remains**.
+- **Drafts only — never auto-send.** Output is Gmail drafts the user reviews and sends.
+- **`WebSearch` is US-biased and does NOT see Google's Maps/local pack** — one query misses many local shops. Run several regional query variants AND mine directory/listicle pages for the roster of business *names*, then visit each shop's **own** site for the email.
+- **Deep-find before marking `no_email`**: check privacy/terms/footer, raw-HTML obfuscation, sister/alt domains, and the Facebook "About" page. Surface obvious typos (e.g. `cantact@`) for human confirm — don't use them.
+- **Dedup against `outreach/contacted.csv`** by email and by domain before drafting — reruns must never double-contact.
+- **Write valid CSV**: quote any field with a comma (`hours`/`description` usually need it). Statuses: `found | drafted | no_email | skipped_dupe | replied | unsubscribed`.
+- **Gmail connector** exposes only `authenticate`/`complete_authentication` until OAuth completes; the create-draft tool appears only after. Apollo enrichment is optional, key-gated (`APOLLO_API_KEY`), weaker-CASL — last resort only.
+- Modes: `--collect`/`--no-draft` (build the sheet, no drafts), `--dry-run` (no writes at all), `--followup` (second-touch template).
+
 ## Out of scope (do not add unprompted)
 
 Voice-agent conversation design (Vapi assistant prompt/script), Telegram/WhatsApp/email dispatch channels, and a switch away from Vapi are deferred. Wait for an explicit request.
