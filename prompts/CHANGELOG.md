@@ -7,7 +7,23 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v5 — 2026-06-04 (current)
+## v6 — 2026-06-04 (current)
+Snapshot: [versions/system-prompt-v6.md](versions/system-prompt-v6.md)
+
+**Multi-tenant templatization.** Replaces the hardcoded "M and J" / "Mike" with
+`{{business_name}}` / `{{agent_name}}` so one shared Vapi assistant can serve many
+locksmiths. The webhook's `assistant-request` handler resolves the client (by
+`inbound_number`, else the first active client) and injects `business_name` +
+`agent_name` via `assistantOverrides.variableValues`, alongside the existing
+returning-caller vars. Per-locksmith values live on the `clients` row
+(`business_name`, `agent_name`). M&J's row sets them to "M and J" / "Mike", so
+behavior is unchanged for the current number.
+
+When pushing to Vapi: the assistant's **first message** field must also use
+`{{business_name}}`/`{{agent_name}}` (not just the system prompt), or new-caller
+greetings on a static first message won't personalize.
+
+## v5 — 2026-06-04
 Snapshot: [versions/system-prompt-v5.md](versions/system-prompt-v5.md)
 
 Adds **returning-caller memory**. The webhook's `assistant-request` handler looks

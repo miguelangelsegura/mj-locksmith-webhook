@@ -32,7 +32,7 @@ Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres
 
 ## Data model
 
-- `clients`: `id`, `vapi_assistant_id`, `active`, `dispatch_phone`, plus routing columns `cell_number`, `answer_mode` (`human_first | ai_first | scheduled`), `ring_timeout_seconds`, `business_hours`.
+- `clients`: `id`, `vapi_assistant_id`, `active`, `dispatch_phone`, plus routing columns `inbound_number` (the dedicated Vapi number a locksmith forwards to — primary routing key, with `vapi_assistant_id` as fallback), `cell_number`, `answer_mode` (`human_first | ai_first | scheduled`), `ring_timeout_seconds`, `business_hours`.
 - `calls`: keyed by `vapi_call_id` (upsert), stores structured fields, transcript, summary, `raw_payload`, and the `notified_at`/`notified_phone` dispatch markers.
 
 ## Cold outreach (the `/locksmith-outreach` skill)

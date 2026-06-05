@@ -58,6 +58,17 @@ function extractCallerPhone(payload: any): string | null {
   return null;
 }
 
+function extractInboundNumber(payload: any): string | null {
+  const msg = payload?.message ?? {};
+  const call = msg?.call ?? {};
+  const candidates = [call?.phoneNumber?.number, msg?.phoneNumber?.number];
+  for (const c of candidates) {
+    const normalized = normalizePhone(c);
+    if (normalized) return normalized;
+  }
+  return null;
+}
+
 function buildTranscript(messages: unknown): string | null {
   if (!Array.isArray(messages)) return null;
   const lines: string[] = [];
@@ -213,6 +224,13 @@ async function sendDispatchSms(clientId: string, callId: string, row: Record<str
   console.log(`[vapi] sms sent call=${callId} to=${dispatchPhone} sid=${sid}`);
 }
 
+async function lookupClientByInbound(number: string | null): Promise<string | null> {
+  if (!number || !supabase) return null;
+  const { data } = await supabase
+    .from("clients").select("id").eq("inbound_number", number).eq("active", true).limit(1);
+  return data?.[0]?.id ?? null;
+}
+
 async function lookupClientId(assistantId: unknown): Promise<string | null> {
   if (!assistantId || !supabase) return null;
   const { data } = await supabase
@@ -246,59 +264,92 @@ async function lookupCallerMemory(phone: string | null) {
   const door = firstClean(data.map((r) => (r.door_type ? String(r.door_type).replace(/_/g, " ") : null)));
   return {
     name: firstClean(data.map((r) => r.caller_name)),
+    door,
     problem: damage || door,
     address: firstClean(data.map((r) => r.service_address)),
     summary: firstClean(data.map((r) => r.summary)),
   };
 }
 
-async function resolveAssistantId(): Promise<string | null> {
+async function resolveClientContext(
+  payload: any,
+): Promise<{ assistantId: string | null; businessName: string; agentName: string }> {
   const envId = Deno.env.get("VAPI_ASSISTANT_ID");
-  if (envId) return envId;
-  if (!supabase) return null;
-  const { data } = await supabase
-    .from("clients").select("vapi_assistant_id").eq("active", true).limit(1);
-  return data?.[0]?.vapi_assistant_id ?? null;
+  let row: any = null;
+  if (supabase) {
+    const inbound = extractInboundNumber(payload);
+    if (inbound) {
+      const { data } = await supabase
+        .from("clients").select("vapi_assistant_id, business_name, agent_name")
+        .eq("inbound_number", inbound).eq("active", true).limit(1);
+      row = data?.[0] ?? null;
+    }
+    if (!row) {
+      const { data } = await supabase
+        .from("clients").select("vapi_assistant_id, business_name, agent_name")
+        .eq("active", true).limit(1);
+      row = data?.[0] ?? null;
+    }
+  }
+  return {
+    assistantId: envId ?? row?.vapi_assistant_id ?? null,
+    businessName: row?.business_name ?? "",
+    agentName: row?.agent_name ?? "",
+  };
 }
 
 async function handleAssistantRequest(payload: any): Promise<Response> {
-  const assistantId = await resolveAssistantId();
-  const emptyVars = { variableValues: { caller_name: "", caller_memory: "" } };
+  const { assistantId, businessName, agentName } = await resolveClientContext(payload);
+  const baseVars = {
+    caller_name: "", caller_memory: "",
+    business_name: businessName, agent_name: agentName,
+  };
   if (!assistantId) {
     console.log("[vapi] assistant-request: no assistant resolved");
-    return Response.json({ assistantOverrides: emptyVars });
+    return Response.json({ assistantOverrides: { variableValues: baseVars } });
   }
   try {
     const phone = extractCallerPhone(payload);
     const mem = await lookupCallerMemory(phone);
     if (!mem) {
       console.log(`[vapi] assistant-request: new caller phone=${phone}`);
-      return Response.json({ assistantId, assistantOverrides: emptyVars });
+      return Response.json({ assistantId, assistantOverrides: { variableValues: baseVars } });
     }
     const parts = ["Returning caller."];
+    if (mem.door) parts.push(`Last job: ${mem.door}.`);
     if (mem.address) parts.push(`Address on file: ${mem.address}.`);
     if (mem.summary) parts.push(`Most recent call: ${mem.summary}`);
     const memory = parts.join(" ");
     const name = mem.name ?? "";
-    const about = mem.address ? `your place over at ${mem.address}` : "";
+    const door = mem.door && mem.door.length <= 40 ? mem.door : null;
+    const loc = mem.address;
+    const about = door && loc
+      ? `the ${door} over at ${loc}`
+      : loc
+        ? `your place over at ${loc}`
+        : door
+          ? `the ${door}`
+          : "";
+    const business = businessName || "our shop";
+    const agent = agentName || "the team";
     const greeting = name
       ? (about
-        ? `Hi ${name}, it's Mike at M and J — are you calling about ${about} again, or is it something new?`
-        : `Hi ${name}, welcome back to M and J — it's Mike. What's going on today?`)
+        ? `Hi ${name}, it's ${agent} at ${business} — is this the same situation with ${about}, or did something new come up?`
+        : `Hi ${name}, welcome back to ${business} — it's ${agent}. What's going on today?`)
       : (about
-        ? `Welcome back to M and J — this is Mike. Are you calling about ${about} again, or something new?`
-        : "Welcome back to M and J — this is Mike. What's going on today?");
+        ? `Welcome back to ${business} — this is ${agent}. Is this the same situation with ${about}, or something new?`
+        : `Welcome back to ${business} — this is ${agent}. What's going on today?`);
     console.log(`[vapi] assistant-request: returning caller phone=${phone} name=${name}`);
     return Response.json({
       assistantId,
       assistantOverrides: {
-        variableValues: { caller_name: name, caller_memory: memory },
+        variableValues: { ...baseVars, caller_name: name, caller_memory: memory },
         firstMessage: greeting,
       },
     });
   } catch (e) {
     console.log(`[vapi] assistant-request error: ${e}`);
-    return Response.json({ assistantId, assistantOverrides: emptyVars });
+    return Response.json({ assistantId, assistantOverrides: { variableValues: baseVars } });
   }
 }
 
@@ -309,9 +360,10 @@ async function persistCall(payload: any): Promise<void> {
   const callId = call?.id;
   const assistantId = call?.assistantId;
   try {
-    const clientId = await lookupClientId(assistantId);
+    const inboundNumber = extractInboundNumber(payload);
+    const clientId = await lookupClientByInbound(inboundNumber) ?? await lookupClientId(assistantId);
     if (!clientId) {
-      console.log(`[vapi] unknown assistantId=${assistantId} call=${callId} — skipping insert`);
+      console.log(`[vapi] unknown client inbound=${inboundNumber} assistantId=${assistantId} call=${callId} — skipping insert`);
       return;
     }
     const row = buildCallRow(payload);
