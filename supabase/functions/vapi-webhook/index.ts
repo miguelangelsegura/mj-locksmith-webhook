@@ -220,6 +220,75 @@ async function lookupClientId(assistantId: unknown): Promise<string | null> {
   return data?.[0]?.id ?? null;
 }
 
+async function lookupCallerMemory(phone: string | null) {
+  if (!phone || !supabase) return null;
+  const { data } = await supabase
+    .from("calls")
+    .select("caller_name, door_type, damage_description, service_address, summary, ended_at")
+    .eq("caller_phone", phone)
+    .not("ended_at", "is", null)
+    .order("ended_at", { ascending: false })
+    .limit(1);
+  const r = data?.[0];
+  if (!r) return null;
+  const door = r.door_type ? String(r.door_type).replace(/_/g, " ") : null;
+  const problem = [door, r.damage_description].filter(Boolean).join(" — ") || null;
+  return {
+    name: r.caller_name ?? null,
+    problem,
+    address: r.service_address ?? null,
+    summary: r.summary ?? null,
+  };
+}
+
+async function resolveAssistantId(): Promise<string | null> {
+  const envId = Deno.env.get("VAPI_ASSISTANT_ID");
+  if (envId) return envId;
+  if (!supabase) return null;
+  const { data } = await supabase
+    .from("clients").select("vapi_assistant_id").eq("active", true).limit(1);
+  return data?.[0]?.vapi_assistant_id ?? null;
+}
+
+async function handleAssistantRequest(payload: any): Promise<Response> {
+  const assistantId = await resolveAssistantId();
+  const emptyVars = { variableValues: { caller_name: "", caller_memory: "" } };
+  if (!assistantId) {
+    console.log("[vapi] assistant-request: no assistant resolved");
+    return Response.json({ assistantOverrides: emptyVars });
+  }
+  try {
+    const phone = extractCallerPhone(payload);
+    const mem = await lookupCallerMemory(phone);
+    if (!mem) {
+      console.log(`[vapi] assistant-request: new caller phone=${phone}`);
+      return Response.json({ assistantId, assistantOverrides: emptyVars });
+    }
+    const parts = ["Returning caller."];
+    if (mem.problem) parts.push(`Last issue: ${mem.problem}.`);
+    if (mem.address) parts.push(`Address on file: ${mem.address}.`);
+    if (mem.summary) parts.push(`Last call: ${mem.summary}`);
+    const memory = parts.join(" ");
+    const name = mem.name ?? "";
+    const greeting = name
+      ? (mem.problem
+        ? `Hi ${name}, it's Mike at M and J — are you calling about the ${mem.problem} again, or is it something new?`
+        : `Hi ${name}, welcome back to M and J — it's Mike. What's going on today?`)
+      : "Welcome back to M and J — this is Mike. What's going on today?";
+    console.log(`[vapi] assistant-request: returning caller phone=${phone} name=${name}`);
+    return Response.json({
+      assistantId,
+      assistantOverrides: {
+        variableValues: { caller_name: name, caller_memory: memory },
+        firstMessage: greeting,
+      },
+    });
+  } catch (e) {
+    console.log(`[vapi] assistant-request error: ${e}`);
+    return Response.json({ assistantId, assistantOverrides: emptyVars });
+  }
+}
+
 async function persistCall(payload: any): Promise<void> {
   if (!supabase) return;
   const msg = payload?.message ?? {};
@@ -265,6 +334,9 @@ Deno.serve(async (req) => {
     const msg = (payload && typeof payload === "object") ? (payload.message ?? {}) : {};
     const eventType = msg.type ?? "<unknown>";
     const callId = msg.call?.id ?? "<no-call-id>";
+    if (eventType === "assistant-request") {
+      return await handleAssistantRequest(payload);
+    }
     if (eventType === "end-of-call-report") {
       console.log(JSON.stringify(payload, null, 2));
       await persistCall(payload);

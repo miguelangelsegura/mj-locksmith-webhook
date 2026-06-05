@@ -7,7 +7,18 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v4 — 2026-06-04 (current)
+## v5 — 2026-06-04 (current)
+Snapshot: [versions/system-prompt-v5.md](versions/system-prompt-v5.md)
+
+Adds **returning-caller memory**. The webhook's `assistant-request` handler looks
+up the caller by phone in `calls`, and injects `{{caller_name}}` + `{{caller_memory}}`
+(last issue + address) plus a personalized greeting via Vapi `assistantOverrides`.
+Requires the Vapi phone number to use **dynamic/server routing** (no static inbound
+assistant) so Vapi asks our server per call. Do NOT push v5 to the live assistant
+until the number is switched to dynamic, or `{{...}}` would render literally on a
+static call.
+
+## v4 — 2026-06-04
 Snapshot: [versions/system-prompt-v4.md](versions/system-prompt-v4.md)
 
 Tone/accuracy refinements on v3 (kept lean):
