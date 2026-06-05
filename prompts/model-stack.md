@@ -8,8 +8,8 @@ Configured in the **Vapi dashboard** / via API per assistant. Assistant: **Riley
 | Layer | Live setting | Status vs plan |
 |---|---|---|
 | **Transcriber (STT)** | Deepgram **Nova-3**, endpointing 150 | ✅ already the recommended pick |
-| **Model (LLM)** | OpenAI **gpt-5-mini** | Keep — newer/cheaper than the GPT-4o we'd planned |
-| **Voice (TTS)** | **ElevenLabs "Rachel"** (Flash v2.5), stability 0.6 | Calmer/lower/professional; swapped off the higher "Sarah"/Vapi voices |
+| **Model (LLM)** | Anthropic **claude-sonnet-4-6** | Upgraded from gpt-5-mini, which stacked questions / repeated / reasoned poorly |
+| **Voice (TTS)** | **ElevenLabs "Brian"** (male, Turbo v2.5), stability 0.5 | Professional male; Turbo (not Flash) for less-robotic quality. Persona renamed Sarah → **Mike** to match |
 
 **Call controls (live):** `startSpeakingPlan.waitSeconds = 0.8` + transcriber `endpointing = 300` (so she doesn't cut callers off); `endCallFunctionEnabled = true` + end-call phrases (bye / hang up / that's all / we're done) so she hangs up when the caller is done; `maxDurationSeconds = 600`, `silenceTimeoutSeconds = 300`, idle check-ins at 20s.
 
