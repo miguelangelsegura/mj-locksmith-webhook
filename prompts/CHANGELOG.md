@@ -7,7 +7,14 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v8 — 2026-06-04 (current)
+## v9 — 2026-06-04 (current)
+Snapshot: [versions/system-prompt-v9.md](versions/system-prompt-v9.md)
+
+Reverts the v7 city/province-assumption guard — the agent hadn't actually invented
+"Calgary" (the caller had stated it earlier); removed to keep the prompt lean. The
+`service_address` structured output reverted to the partial-capture version too.
+
+## v8 — 2026-06-04
 Snapshot: [versions/system-prompt-v8.md](versions/system-prompt-v8.md)
 
 End-of-call + phone fixes. **Callback number:** ask "is the number you're calling from
