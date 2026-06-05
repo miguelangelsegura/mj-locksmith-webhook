@@ -9,7 +9,9 @@ Configured in the **Vapi dashboard** / via API per assistant. Assistant: **Riley
 |---|---|---|
 | **Transcriber (STT)** | Deepgram **Nova-3**, endpointing 150 | ✅ already the recommended pick |
 | **Model (LLM)** | OpenAI **gpt-5-mini** | Keep — newer/cheaper than the GPT-4o we'd planned |
-| **Voice (TTS)** | Vapi **"Emma"**, speed 1.1 | Optional A/B vs Cartesia Sonic / ElevenLabs Flash |
+| **Voice (TTS)** | **ElevenLabs "Rachel"** (Flash v2.5), stability 0.6 | Calmer/lower/professional; swapped off the higher "Sarah"/Vapi voices |
+
+**Call controls (live):** `startSpeakingPlan.waitSeconds = 0.8` + transcriber `endpointing = 300` (so she doesn't cut callers off); `endCallFunctionEnabled = true` + end-call phrases (bye / hang up / that's all / we're done) so she hangs up when the caller is done; `maxDurationSeconds = 600`, `silenceTimeoutSeconds = 300`, idle check-ins at 20s.
 
 ## Optional A/B (only if you want to tune)
 
