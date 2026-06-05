@@ -14,13 +14,20 @@ Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres
 - Type-check: `deno check supabase/functions/vapi-webhook/index.ts`
 - Serve locally: `supabase functions serve vapi-webhook --no-verify-jwt --env-file supabase/functions/.env.local`
 - Smoke-test commands are in [README.md](README.md). No unit-test suite — verify with `curl`.
+- **The agent prompt is versioned:** canonical [prompts/system-prompt.md](prompts/system-prompt.md), frozen snapshots in [prompts/versions/](prompts/versions/), notes in [prompts/CHANGELOG.md](prompts/CHANGELOG.md). Revert by copying a `versions/system-prompt-vN.md` over the canonical file and pushing it to Vapi.
 
 ## Deployment
 
 - Deploy: `supabase functions deploy vapi-webhook` (`verify_jwt = false` is set in [supabase/config.toml](supabase/config.toml), so the endpoint is public; the `x-vapi-secret` check is the auth gate).
 - Live webhook URL: `https://<project-ref>.supabase.co/functions/v1/vapi-webhook` — paste into the Vapi assistant Server URL.
 - Secrets: `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are auto-injected by the Edge runtime (you cannot set `SUPABASE_`-prefixed secrets). Set the rest with `supabase secrets set VAPI_SECRET=… TWILIO_ACCOUNT_SID=… TWILIO_AUTH_TOKEN=… TWILIO_MESSAGING_SERVICE_SID=… OPS_PHONE=…`.
-- Schema changes live in [supabase/migrations/](supabase/migrations/); apply with `supabase db push`.
+- Schema changes live in [supabase/migrations/](supabase/migrations/); apply with `supabase db push --linked`.
+- **CLI "Cannot find project ref":** restore `supabase/.temp/project-ref` containing just the ref string (`config.toml`'s `project_id` is a display name, not the ref). The DB password is cached, so `--linked` then connects without a prompt.
+- **Ad-hoc prod data read/write (no DB password needed):** fetch the service_role key with `supabase projects api-keys --project-ref <ref> --output-format json` (shape `{"keys":[{api_key,name}]}`), then hit PostgREST at `https://<ref>.supabase.co/rest/v1/<table>`. PostgREST can't run DDL — column adds still go through a migration + `db push`.
+- **Driving the Vapi REST API** (`api.vapi.ai`, bearer `VAPI_PRIVATE_KEY` from `.env.local`): it rejects the default python-urllib User-Agent with Cloudflare error 1010 — use `curl`, or set a browser `User-Agent` header. PATCHing `model` requires sending the whole model object back (GET it, swap the system message, PATCH) so other settings aren't wiped.
+- **Smoke-test routing without a real call:** `POST` an `assistant-request` payload (`message.type`, `call.phoneNumber.number`) to the deployed webhook with `?token=$VAPI_SECRET`; the response's `variableValues` should carry the right `business_name`/`agent_name`.
+- **Vapi server URLs have silently regressed to dead Render before — always verify them.** The **assistant** `server.url` receives post-call messages (end-of-call → persist + SMS); **`assistant-request` (per-call routing/memory) uses the PHONE NUMBER's `server.url`** (or org). Both must point at `https://<ref>.supabase.co/functions/v1/vapi-webhook?token=<VAPI_SECRET>`. A number with no assistant **and** no server URL = calls don't connect. If persistence/SMS goes quiet, check neither URL points at `*.onrender.com`.
+- **`VAPI_SECRET` is unreadable after the fact** (Supabase shows only a digest). To put it in a `?token=` URL, **rotate** it to a value you generate (`supabase secrets set VAPI_SECRET=…` → redeploy → update the Vapi URLs).
 
 ## Design constraints to preserve
 
@@ -29,6 +36,8 @@ Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres
 - **Only `end-of-call-report` events persist + dispatch.** Other Vapi event types emit a one-line ack (`[vapi] <type> call=<id> bytes=<n>`). Do not expand other event types to full handling without an explicit ask.
 - **SMS dispatch is idempotent** via the `notified_at`/`notified_phone` conditional claim on the `calls` row — never send two texts for one call. A stale guard skips calls ended more than an hour ago. Preserve both.
 - **SMS sends the full lead** (multi-segment, paid Twilio account). Do not reintroduce the old single-segment truncation.
+- **Multi-tenant by phone number.** `handleAssistantRequest`/`persistCall` resolve the locksmith by `inbound_number` (the number the call arrived on, `call.phoneNumber.number`), falling back to `vapi_assistant_id`. **One shared Vapi assistant serves every locksmith** — per-shop identity (`business_name`, `agent_name`) lives on the `clients` row and is injected per call via `assistantOverrides.variableValues`. Keep the assistant prompt and `firstMessage` templatized with `{{business_name}}`/`{{agent_name}}`; never hardcode a shop name. New-caller greeting = the assistant's `firstMessage` field; returning-caller greeting is built in `handleAssistantRequest` — both must use the variables.
+- **The Vapi number must be on dynamic/server routing** (a Server URL on the phone-number resource, no static `assistantId`/`squadId`), or `{{...}}` template vars render literally on live calls.
 
 ## Data model
 
