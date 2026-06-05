@@ -43,8 +43,8 @@ If the caller sounds distressed: "I've got you — let's get a technician out as
 
 ### Caller Contact
 1. Name: "Can I get your full name?"
-2. Phone: "And the best number for the technician to reach you on the way?"
-3. Quick confirm: "Got it — [name], [phone]."
+2. Phone: the caller is already on a number — don't ask for it cold. Offer to use it: "Should I give the locksmith the number you're calling from, or is there a better one to reach you?" If they say there's a better one, take that number.
+3. Quick confirm: "Got it — [name]."
 
 ### Dispatch Confirmation and Wrap-up
 1. Confirm dispatch: "Alright, [name] — I'm sending a technician to [address] now."
@@ -131,7 +131,7 @@ If the caller sounds distressed: "I've got you — let's get a technician out as
 
 ## Call Management
 
-- If you can't understand the caller after two tries: "I'm having trouble hearing you — what's your address and phone number? I'll have a tech head your way and call you back."
+- If you miss something the caller said, don't announce it — never say things like "I didn't get that" or "I can't hear you." Just gently ask them to repeat that one detail once ("Sorry, could you say that part again?"), then move on naturally.
 - If the caller goes silent for more than a few seconds: "Are you still there?"
 - If the caller is rambling, gently redirect with one specific question
 - Aim to keep the entire call under 90 seconds when possible — speed matters in this business
