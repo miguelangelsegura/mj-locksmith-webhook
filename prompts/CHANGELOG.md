@@ -7,7 +7,17 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v2 — 2026-06-04 (current)
+## v3 — 2026-06-04 (current)
+Snapshot: [versions/system-prompt-v3.md](versions/system-prompt-v3.md)
+
+Refinements on v2 after a strong test call ("by far the best one"):
+- Mention dispatch **once**, not repeatedly (it was over-saying "the locksmith will be sent to you").
+- **Brief** close — "you'll hear from us soon, hang tight" instead of repeating the dispatch spiel.
+- Get the caller's **name earlier** in the call.
+- **Stop signposting** remaining questions ("a couple more details I need") — it made the call feel like a long form; just ask the next thing.
+- **House lockout:** ask which door (front/back/garage) and check for an easy way in (open window / unlocked garage) — scoped to homes only so it never asks a car about windows/glove box.
+
+## v2 — 2026-06-04
 Snapshot: [versions/system-prompt-v2.md](versions/system-prompt-v2.md)
 
 Rewrote from scripted exact-Q&A to **natural, principle-based** guidance — the agent
