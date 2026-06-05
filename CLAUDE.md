@@ -38,6 +38,9 @@ Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres
 - **SMS sends the full lead** (multi-segment, paid Twilio account). Do not reintroduce the old single-segment truncation.
 - **Multi-tenant by phone number.** `handleAssistantRequest`/`persistCall` resolve the locksmith by `inbound_number` (the number the call arrived on, `call.phoneNumber.number`), falling back to `vapi_assistant_id`. **One shared Vapi assistant serves every locksmith** — per-shop identity (`business_name`, `agent_name`) lives on the `clients` row and is injected per call via `assistantOverrides.variableValues`. Keep the assistant prompt and `firstMessage` templatized with `{{business_name}}`/`{{agent_name}}`; never hardcode a shop name. New-caller greeting = the assistant's `firstMessage` field; returning-caller greeting is built in `handleAssistantRequest` — both must use the variables.
 - **The Vapi number must be on dynamic/server routing** (a Server URL on the phone-number resource, no static `assistantId`/`squadId`), or `{{...}}` template vars render literally on live calls.
+- **Returning-caller memory** (`handleAssistantRequest`/`lookupCallerMemory`): look up by `caller_phone`, **coalesce each field across the last ~20 calls** (a thin/incomplete call must not wipe history) and **filter junk values** (`unknown`/`null`/empty). Don't revert to a single most-recent-row lookup.
+- **Lead-data quality is fixed in the Vapi structured outputs, not the prompt.** Past bugs were schema bugs: `service_address` said "return null if not fully collected" (dropped partials like a neighbourhood); `door_type` was a machine enum (`residential_key`). Fix the structured-output **description/schema** via the Vapi API; don't pile rules into the prompt.
+- **Keep the agent prompt LEAN.** Over-engineering it (stacking required steps/scripts) caused question-stacking, repetition, and nonsense answers. The levers for "smart + natural" are the **model and voice**, not more prompt rules.
 
 ## Data model
 
@@ -61,4 +64,4 @@ Invariants / traps (learned building it):
 
 ## Out of scope (do not add unprompted)
 
-Voice-agent conversation design (Vapi assistant prompt/script), Telegram/WhatsApp/email dispatch channels, and a switch away from Vapi are deferred. Wait for an explicit request.
+Telegram/WhatsApp/email dispatch channels and a switch away from Vapi are deferred — wait for an explicit request. (The Vapi assistant prompt is **actively maintained**, versioned under [prompts/](prompts/), so iterating on it is in scope.)
