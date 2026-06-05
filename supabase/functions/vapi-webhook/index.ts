@@ -228,16 +228,27 @@ async function lookupCallerMemory(phone: string | null) {
     .eq("caller_phone", phone)
     .not("ended_at", "is", null)
     .order("ended_at", { ascending: false })
-    .limit(1);
-  const r = data?.[0];
-  if (!r) return null;
-  const door = r.door_type ? String(r.door_type).replace(/_/g, " ") : null;
-  const problem = [door, r.damage_description].filter(Boolean).join(" — ") || null;
+    .limit(20);
+  if (!data || data.length === 0) return null;
+  const clean = (v: unknown): string | null => {
+    if (typeof v !== "string") return null;
+    const s = v.trim();
+    return (!s || ["unknown", "null", "n/a", "none"].includes(s.toLowerCase())) ? null : s;
+  };
+  const firstClean = (vals: unknown[]) => {
+    for (const v of vals) {
+      const c = clean(v);
+      if (c) return c;
+    }
+    return null;
+  };
+  const damage = firstClean(data.map((r) => r.damage_description));
+  const door = firstClean(data.map((r) => (r.door_type ? String(r.door_type).replace(/_/g, " ") : null)));
   return {
-    name: r.caller_name ?? null,
-    problem,
-    address: r.service_address ?? null,
-    summary: r.summary ?? null,
+    name: firstClean(data.map((r) => r.caller_name)),
+    problem: damage || door,
+    address: firstClean(data.map((r) => r.service_address)),
+    summary: firstClean(data.map((r) => r.summary)),
   };
 }
 
@@ -265,16 +276,18 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
       return Response.json({ assistantId, assistantOverrides: emptyVars });
     }
     const parts = ["Returning caller."];
-    if (mem.problem) parts.push(`Last issue: ${mem.problem}.`);
     if (mem.address) parts.push(`Address on file: ${mem.address}.`);
-    if (mem.summary) parts.push(`Last call: ${mem.summary}`);
+    if (mem.summary) parts.push(`Most recent call: ${mem.summary}`);
     const memory = parts.join(" ");
     const name = mem.name ?? "";
+    const about = mem.address ? `your place over at ${mem.address}` : "";
     const greeting = name
-      ? (mem.problem
-        ? `Hi ${name}, it's Mike at M and J — are you calling about the ${mem.problem} again, or is it something new?`
+      ? (about
+        ? `Hi ${name}, it's Mike at M and J — are you calling about ${about} again, or is it something new?`
         : `Hi ${name}, welcome back to M and J — it's Mike. What's going on today?`)
-      : "Welcome back to M and J — this is Mike. What's going on today?";
+      : (about
+        ? `Welcome back to M and J — this is Mike. Are you calling about ${about} again, or something new?`
+        : "Welcome back to M and J — this is Mike. What's going on today?");
     console.log(`[vapi] assistant-request: returning caller phone=${phone} name=${name}`);
     return Response.json({
       assistantId,
