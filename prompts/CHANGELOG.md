@@ -7,7 +7,16 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v7 — 2026-06-04 (current)
+## v8 — 2026-06-04 (current)
+Snapshot: [versions/system-prompt-v8.md](versions/system-prompt-v8.md)
+
+End-of-call + phone fixes. **Callback number:** ask "is the number you're calling from
+the best one?" — yes = done (no readback), no = take + read back the alternate.
+**Address:** confirm once when first given, never repeat (especially not at the end).
+**Ending:** wrap up and end the call when concluded — sign-off ends with "Take care!",
+which is added to `endCallPhrases` so Vapi hangs up deterministically (Haiku was lingering).
+
+## v7 — 2026-06-04
 Snapshot: [versions/system-prompt-v7.md](versions/system-prompt-v7.md)
 
 Stop the agent inventing a city/province. Address handling now says: only repeat back
