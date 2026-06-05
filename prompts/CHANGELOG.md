@@ -7,7 +7,15 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v10 — 2026-06-04 (current)
+## v11 — 2026-06-04 (current)
+Snapshot: [versions/system-prompt-v11.md](versions/system-prompt-v11.md)
+
+**Callback number asked once** — don't bring the number up again after confirming it.
+**Urgency sensing** — if the caller sounds rushed/stressed, speed up: skip small talk,
+get just the essentials (problem, location, callback), reassure, and wrap up fast
+(was only "reassure," didn't actually move faster).
+
+## v10 — 2026-06-04
 Snapshot: [versions/system-prompt-v10.md](versions/system-prompt-v10.md)
 
 Lean pass (no behavior change): removed the redundant "What you're trying to do"
