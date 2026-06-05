@@ -7,7 +7,15 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v6 — 2026-06-04 (current)
+## v7 — 2026-06-04 (current)
+Snapshot: [versions/system-prompt-v7.md](versions/system-prompt-v7.md)
+
+Stop the agent inventing a city/province. Address handling now says: only repeat back
+what the caller actually said — never add or assume a city/province/country they didn't
+mention (Miguel's "652 Platts Lane" was being saved as "…Calgary, Alberta"). Paired with
+the `service_address` structured output (Vapi), which now forbids inferring location parts.
+
+## v6 — 2026-06-04
 Snapshot: [versions/system-prompt-v6.md](versions/system-prompt-v6.md)
 
 **Multi-tenant templatization.** Replaces the hardcoded "M and J" / "Mike" with
