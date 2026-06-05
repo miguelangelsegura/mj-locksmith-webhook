@@ -7,7 +7,14 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v9 — 2026-06-04 (current)
+## v10 — 2026-06-04 (current)
+Snapshot: [versions/system-prompt-v10.md](versions/system-prompt-v10.md)
+
+Lean pass (no behavior change): removed the redundant "What you're trying to do"
+section (covered by the identity + "What you need before the call ends") and tightened
+the returning-caller paragraph.
+
+## v9 — 2026-06-04
 Snapshot: [versions/system-prompt-v9.md](versions/system-prompt-v9.md)
 
 Reverts the v7 city/province-assumption guard — the agent hadn't actually invented
