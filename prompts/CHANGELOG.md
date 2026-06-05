@@ -7,7 +7,15 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v11 — 2026-06-04 (current)
+## v12 — 2026-06-04 (current)
+Snapshot: [versions/system-prompt-v12.md](versions/system-prompt-v12.md)
+
+Make the callback question non-paraphrasable. "Speak in your own words" let the model
+drift "Is the number you're calling from the best one?" into an open "what's the best
+number to reach you?" — which makes the caller repeat a number we already have from
+caller ID. Now: confirm that exact number, almost word-for-word; never ask it open.
+
+## v11 — 2026-06-04
 Snapshot: [versions/system-prompt-v11.md](versions/system-prompt-v11.md)
 
 **Callback number asked once** — don't bring the number up again after confirming it.
