@@ -8,6 +8,8 @@ Backend for a Vapi voice-agent dispatch app (locksmith use case). A Vapi assista
 
 Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres + Twilio SMS.** There is no Render/FastAPI host anymore.
 
+**Telephony & billing:** the phone number (`+16514444875`) is a **BYO Twilio number** (`provider: twilio`) imported into Vapi — *not* a Vapi-provided number. One Twilio account does double duty: it **receives the inbound calls** and **sends the dispatch SMS**. Cost splits two ways — **Twilio** = the number + call carriage + SMS (cheap, mostly fixed); **Vapi** = the AI minutes (STT + LLM + TTS, ~90% of per-call cost — the "call credits"). Live voice stack (tuned in the Vapi dashboard, not the repo): STT OpenAI `gpt-4o-mini-transcribe`, LLM Anthropic **Claude Haiku 4.5** @ temp 0.6, TTS Vapi voice "Elliot".
+
 ## Local development
 
 - Requires the Supabase CLI (`supabase`) and Deno (for local `supabase functions serve` / type-check).
@@ -41,6 +43,13 @@ Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres
 - **Returning-caller memory** (`handleAssistantRequest`/`lookupCallerMemory`): look up by `caller_phone`, **coalesce each field across the last ~20 calls** (a thin/incomplete call must not wipe history) and **filter junk values** (`unknown`/`null`/empty). Don't revert to a single most-recent-row lookup.
 - **Lead-data quality is fixed in the Vapi structured outputs, not the prompt.** Past bugs were schema bugs: `service_address` said "return null if not fully collected" (dropped partials like a neighbourhood); `door_type` was a machine enum (`residential_key`). Fix the structured-output **description/schema** via the Vapi API; don't pile rules into the prompt.
 - **Keep the agent prompt LEAN.** Over-engineering it (stacking required steps/scripts) caused question-stacking, repetition, and nonsense answers. The levers for "smart + natural" are the **model and voice**, not more prompt rules.
+
+## Cost & abuse failsafes
+
+- **Per-call caps (Vapi assistant):** `maxDurationSeconds = 600` (10-min hard stop), `silenceTimeoutSeconds = 300` (ends on 5 min of dead air), plus idle check-in messages. One call therefore maxes out at ~$1.40.
+- **Vapi is prepaid** — billing can't exceed the loaded balance, so the **loaded balance is the hard total ceiling** (no debt possible). Keep it modest; set auto-reload conservatively, or skip it so abuse simply stops at $0.
+- **Junk calls:** the agent ends wrong-number/robocalls quickly, and `sendDispatchSms` skips texting for `wrong_number`/`spam`/`info_only` outcomes — no SMS spam to the locksmith.
+- **KNOWN GAP — no per-number rate limit.** Many short calls from one number can still drain the loaded balance. Planned fix: rate-limit in `handleAssistantRequest` — count recent calls per `caller_phone` in `calls` and refuse to spin up the assistant past a threshold (e.g. >5/hour), so abuse is stopped *before* it costs AI minutes.
 
 ## Data model
 
