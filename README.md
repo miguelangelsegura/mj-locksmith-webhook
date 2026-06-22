@@ -4,6 +4,29 @@ Receives Vapi voice-agent end-of-call webhooks, authenticates them, persists the
 
 Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres + Twilio SMS.**
 
+## How it works (the call workflow)
+
+> New to the project? Read the full onboarding doc: **[docs/SYSTEM-OVERVIEW.md](docs/SYSTEM-OVERVIEW.md).**
+
+A customer calls → an AI agent ("Mike") answers, captures the locksmith lead, texts it to the locksmith, and **remembers returning callers**. **Vapi** runs the call; the **only custom code is our Supabase webhook** (it runs *twice* per call); **Supabase Postgres** stores leads *and* memory; **Twilio** sends the text.
+
+| # | Phase | What happens | Platform(s) |
+|---|---|---|---|
+| 1 | Before | Customer dials the number; the line answers | **Vapi** |
+| 2 | Before | No fixed agent → Vapi asks our server "who's calling, which agent?" | **Vapi → webhook** (`assistant-request`) |
+| 3 | Before | Webhook finds the locksmith + looks the caller up by phone | **Webhook → Supabase** (`clients`, `calls`) |
+| 4 | Before | Webhook returns the agent + personalized greeting + memory | **Webhook → Vapi** |
+| 5 | During | Caller speaks → text | **OpenAI** (speech-to-text) |
+| 6 | During | "Mike" decides the reply | **Anthropic** (Claude) |
+| 7 | During | Reply spoken back; loops until details gathered | **Vapi voice** (text-to-speech) |
+| 8 | Ending | Mike says "Take care!" → call ends | **Vapi** |
+| 9 | After | Vapi transcribes + extracts the fields + summary, sends it to us | **Vapi → webhook** (`end-of-call-report`) |
+| 10 | After | Webhook saves the call (the lead **and** the memory) | **Webhook → Supabase** (`calls`) |
+| 11 | After | Webhook texts the labeled lead to the locksmith | **Webhook → Twilio → 📱** |
+| ↺ | Next call | Same caller → step 3 reads the row saved in step 10 → Mike greets them by name | the **memory loop** |
+
+**Platforms at a glance:** **Vapi** (phone + conductor) · **OpenAI** (ears / speech-to-text) · **Anthropic** (brain — "Mike") · **Supabase** (our webhook code + the database) · **Twilio** (texts the locksmith). Memory isn't a special feature — the `calls` table is *both* the lead record and the memory store.
+
 ## Behavior
 
 - `GET` — health check, returns `{"status": "ok"}`.
