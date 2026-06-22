@@ -1,14 +1,20 @@
 import asyncio
+import hmac
 import json
 import os
 import re
 from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from supabase import create_client
 from twilio.rest import Client as TwilioClient
 
 app = FastAPI()
+
+VAPI_WEBHOOK_SECRET = os.environ.get("VAPI_WEBHOOK_SECRET")
+if not VAPI_WEBHOOK_SECRET:
+    print("[startup] VAPI_WEBHOOK_SECRET not set — webhook is UNAUTHENTICATED", flush=True)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
@@ -178,11 +184,19 @@ def _send_dispatch_sms(client_id, call_id, row):
         if not claim.data:
             print(f"[vapi] sms already sent call={call_id}", flush=True)
             return
-        message = twilio_client.messages.create(
-            to=dispatch_phone,
-            messaging_service_sid=TWILIO_MESSAGING_SERVICE_SID,
-            body=_compose_sms_body(row),
-        )
+        try:
+            message = twilio_client.messages.create(
+                to=dispatch_phone,
+                messaging_service_sid=TWILIO_MESSAGING_SERVICE_SID,
+                body=_compose_sms_body(row),
+            )
+        except Exception:
+            # Release the claim so a Vapi retry can re-send. A duplicate dispatch
+            # SMS is far cheaper than a silently dropped job lead.
+            supabase.table("calls").update(
+                {"notified_at": None, "notified_phone": None}
+            ).eq("vapi_call_id", call_id).execute()
+            raise
         print(f"[vapi] sms sent call={call_id} to={dispatch_phone} sid={message.sid}", flush=True)
     except Exception as e:
         print(f"[vapi] sms failed call={call_id}: {e}", flush=True)
@@ -225,6 +239,11 @@ async def health():
 
 @app.post("/vapi/webhook")
 async def vapi_webhook(request: Request):
+    if VAPI_WEBHOOK_SECRET:
+        provided = request.headers.get("x-vapi-secret", "")
+        if not hmac.compare_digest(provided, VAPI_WEBHOOK_SECRET):
+            print("[vapi/webhook] rejected: bad/missing secret", flush=True)
+            return JSONResponse({"received": False}, status_code=401)
     raw = await request.body()
     try:
         payload = json.loads(raw)
