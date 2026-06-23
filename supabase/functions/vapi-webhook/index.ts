@@ -220,8 +220,17 @@ async function sendDispatchSms(clientId: string, callId: string, row: Record<str
     console.log(`[vapi] sms already sent call=${callId}`);
     return;
   }
-  const sid = await sendSms(dispatchPhone, composeSmsBody(row, tz));
-  console.log(`[vapi] sms sent call=${callId} to=${dispatchPhone} sid=${sid}`);
+  try {
+    const sid = await sendSms(dispatchPhone, composeSmsBody(row, tz));
+    console.log(`[vapi] sms sent call=${callId} to=${dispatchPhone} sid=${sid}`);
+  } catch (e) {
+    // Release the claim so a Vapi retry can re-send — a duplicate text beats a dropped lead.
+    await supabase.from("calls")
+      .update({ notified_at: null, notified_phone: null })
+      .eq("vapi_call_id", callId);
+    console.log(`[vapi] sms failed, claim released call=${callId}: ${e}`);
+    throw e;
+  }
 }
 
 async function lookupClientByInbound(number: string | null): Promise<string | null> {
@@ -298,6 +307,25 @@ async function resolveClientContext(
   };
 }
 
+const RATE_LIMIT_PER_DAY = 10;
+
+async function countRecentCalls(phone: string | null): Promise<number> {
+  if (!phone || !supabase) return 0;
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from("calls")
+    .select("vapi_call_id", { count: "exact", head: true })
+    .eq("caller_phone", phone)
+    .gte("ended_at", since);
+  return count ?? 0;
+}
+
+// Spoken greeting must not read the street/house number aloud (caller ID is spoofable).
+function greetingLocation(addr: string | null): string | null {
+  if (!addr) return null;
+  return addr.replace(/^\s*\d[\w-]*\s+/, "").trim() || null;
+}
+
 async function handleAssistantRequest(payload: any): Promise<Response> {
   const { assistantId, businessName, agentName } = await resolveClientContext(payload);
   const baseVars = {
@@ -310,6 +338,12 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
   }
   try {
     const phone = extractCallerPhone(payload);
+    if (await countRecentCalls(phone) >= RATE_LIMIT_PER_DAY) {
+      console.log(`[vapi] rate-limited phone=${phone} (>=${RATE_LIMIT_PER_DAY}/day)`);
+      return Response.json({
+        error: "We're getting a lot of calls right now — please try again later.",
+      });
+    }
     const mem = await lookupCallerMemory(phone);
     if (!mem) {
       console.log(`[vapi] assistant-request: new caller phone=${phone}`);
@@ -322,7 +356,7 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
     const memory = parts.join(" ");
     const name = mem.name ?? "";
     const door = mem.door && mem.door.length <= 40 ? mem.door : null;
-    const loc = mem.address;
+    const loc = greetingLocation(mem.address);
     const about = door && loc
       ? `the ${door} over at ${loc}`
       : loc
