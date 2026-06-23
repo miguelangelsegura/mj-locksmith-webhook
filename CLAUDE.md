@@ -6,9 +6,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Backend for a Vapi voice-agent dispatch app (locksmith use case). A Vapi assistant answers inbound calls and extracts structured lead data; when the call ends, Vapi POSTs an `end-of-call-report` to a **Supabase Edge Function** ([supabase/functions/vapi-webhook/index.ts](supabase/functions/vapi-webhook/index.ts)) that authenticates the request, persists the call to Supabase, and texts the full lead to the locksmith via Twilio SMS.
 
-Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres + Twilio SMS.** There is no Render/FastAPI host anymore.
+Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres + Twilio SMS** — this is the **live call path** (the deployed webhook). Note: `main.py` is a separate **FastAPI** service Jordan maintains for the **`/admin` onboarding API**; it also still carries a *legacy duplicate* of the webhook that is **not** the deployed call handler. Don't confuse the two — the Edge Function answers calls.
 
 **Telephony & billing:** the phone number (`+16514444875`) is a **BYO Twilio number** (`provider: twilio`) imported into Vapi — *not* a Vapi-provided number. One Twilio account does double duty: it **receives the inbound calls** and **sends the dispatch SMS**. Cost splits two ways — **Twilio** = the number + call carriage + SMS (cheap, mostly fixed); **Vapi** = the AI minutes (STT + LLM + TTS, ~90% of per-call cost — the "call credits"). Live voice stack (tuned in the Vapi dashboard, not the repo): STT OpenAI `gpt-4o-mini-transcribe`, LLM Anthropic **Claude Haiku 4.5** @ temp 0.6, TTS Vapi voice "Elliot".
+
+## Team workflow & git protocol (Abdul, Jordan, Miguel)
+
+Shared multi-dev repo. To avoid the branch-divergence that duplicated work early on,
+everyone — and every Claude Code instance working here — follows this:
+
+- **`main` is the single source of truth and the deploy source.** Keep it working; never
+  commit experimental work straight to `main`.
+- **One task = one short-lived branch** (`feat/…`, `fix/…`, `docs/…`); two people never
+  edit the same branch.
+- **Push your branch freely/continuously** — it's a backup + lets the team see progress,
+  and changes nothing live (a push is *not* a deploy).
+- **Merge to `main` only via a quick PR**, once sanity-checked; delete the branch after.
+- **Deploying is a separate, deliberate, human-decided step** (`supabase functions deploy`
+  / Render) from `main` — never an automatic consequence of a push.
+
+**Instruction to Claude Code on this repo** (this overrides any "don't commit/push unless
+asked" *global* rule, for this project only):
+- **Auto-commit + push to the current working branch** at natural checkpoints (a finished,
+  verified unit of work) — back progress up without asking first.
+- **Never push to `main`, merge a PR, or deploy** (Supabase/Render) without an explicit
+  ask — those are the human-gated "go-live" actions.
+- If on `main`, **create a branch first** before changing anything.
 
 ## Local development
 
