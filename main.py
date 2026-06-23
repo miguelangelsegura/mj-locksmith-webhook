@@ -5,7 +5,7 @@ import os
 import re
 from datetime import datetime, timedelta, timezone
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from supabase import create_client
 from twilio.rest import Client as TwilioClient
@@ -15,6 +15,10 @@ app = FastAPI()
 VAPI_WEBHOOK_SECRET = os.environ.get("VAPI_WEBHOOK_SECRET")
 if not VAPI_WEBHOOK_SECRET:
     print("[startup] VAPI_WEBHOOK_SECRET not set — webhook is UNAUTHENTICATED", flush=True)
+
+ADMIN_API_TOKEN = os.environ.get("ADMIN_API_TOKEN")
+if not ADMIN_API_TOKEN:
+    print("[startup] ADMIN_API_TOKEN not set — /admin endpoints are DISABLED", flush=True)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
@@ -259,6 +263,83 @@ async def vapi_webhook(request: Request):
         print(f"[vapi/webhook] failed to parse JSON: {e}", flush=True)
         print(f"[vapi/webhook] raw body: {raw!r}", flush=True)
     return {"received": True}
+
+
+# --- Admin API ---------------------------------------------------------------
+# Internal endpoints for the onboarding tool (Retool/Appsmith). Reads, the
+# active toggle, and edits are done by the tool directly against Supabase; only
+# the actions that need server-side validation or Twilio creds live here.
+# Fails closed: when ADMIN_API_TOKEN is unset every /admin route returns 503.
+
+
+def require_admin(x_admin_token: str = Header(default="")):
+    if not ADMIN_API_TOKEN:
+        raise HTTPException(status_code=503, detail="admin API not configured")
+    if not hmac.compare_digest(x_admin_token, ADMIN_API_TOKEN):
+        raise HTTPException(status_code=401, detail="invalid admin token")
+
+
+def _admin_create_client(payload):
+    assistant_id = (payload.get("vapi_assistant_id") or "").strip()
+    business_name = (payload.get("business_name") or "").strip()
+    dispatch_phone = _normalize_phone(payload.get("dispatch_phone"))
+    if not assistant_id:
+        raise HTTPException(status_code=400, detail="vapi_assistant_id is required")
+    if not business_name:
+        raise HTTPException(status_code=400, detail="business_name is required")
+    if dispatch_phone is None:
+        raise HTTPException(status_code=400, detail="dispatch_phone must be E.164, e.g. +14165551234")
+    existing = supabase.table("clients").select("id").eq("vapi_assistant_id", assistant_id).limit(1).execute()
+    if existing.data:
+        raise HTTPException(status_code=409, detail="a client with that vapi_assistant_id already exists")
+    row = {
+        "vapi_assistant_id": assistant_id,
+        "business_name": business_name,
+        "dispatch_phone": dispatch_phone,
+        "active": bool(payload.get("active", True)),
+    }
+    res = supabase.table("clients").insert(row).execute()
+    print(f"[admin] created client business={business_name!r} assistant={assistant_id}", flush=True)
+    return (res.data or [row])[0]
+
+
+def _admin_test_sms(client_id):
+    res = supabase.table("clients").select("business_name, dispatch_phone").eq("id", client_id).limit(1).execute()
+    rows = res.data or []
+    if not rows:
+        raise HTTPException(status_code=404, detail="client not found")
+    dispatch_phone = _normalize_phone(rows[0].get("dispatch_phone"))
+    if dispatch_phone is None:
+        raise HTTPException(status_code=400, detail="client has no valid dispatch_phone")
+    msg = twilio_client.messages.create(
+        to=dispatch_phone,
+        messaging_service_sid=TWILIO_MESSAGING_SERVICE_SID,
+        body="Test dispatch — this number is set up to receive job alerts. No action needed.",
+    )
+    print(f"[admin] test sms sent client={client_id} to={dispatch_phone} sid={msg.sid}", flush=True)
+    return {"to": dispatch_phone, "sid": msg.sid}
+
+
+@app.post("/admin/clients")
+async def admin_create_client(request: Request, _=Depends(require_admin)):
+    if supabase is None:
+        raise HTTPException(status_code=503, detail="supabase not configured")
+    payload = await request.json()
+    client = await asyncio.to_thread(_admin_create_client, payload)
+    return {"created": True, "client": client}
+
+
+@app.post("/admin/clients/{client_id}/test-sms")
+async def admin_test_sms(client_id: str, _=Depends(require_admin)):
+    if supabase is None or twilio_client is None:
+        raise HTTPException(status_code=503, detail="supabase/twilio not configured")
+    try:
+        result = await asyncio.to_thread(_admin_test_sms, client_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"twilio send failed: {e}")
+    return {"sent": True, **result}
 
 
 if __name__ == "__main__":
