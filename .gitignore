@@ -12,3 +12,10 @@ env/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
+
+# Outreach ledger — holds scraped business PII, do not commit
+outreach/contacted.csv

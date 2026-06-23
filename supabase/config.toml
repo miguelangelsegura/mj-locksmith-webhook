@@ -1,0 +1,4 @@
+project_id = "mj-locksmith-webhook"
+
+[functions.vapi-webhook]
+verify_jwt = false

@@ -4,37 +4,73 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Webhook receiver for a Vapi voice-agent dispatch app (locksmith use case). A single-file FastAPI service ([main.py](main.py)) that receives Vapi `end-of-call-report` webhooks and, for each call: looks up which client (locksmith business) owns the assistant, persists a parsed call row to Supabase, and texts the client's dispatcher via Twilio. Other Vapi event types get a one-line stdout ack. The service degrades gracefully — if Supabase or Twilio env vars are missing it runs in log-only mode rather than failing.
+Backend for a Vapi voice-agent dispatch app (locksmith use case). A Vapi assistant answers inbound calls and extracts structured lead data; when the call ends, Vapi POSTs an `end-of-call-report` to a **Supabase Edge Function** ([supabase/functions/vapi-webhook/index.ts](supabase/functions/vapi-webhook/index.ts)) that authenticates the request, persists the call to Supabase, and texts the full lead to the locksmith via Twilio SMS.
 
-End-to-end flow: customer calls → Vapi voice agent handles the conversation → on hang-up Vapi POSTs `end-of-call-report` → this service verifies the shared secret, persists the call, and dispatches an SMS.
+Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres + Twilio SMS.** There is no Render/FastAPI host anymore.
+
+**Telephony & billing:** the phone number (`+16514444875`) is a **BYO Twilio number** (`provider: twilio`) imported into Vapi — *not* a Vapi-provided number. One Twilio account does double duty: it **receives the inbound calls** and **sends the dispatch SMS**. Cost splits two ways — **Twilio** = the number + call carriage + SMS (cheap, mostly fixed); **Vapi** = the AI minutes (STT + LLM + TTS, ~90% of per-call cost — the "call credits"). Live voice stack (tuned in the Vapi dashboard, not the repo): STT OpenAI `gpt-4o-mini-transcribe`, LLM Anthropic **Claude Haiku 4.5** @ temp 0.6, TTS Vapi voice "Elliot".
 
 ## Local development
 
-- Requires Python 3.11+. On this Mac the system `python3` is 3.9 — use `python3.11` explicitly (homebrew: `/opt/homebrew/bin/python3.11`).
-- Setup: `python3.11 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`
-- Run: `uvicorn main:app --reload --port 8000`
-- Smoke test commands are in [README.md](README.md). No test suite, linter, or type-checker is configured — verify changes by `curl`.
+- Requires the Supabase CLI (`supabase`) and Deno (for local `supabase functions serve` / type-check).
+- Type-check: `deno check supabase/functions/vapi-webhook/index.ts`
+- Serve locally: `supabase functions serve vapi-webhook --no-verify-jwt --env-file supabase/functions/.env.local`
+- Smoke-test commands are in [README.md](README.md). No unit-test suite — verify with `curl`.
+- **The agent prompt is versioned:** canonical [prompts/system-prompt.md](prompts/system-prompt.md), frozen snapshots in [prompts/versions/](prompts/versions/), notes in [prompts/CHANGELOG.md](prompts/CHANGELOG.md). Revert by copying a `versions/system-prompt-vN.md` over the canonical file and pushing it to Vapi.
 
 ## Deployment
 
-- Hosted on Render free plan via the `render.yaml` blueprint. GitHub repo: `miguelangelsegura/mj-locksmith-webhook`. Pushing to `main` triggers auto-deploy.
-- Live webhook URL: `https://mj-locksmith-webhook.onrender.com/vapi/webhook`
-- Free-plan caveat: services spin down after ~15 min idle, so the first request after a quiet period takes ~30s to wake up.
+- Deploy: `supabase functions deploy vapi-webhook` (`verify_jwt = false` is set in [supabase/config.toml](supabase/config.toml), so the endpoint is public; the `x-vapi-secret` check is the auth gate).
+- Live webhook URL: `https://<project-ref>.supabase.co/functions/v1/vapi-webhook` — paste into the Vapi assistant Server URL.
+- Secrets: `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are auto-injected by the Edge runtime (you cannot set `SUPABASE_`-prefixed secrets). Set the rest with `supabase secrets set VAPI_SECRET=… TWILIO_ACCOUNT_SID=… TWILIO_AUTH_TOKEN=… TWILIO_MESSAGING_SERVICE_SID=… OPS_PHONE=…`.
+- Schema changes live in [supabase/migrations/](supabase/migrations/); apply with `supabase db push --linked`.
+- **CLI "Cannot find project ref":** restore `supabase/.temp/project-ref` containing just the ref string (`config.toml`'s `project_id` is a display name, not the ref). The DB password is cached, so `--linked` then connects without a prompt.
+- **Ad-hoc prod data read/write (no DB password needed):** fetch the service_role key with `supabase projects api-keys --project-ref <ref> --output-format json` (shape `{"keys":[{api_key,name}]}`), then hit PostgREST at `https://<ref>.supabase.co/rest/v1/<table>`. PostgREST can't run DDL — column adds still go through a migration + `db push`.
+- **Driving the Vapi REST API** (`api.vapi.ai`, bearer `VAPI_PRIVATE_KEY` from `.env.local`): it rejects the default python-urllib User-Agent with Cloudflare error 1010 — use `curl`, or set a browser `User-Agent` header. PATCHing `model` requires sending the whole model object back (GET it, swap the system message, PATCH) so other settings aren't wiped.
+- **Smoke-test routing without a real call:** `POST` an `assistant-request` payload (`message.type`, `call.phoneNumber.number`) to the deployed webhook with `?token=$VAPI_SECRET`; the response's `variableValues` should carry the right `business_name`/`agent_name`.
+- **Vapi server URLs have silently regressed to dead Render before — always verify them.** The **assistant** `server.url` receives post-call messages (end-of-call → persist + SMS); **`assistant-request` (per-call routing/memory) uses the PHONE NUMBER's `server.url`** (or org). Both must point at `https://<ref>.supabase.co/functions/v1/vapi-webhook?token=<VAPI_SECRET>`. A number with no assistant **and** no server URL = calls don't connect. If persistence/SMS goes quiet, check neither URL points at `*.onrender.com`.
+- **`VAPI_SECRET` is unreadable after the fact** (Supabase shows only a digest). To put it in a `?token=` URL, **rotate** it to a value you generate (`supabase secrets set VAPI_SECRET=…` → redeploy → update the Vapi URLs).
 
 ## Design constraints to preserve
 
-- **`main.py` is intentionally minimal** — no Pydantic models, request validators, or abstraction layers. The endpoint deliberately accepts arbitrary JSON so unknown Vapi fields aren't rejected before they can be observed/persisted (the full payload is stored in `calls.raw_payload`).
-- **The webhook returns 200 on any processing/JSON error.** The `try`/`except` blocks exist so a malformed or unexpected payload can never crash the worker or trigger a Vapi retry-storm. The one intentional exception: a missing/bad `x-vapi-secret` returns 401 (see auth below).
-- **Auth: shared-secret via `x-vapi-secret`.** When `VAPI_WEBHOOK_SECRET` is set, the handler constant-time-compares it against the header and rejects mismatches with 401. It **fails open** (logs a loud warning, accepts requests) when the env var is unset so local `curl` testing works — keep that behavior unless asked to fail closed.
-- **Persistence & SMS are idempotent.** Calls upsert on `vapi_call_id`. The dispatch SMS is guarded by an atomic claim (`UPDATE ... WHERE notified_at IS NULL`) so concurrent webhook deliveries can't double-text; on a Twilio send failure the claim is released so a retry can re-send. Preserve this claim/release ordering.
-- **Logs go to stdout via `print(..., flush=True)`** — that is what surfaces in Render's Logs tab. Do not switch to a logging framework, structured logger, or external log sink without an explicit ask.
-- **Only `end-of-call-report` events log the full payload and persist.** All other Vapi event types emit a one-line ack (`[vapi] <type> call=<id> bytes=<n>`) to keep Render logs readable. Do not remove the filter without an explicit ask.
+- **Signature verification is the security gate.** When `VAPI_SECRET` is set, every webhook must present the matching secret either as the `x-vapi-secret` header or as a `?token=` query param on the Server URL (the token form is used because the current Vapi UI has no plain secret field). Mismatches are rejected (200 `{"received": false}`) before any DB write or SMS. Do not remove or weaken this without an explicit ask.
+- **The webhook always returns 200**, even on JSON parse failure. The `try`/`catch` exists so a malformed payload can never crash the worker.
+- **Only `end-of-call-report` events persist + dispatch.** Other Vapi event types emit a one-line ack (`[vapi] <type> call=<id> bytes=<n>`). Do not expand other event types to full handling without an explicit ask.
+- **SMS dispatch is idempotent** via the `notified_at`/`notified_phone` conditional claim on the `calls` row — never send two texts for one call. A stale guard skips calls ended more than an hour ago. Preserve both.
+- **SMS sends the full lead** (multi-segment, paid Twilio account). Do not reintroduce the old single-segment truncation.
+- **Multi-tenant by phone number.** `handleAssistantRequest`/`persistCall` resolve the locksmith by `inbound_number` (the number the call arrived on, `call.phoneNumber.number`), falling back to `vapi_assistant_id`. **One shared Vapi assistant serves every locksmith** — per-shop identity (`business_name`, `agent_name`) lives on the `clients` row and is injected per call via `assistantOverrides.variableValues`. Keep the assistant prompt and `firstMessage` templatized with `{{business_name}}`/`{{agent_name}}`; never hardcode a shop name. New-caller greeting = the assistant's `firstMessage` field; returning-caller greeting is built in `handleAssistantRequest` — both must use the variables.
+- **The Vapi number must be on dynamic/server routing** (a Server URL on the phone-number resource, no static `assistantId`/`squadId`), or `{{...}}` template vars render literally on live calls.
+- **Returning-caller memory** (`handleAssistantRequest`/`lookupCallerMemory`): look up by `caller_phone`, **coalesce each field across the last ~20 calls** (a thin/incomplete call must not wipe history) and **filter junk values** (`unknown`/`null`/empty). Don't revert to a single most-recent-row lookup.
+- **Lead-data quality is fixed in the Vapi structured outputs, not the prompt.** Past bugs were schema bugs: `service_address` said "return null if not fully collected" (dropped partials like a neighbourhood); `door_type` was a machine enum (`residential_key`). Fix the structured-output **description/schema** via the Vapi API; don't pile rules into the prompt.
+- **Keep the agent prompt LEAN.** Over-engineering it (stacking required steps/scripts) caused question-stacking, repetition, and nonsense answers. The levers for "smart + natural" are the **model and voice**, not more prompt rules.
 
-## Expected Supabase schema
+## Cost & abuse failsafes
 
-- `clients`: `id`, `vapi_assistant_id` (unique), `active` (bool), `dispatch_phone` (E.164, DB-checked), plus admin-tool fields `business_name`, `contact_name`, `contact_email`, `created_at`.
-- `calls`: `vapi_call_id` (unique, upsert conflict target), `client_id`, timing/`duration_seconds`, `caller_phone`, `summary`, `transcript`, the structured fields in `STRUCTURED_FIELDS`, `raw_payload` (jsonb), plus `notified_at` / `notified_phone` for the SMS dispatch claim.
+- **Per-call caps (Vapi assistant):** `maxDurationSeconds = 600` (10-min hard stop), `silenceTimeoutSeconds = 300` (ends on 5 min of dead air), plus idle check-in messages. One call therefore maxes out at ~$1.40.
+- **Vapi is prepaid** — billing can't exceed the loaded balance, so the **loaded balance is the hard total ceiling** (no debt possible). Keep it modest; set auto-reload conservatively, or skip it so abuse simply stops at $0.
+- **Junk calls:** the agent ends wrong-number/robocalls quickly, and `sendDispatchSms` skips texting for `wrong_number`/`spam`/`info_only` outcomes — no SMS spam to the locksmith.
+- **KNOWN GAP — no per-number rate limit.** Many short calls from one number can still drain the loaded balance. Planned fix: rate-limit in `handleAssistantRequest` — count recent calls per `caller_phone` in `calls` and refuse to spin up the assistant past a threshold (e.g. >5/hour), so abuse is stopped *before* it costs AI minutes.
 
-## Roadmap / not yet done
+## Data model
 
-Per-client SMS retry sweep (currently relies on Vapi's retry window), and a stricter fail-closed auth mode. Ask before expanding scope further.
+- `clients`: `id`, `vapi_assistant_id`, `active`, `dispatch_phone`, plus routing columns `inbound_number` (the dedicated Vapi number a locksmith forwards to — primary routing key, with `vapi_assistant_id` as fallback), `cell_number`, `answer_mode` (`human_first | ai_first | scheduled`), `ring_timeout_seconds`, `business_hours`.
+- `calls`: keyed by `vapi_call_id` (upsert), stores structured fields, transcript, summary, `raw_payload`, and the `notified_at`/`notified_phone` dispatch markers.
+
+## Cold outreach (the `/locksmith-outreach` skill)
+
+A **separate subsystem** from the call→SMS pipeline above: a Claude Code skill that finds locksmith businesses by city, scrapes their published email, and creates ready-to-send Gmail drafts pitching the dispatch service. Lives in [.claude/skills/locksmith-outreach/SKILL.md](.claude/skills/locksmith-outreach/SKILL.md); email copy in [outreach/templates.md](outreach/templates.md); dedup ledger in `outreach/contacted.csv` (gitignored — scraped business PII). Built deliberately **lean** (no paid APIs, no DB, no LLM personalization, no agent fan-out) — keep it that way unless asked.
+
+Invariants / traps (learned building it):
+- **CASL implied-consent is the legal basis** (targets are Canadian): only email an address **conspicuously published on the business's own website**, and record its `email_source_url`. **Never guess `info@domain`** — a guessed address isn't "published" and weakens the CASL footing. Skip sites stating "no unsolicited email."
+- **Every email carries the CASL footer** from templates.md (sender identity + physical mailing address + working unsubscribe). Preflight **refuses to draft while any `{{...}}` placeholder remains**.
+- **Drafts only — never auto-send.** Output is Gmail drafts the user reviews and sends.
+- **`WebSearch` is US-biased and does NOT see Google's Maps/local pack** — one query misses many local shops. Run several regional query variants AND mine directory/listicle pages for the roster of business *names*, then visit each shop's **own** site for the email.
+- **Deep-find before marking `no_email`**: check privacy/terms/footer, raw-HTML obfuscation, sister/alt domains, and the Facebook "About" page. Surface obvious typos (e.g. `cantact@`) for human confirm — don't use them.
+- **Dedup against `outreach/contacted.csv`** by email and by domain before drafting — reruns must never double-contact.
+- **Write valid CSV**: quote any field with a comma (`hours`/`description` usually need it). Statuses: `found | drafted | no_email | skipped_dupe | replied | unsubscribed`.
+- **Gmail connector** exposes only `authenticate`/`complete_authentication` until OAuth completes; the create-draft tool appears only after. Apollo enrichment is optional, key-gated (`APOLLO_API_KEY`), weaker-CASL — last resort only.
+- Modes: `--collect`/`--no-draft` (build the sheet, no drafts), `--dry-run` (no writes at all), `--followup` (second-touch template).
+
+## Out of scope (do not add unprompted)
+
+Telegram/WhatsApp/email dispatch channels and a switch away from Vapi are deferred — wait for an explicit request. (The Vapi assistant prompt is **actively maintained**, versioned under [prompts/](prompts/), so iterating on it is in scope.)
