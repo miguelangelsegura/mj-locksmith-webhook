@@ -1,15 +1,4 @@
-// Admin UI — a single self-contained page for onboarding/managing locksmith
-// clients. Served as static HTML by this Edge Function so the team just opens a
-// URL; no Retool, no build step, no account.
-//
-// Security: this page holds NO secrets. On first load it asks for the admin
-// token, stores it in the browser's localStorage only, and sends it as
-// `x-admin-token` to the sibling `admin` function (same Supabase origin, so no
-// CORS). The real auth gate stays the token check on the `admin` API.
-//
-// Deploy with verify_jwt = false (see config.toml) so a browser can GET the page.
-
-const PAGE = `<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -91,7 +80,7 @@ const PAGE = `<!doctype html>
 <div class="toast" id="toast"></div>
 
 <script>
-  var API = location.origin + '/functions/v1/admin';
+  var API = 'https://yqyvybukyfokyfsjzyso.supabase.co/functions/v1/admin';
   var KEY = 'dispango_admin_token';
   var $ = function (id) { return document.getElementById(id); };
 
@@ -220,10 +209,4 @@ const PAGE = `<!doctype html>
   if (token()) { show('app'); loadClients(); } else { show('login'); }
 </script>
 </body>
-</html>`;
-
-Deno.serve(() => {
-  return new Response(PAGE, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
-});
+</html>
