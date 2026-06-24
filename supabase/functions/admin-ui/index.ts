@@ -1,0 +1,229 @@
+// Admin UI — a single self-contained page for onboarding/managing locksmith
+// clients. Served as static HTML by this Edge Function so the team just opens a
+// URL; no Retool, no build step, no account.
+//
+// Security: this page holds NO secrets. On first load it asks for the admin
+// token, stores it in the browser's localStorage only, and sends it as
+// `x-admin-token` to the sibling `admin` function (same Supabase origin, so no
+// CORS). The real auth gate stays the token check on the `admin` API.
+//
+// Deploy with verify_jwt = false (see config.toml) so a browser can GET the page.
+
+const PAGE = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dispango — Client Admin</title>
+<style>
+  :root { --bg:#0f1115; --card:#181b22; --line:#262b35; --text:#e8eaed; --muted:#9aa3b2; --accent:#4f7cff; --danger:#ff5d5d; --ok:#3ecf8e; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--text); }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 28px 20px 80px; }
+  h1 { font-size: 20px; margin: 0; }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-top:18px; }
+  label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; }
+  input { width:100%; padding:9px 11px; background:#0e1016; border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:14px; }
+  input:focus { outline:none; border-color:var(--accent); }
+  .grid { display:grid; grid-template-columns: 1fr 1fr; gap:8px 14px; }
+  button { cursor:pointer; border:none; border-radius:8px; padding:9px 14px; font-size:13px; font-weight:600; color:#fff; background:var(--accent); }
+  button.ghost { background:transparent; border:1px solid var(--line); color:var(--text); font-weight:500; }
+  button.sm { padding:5px 10px; font-size:12px; }
+  button:disabled { opacity:.5; cursor:default; }
+  table { width:100%; border-collapse:collapse; margin-top:6px; font-size:13px; }
+  th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+  .pill { font-size:11px; padding:2px 8px; border-radius:999px; }
+  .pill.on { background:rgba(62,207,142,.15); color:var(--ok); }
+  .pill.off { background:rgba(154,163,178,.15); color:var(--muted); }
+  .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:#1f2330; border:1px solid var(--line); padding:11px 16px; border-radius:10px; font-size:13px; max-width:90%; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .toast.show { opacity:1; }
+  .toast.err { border-color:var(--danger); }
+  .toast.ok { border-color:var(--ok); }
+  .muted { color:var(--muted); font-size:13px; }
+  .hidden { display:none; }
+  .err { color:var(--danger); font-size:12px; margin-top:8px; min-height:14px; }
+  .actions { display:flex; gap:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row">
+    <div>
+      <h1>Dispango — Client Admin</h1>
+      <div class="sub">Onboard &amp; manage locksmith clients</div>
+    </div>
+    <button id="logout" class="ghost hidden">Log out</button>
+  </div>
+
+  <!-- Token screen -->
+  <div id="login" class="card hidden">
+    <label>Admin token</label>
+    <input id="token" type="password" placeholder="paste your ADMIN_API_TOKEN" autocomplete="off" />
+    <div class="err" id="loginErr"></div>
+    <div style="margin-top:12px"><button id="connect">Connect</button></div>
+    <div class="muted" style="margin-top:10px">Stored only in this browser. Used to authenticate with the admin API.</div>
+  </div>
+
+  <!-- App -->
+  <div id="app" class="hidden">
+    <div class="card">
+      <div class="row"><strong>Clients</strong><button id="refresh" class="ghost sm">Refresh</button></div>
+      <div id="tableWrap"><div class="muted" style="margin-top:10px">Loading…</div></div>
+    </div>
+
+    <div class="card">
+      <strong>New client</strong>
+      <div class="grid">
+        <div><label>Business name *</label><input id="f_business_name" /></div>
+        <div><label>Agent name</label><input id="f_agent_name" placeholder="e.g. Mike" /></div>
+        <div><label>Vapi assistant ID *</label><input id="f_vapi_assistant_id" /></div>
+        <div><label>Dispatch phone * (E.164)</label><input id="f_dispatch_phone" placeholder="+14165551234" /></div>
+        <div><label>Inbound number (E.164)</label><input id="f_inbound_number" placeholder="+16514444875" /></div>
+      </div>
+      <div class="err" id="createErr"></div>
+      <div style="margin-top:12px"><button id="create">Create client</button></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  var API = location.origin + '/functions/v1/admin';
+  var KEY = 'dispango_admin_token';
+  var $ = function (id) { return document.getElementById(id); };
+
+  function token() { return localStorage.getItem(KEY) || ''; }
+  function esc(v) { return v == null ? '' : String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function toast(msg, kind) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + (kind || '');
+    setTimeout(function(){ t.className = 'toast ' + (kind || ''); }, 3200);
+  }
+
+  function api(path, method, body) {
+    return fetch(API + path, {
+      method: method || 'GET',
+      headers: { 'x-admin-token': token(), 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function (r) {
+      return r.json().catch(function(){ return {}; }).then(function (j) { return { status: r.status, body: j }; });
+    });
+  }
+
+  function show(which) {
+    $('login').className = 'card' + (which === 'login' ? '' : ' hidden');
+    $('app').className = which === 'app' ? '' : 'hidden';
+    $('logout').className = 'ghost' + (which === 'app' ? '' : ' hidden');
+  }
+
+  function connect() {
+    var val = $('token').value.trim();
+    if (!val) { $('loginErr').textContent = 'Enter the token.'; return; }
+    localStorage.setItem(KEY, val);
+    $('loginErr').textContent = 'Checking…';
+    api('/clients').then(function (res) {
+      if (res.status === 200) { $('loginErr').textContent = ''; show('app'); loadClients(); }
+      else if (res.status === 401) { $('loginErr').textContent = 'That token was rejected.'; localStorage.removeItem(KEY); }
+      else { $('loginErr').textContent = (res.body && res.body.error) || ('Error ' + res.status); }
+    }).catch(function(){ $('loginErr').textContent = 'Network error.'; });
+  }
+
+  function rowsHtml(clients) {
+    if (!clients.length) return '<div class="muted" style="margin-top:10px">No clients yet. Add one below.</div>';
+    var h = '<table><thead><tr><th>Business</th><th>Agent</th><th>Dispatch</th><th>Inbound</th><th>Status</th><th></th></tr></thead><tbody>';
+    clients.forEach(function (c) {
+      var pill = c.active ? '<span class="pill on">active</span>' : '<span class="pill off">inactive</span>';
+      h += '<tr>' +
+        '<td>' + esc(c.business_name) + '</td>' +
+        '<td>' + esc(c.agent_name) + '</td>' +
+        '<td>' + esc(c.dispatch_phone) + '</td>' +
+        '<td>' + esc(c.inbound_number) + '</td>' +
+        '<td>' + pill + '</td>' +
+        '<td class="actions">' +
+          '<button class="ghost sm" data-act="test" data-id="' + esc(c.id) + '">Test SMS</button>' +
+          '<button class="ghost sm" data-act="toggle" data-id="' + esc(c.id) + '" data-active="' + (c.active ? '1' : '0') + '">' + (c.active ? 'Deactivate' : 'Activate') + '</button>' +
+        '</td>' +
+      '</tr>';
+    });
+    return h + '</tbody></table>';
+  }
+
+  function loadClients() {
+    $('tableWrap').innerHTML = '<div class="muted" style="margin-top:10px">Loading…</div>';
+    api('/clients').then(function (res) {
+      if (res.status === 401) { localStorage.removeItem(KEY); show('login'); return; }
+      if (res.status !== 200) { $('tableWrap').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || 'Error') + '</div>'; return; }
+      $('tableWrap').innerHTML = rowsHtml(res.body.clients || []);
+    });
+  }
+
+  function createClient() {
+    $('createErr').textContent = '';
+    var body = {
+      business_name: $('f_business_name').value.trim(),
+      vapi_assistant_id: $('f_vapi_assistant_id').value.trim(),
+      dispatch_phone: $('f_dispatch_phone').value.trim()
+    };
+    var agent = $('f_agent_name').value.trim();
+    var inbound = $('f_inbound_number').value.trim();
+    if (agent) body.agent_name = agent;
+    if (inbound) body.inbound_number = inbound;
+
+    $('create').disabled = true;
+    api('/clients', 'POST', body).then(function (res) {
+      $('create').disabled = false;
+      if (res.status === 201) {
+        toast('Client created', 'ok');
+        ['f_business_name','f_agent_name','f_vapi_assistant_id','f_dispatch_phone','f_inbound_number'].forEach(function(id){ $(id).value=''; });
+        loadClients();
+      } else {
+        $('createErr').textContent = (res.body && res.body.error) || ('Error ' + res.status);
+      }
+    }).catch(function(){ $('create').disabled = false; $('createErr').textContent = 'Network error.'; });
+  }
+
+  function testSms(id) {
+    toast('Sending test SMS…');
+    api('/clients/' + id + '/test-sms', 'POST').then(function (res) {
+      if (res.status === 200) toast('Test SMS sent to ' + res.body.to, 'ok');
+      else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
+    }).catch(function(){ toast('Network error', 'err'); });
+  }
+
+  function toggleActive(id, isActive) {
+    api('/clients/' + id, 'PATCH', { active: !isActive }).then(function (res) {
+      if (res.status === 200) { toast(isActive ? 'Deactivated' : 'Activated', 'ok'); loadClients(); }
+      else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
+    });
+  }
+
+  // Wire up
+  $('connect').addEventListener('click', connect);
+  $('token').addEventListener('keydown', function (e) { if (e.key === 'Enter') connect(); });
+  $('logout').addEventListener('click', function () { localStorage.removeItem(KEY); show('login'); });
+  $('refresh').addEventListener('click', loadClients);
+  $('create').addEventListener('click', createClient);
+  $('tableWrap').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    var id = btn.getAttribute('data-id');
+    if (btn.getAttribute('data-act') === 'test') testSms(id);
+    else toggleActive(id, btn.getAttribute('data-active') === '1');
+  });
+
+  // Boot
+  if (token()) { show('app'); loadClients(); } else { show('login'); }
+</script>
+</body>
+</html>`;
+
+Deno.serve(() => {
+  return new Response(PAGE, {
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+});
