@@ -1,102 +1,164 @@
 # Go-To-Market Plan — Commercializing the Locksmith Voice Agent
 
-Plain-language plan to take the working product (multi-tenant call → SMS dispatch,
-shared Vapi assistant, outreach engine) and turn it into a business we can sell —
-starting with **cold calls**. Work is split across Abdul, Miguel, and Jordan.
+Plain-language plan to take the working product (multi-tenant call → SMS dispatch, shared
+Vapi assistant, outreach engine) and turn it into a business we can sell — starting with
+**cold calls**. Each item has a "**What we're doing**" (so anyone can pick it up and brief
+their own helper) and a "**Why**". Work is split across Abdul, Miguel, and Jordan.
 
-Status legend: ☐ not started · ◐ in progress · ☑ done.
+Status: ☐ not started · ◐ in progress · ☑ done.
+
+---
+
+## Near-term: test the setup at the next meeting
+
+- ☐ **Dry-run the full onboarding with Jordan playing a customer.** Walk Jordan through the
+  entire setup as if he just signed up, start to finish.
+  - **What we're doing:** rehearsing the real customer experience to find every confusing
+    or broken step *before* a paying customer hits it.
+  - **Why:** the fastest way to discover gaps in the setup process is to actually run it on
+    a "fake customer." Output = a punch-list of what to fix/automate.
 
 ---
 
 ## Abdul
 
-- ☐ **Incorporate the company.** Create a legal company (corporation) so the business,
-  not us personally, carries the risk. We're in Ontario → federal incorporation (~$200,
-  protects the name Canada-wide) is the cleaner choice. *Why: once we take money and
-  handle people's call data, this shields our personal assets if something goes wrong.*
-- ☐ **GST/HST registration + business bank account.** Register for HST (required over
-  $30k/yr revenue; fine to do early) and open a separate business bank account.
-  *Why: required to invoice properly and to keep the "company vs personal" wall real.*
-- ☐ **Uptime monitoring + alerting.** A watcher that tells us fast if the webhook stops
-  working — plus a **Vapi low-balance alert + auto-reload**. *Why: Vapi is prepaid off
-  ONE shared balance; if it hits $0, every customer's AI line goes dead at once. We can't
-  find out from an angry customer.*
+- ☐ **Incorporate the company.**
+  - **What we're doing:** registering a corporation (federal, ~$200, protects the name
+    Canada-wide) so the *company* holds the contracts, money, and risk — not us personally.
+  - **Why:** once we take payments and handle people's call data, an unincorporated setup
+    leaves our personal assets exposed if anything goes wrong.
+- ☐ **GST/HST registration + business bank account.**
+  - **What we're doing:** registering for HST (required over $30k/yr, fine to do early) and
+    opening a dedicated business bank account.
+  - **Why:** needed to invoice correctly and to keep the "company vs personal" wall real.
+- ☐ **Uptime monitoring + alerting (incl. Vapi balance safety).**
+  - **What we're doing:** a watcher that pings the live webhook and alerts us fast if it
+    breaks, plus a **Vapi low-balance alert + auto-reload**.
+  - **Why:** all customers run off the system; if the webhook dies or the prepaid balance
+    hits $0, lines go silent and we must know before a customer does.
+- ☐ **Pricing** (with Miguel — see Decisions).
 
 ## Miguel
 
-- ◐ **Privacy Policy** — how we collect/store/delete caller data (names, numbers,
-  addresses, transcripts). Required under Canadian privacy law (PIPEDA).
-- ◐ **Data Processing terms** — the clause saying the locksmith owns their callers' data
-  and we only process it on their behalf.
+- ◐ **Privacy Policy.**
+  - **What we're doing:** a public document stating how we collect/store/delete caller data
+    (names, numbers, addresses, transcripts).
+  - **Why:** legally required under Canadian privacy law (PIPEDA) because we handle real
+    people's personal information.
+- ◐ **Data Processing terms.**
+  - **What we're doing:** the contract clause saying the locksmith owns their callers' data
+    and we only process it on their behalf.
+  - **Why:** clarifies legal responsibility for the data and is expected by privacy law.
 - ◐ **Terms of Service.**
-- ◐ **Customer contract (MSA).** Must include a **liability cap + SLA disclaimer** — we do
-  NOT guarantee zero missed calls. *Why: if our system hiccups and a locksmith misses a
-  big emergency job, this is what protects us.*
-- ◐ **Billing wired to service state.** Stripe subscription (price TBD — see Decisions),
-  the "sign-contract-then-pay" flow, and what happens on a failed payment (suspend vs keep
-  serving). *Why: this is how we actually get paid and stop serving non-payers.*
+- ◐ **Customer contract (MSA)** with a **liability cap + SLA disclaimer**.
+  - **What we're doing:** the agreement the customer signs, explicitly stating we do NOT
+    guarantee zero missed calls and capping our liability.
+  - **Why:** if our system hiccups and a locksmith misses a big emergency job, this is what
+    protects us from being blamed for the lost revenue.
+- ◐ **Billing wired to service state.**
+  - **What we're doing:** Stripe subscription + the "sign-contract-then-pay" flow, plus the
+    rule for what happens on a failed payment (suspend vs keep serving).
+  - **Why:** this is how we actually collect money and stop serving non-payers.
+- ☐ **SMS deliverability / A2P registration** *(provisional owner — confirm)*.
+  - **What we're doing:** checking with Twilio whether our Messaging Service + number need
+    A2P/10DLC registration, and registering if so.
+  - **Why:** carriers silently filter/block *unregistered* automated business texts. Our
+    whole product is "we text you the lead" — if texts don't deliver, the product is broken.
+    Our number is a US number (`+1 651`), so US sending rules apply.
+- ☐ **Pricing** (with Abdul — see Decisions).
 
 ## Jordan
 
-- ☐ **One-page website** on the Bengal/Dispango domain: what it does, a demo number to
-  call, and a "book a demo" button. *Why: a cold-called locksmith Googles us; no site = no
-  trust = no deal.*
-- ☐ **Demo asset** — a dedicated demo number/persona (NOT M&J's real line, so demo calls
-  don't pollute a real customer's lead data).
-- ☐ **Defined sales motion** — the step-by-step from cold call → demo → pitch + price →
-  contract → payment → onboard. The front (outreach) and back (onboarding) exist; this is
-  the missing middle.
-- ☐ **Calendar integration** — embed the booking link into the site/sales flow.
+- ☐ **One-page website** (Bengal/Dispango domain).
+  - **What we're doing:** a single page — what it does, a demo number to call, "book a demo"
+    button.
+  - **Why:** a cold-called locksmith Googles us; no site = no trust = no deal.
+- ☐ **Demo asset** — a dedicated demo number/persona, separate from M&J's real line.
+  - **What we're doing:** a "show-off" number a prospect can call to hear the AI, that
+    doesn't pollute a real customer's lead data.
+  - **Why:** the live demo is the strongest part of the pitch; it needs its own sandbox.
+- ☐ **Defined sales motion.**
+  - **What we're doing:** writing the exact step-by-step from cold call → demo → pitch +
+    price → contract → payment → onboard.
+  - **Why:** we have the front (outreach) and back (onboarding); the middle (how a call
+    becomes a paying customer) is undefined.
+- ☐ **Calendar integration.**
+  - **What we're doing:** embedding the booking link into the site/sales flow.
+  - **Why:** a prospect should be able to book a demo in one click.
   - Abdul's Calendly link: `<PENDING — Abdul to provide>`
-  - Miguel's existing link (for reference): https://calendly.com/miguel-dispango/30min
-- ☐ **New-customer onboarding runbook** — the repeatable checklist to set up a locksmith:
-  1. Provision/assign a Vapi number for them.
-  2. Create their `clients` row (`business_name`, `agent_name`, `dispatch_phone`,
-     `inbound_number`, `timezone`).
-  3. Send them the **call-forwarding setup guide** (the dial codes differ by phone type —
-     cell vs landline vs VoIP).
-  4. **Go-live verification** (see below) before declaring them live.
+  - Miguel's link (reference): https://calendly.com/miguel-dispango/30min
+- ☐ **Step-by-step setup document + new-customer runbook.**
+  - **What we're doing:** one clear document with the EXACT setup steps (below), used both
+    as our internal checklist and as the customer's guide.
+  - **Why:** setup must be repeatable by anyone, not just whoever built it. This is what we
+    rehearse at the meeting.
+  - Steps: (1) provision/assign a Vapi number → (2) create their `clients` row
+    (`business_name`, `agent_name`, `dispatch_phone`, `inbound_number`, `timezone`) →
+    (3) give them the **call-forwarding setup guide** (dial codes differ by phone type:
+    cell vs landline vs VoIP) → (4) **go-live verification** (see below).
+- ☐ **Kanban board to present at Friday's meeting.**
+  - **What we're doing:** a visual board (columns like To-Do / In-Progress / Done) showing
+    this whole plan and who owns what, ready to demo Friday.
+  - **Why:** gives the team a shared, at-a-glance view of progress to run the meeting from.
+- ☐ **Merge + deploy the onboarding tool** (with Miguel).
+  - **What we're doing:** reviewing the `feat/admin-ui` (admin page) and
+    `feat/billing-onboarding` (billing) branches, merging them into `main`, and deploying
+    them so they actually run.
+  - **Why:** that onboarding software is built but only exists as draft code on GitHub —
+    pushing to GitHub does NOT make it live. Merging + deploying turns it into a usable tool.
+
+---
+
+## Automate the setup (target: near-hands-off onboarding)
+
+Goal: *sign contract → pay → number auto-assigned → forwarding steps sent → test passes →
+live*, with a human only watching. What's needed:
+
+1. **Admin onboarding tool live** (merge + deploy, above) — a form that creates the
+   customer's row instead of hand-editing the database.
+2. **Auto-provision the phone number** via the Twilio/Vapi API (buy + assign a number from
+   the form, no manual step).
+3. **Auto-generate forwarding instructions** for the customer's specific carrier (we can't
+   change their phone, but we can hand them the exact dial codes automatically).
+4. **Automated go-live test** — a script that confirms the row is correct and the dispatch
+   SMS fires, then flips the customer to "active."
+5. **Stripe + e-signature** (Miguel's billing branch) so contract → payment → provisioning
+   chains automatically.
+
+Build owners: items 1–2, 4 sit with Jordan + Miguel (onboarding tool); item 5 with Miguel.
 
 ---
 
 ## What "Go-Live Verification" means (the test before switch-on)
 
-Before we tell a new locksmith "you're live, your AI is answering," we run **one test call
-that proves the whole chain works for THAT customer**:
+Before we tell a new locksmith "you're live," we run **one test call that proves the whole
+chain works for THAT customer**:
 
-1. Call their forwarded/Vapi number ourselves, posing as a customer.
-2. Confirm the AI answers with **their** business name + agent name (not "M and J", and not
-   a literal `{{business_name}}`).
-3. Confirm the **dispatch SMS actually lands on the locksmith's phone** with the lead
-   details.
+1. Call their number ourselves, posing as a customer.
+2. Confirm the AI answers with **their** business name + agent name (not "M and J", not a
+   literal `{{business_name}}`).
+3. Confirm the **dispatch SMS actually lands on the locksmith's phone** with the lead.
 4. Confirm the **callback number** in that text is correct.
 
-**Why it matters:** setup has several moving parts (number, the `clients` row, call
-forwarding on their phone, the prompt variables) and any one can be silently wrong. If we
-skip the test, the customer's first sign of failure is a **real missed emergency lead** —
-the worst possible moment. In plain terms: *don't hand someone the keys without starting
-the car first.* This is a ~2-minute gate; it lives inside Jordan's runbook.
+**Why:** setup has several moving parts (number, the `clients` row, call forwarding on their
+phone, the prompt variables) and any one can be silently wrong. Skip the test and the
+customer's first sign of failure is a **real missed emergency lead**. Plain version: *don't
+hand someone the keys without starting the car first.* Lives inside Jordan's runbook.
 
 ---
 
-## Unassigned — needs an owner
-
-- **SMS deliverability check (A2P / 10DLC).** The specific *10DLC registration system* is a
-  US carrier thing — but our Twilio number is actually a **US number** (`+1 651…` =
-  Minnesota), so US sending rules apply to us, and carriers filter unregistered "business"
-  texts. Action: confirm with Twilio whether our Messaging Service needs A2P/10DLC
-  registration for our number + destinations, and register if so. *Risk if ignored:
-  dispatch texts get silently filtered as we add customers.* **Recommend: Abdul (ops) or
-  Miguel (owns Twilio/billing).**
-- **Merge + deploy the onboarding tooling.** The admin onboarding API is on `main`; the
-  **admin UI** (`feat/admin-ui`) and **billing onboarding** (`feat/billing-onboarding`)
-  branches are unmerged. Someone owns getting these reviewed, merged, and deployed.
-  **Recommend: Jordan (admin UI) + Miguel (billing).**
-
 ## Decisions needed (founders)
 
-- **Price / offer.** What we charge (e.g. $199/mo?). The sales motion can't be built
-  without it. — Abdul + Miguel.
+- **Price / offer** (Abdul + Miguel). The sales motion and the balance/cap plan both depend
+  on it. If flat $199/mo, a high-volume customer could cost more than that in AI minutes →
+  we need per-customer caps. If usage-based, we must meter usage anyway.
+- **Per-customer balance approach** (Abdul + Miguel). One shared Vapi balance is a risk
+  (empty it and every line dies). Two ways to fix:
+  - *Option A:* a separate Vapi account per customer — true separate balances, but breaks
+    the "one shared assistant" simplicity; heavy to operate.
+  - *Option B (recommended):* one account + **per-customer usage metering + spend caps +
+    auto-reload** — same protection (no customer drains the others, clear per-customer cost)
+    without the overhead.
 
 ## Deferred (not needed for launch)
 
@@ -107,15 +169,20 @@ the car first.* This is a ~2-minute gate; it lives inside Jordan's runbook.
 
 ## Are we ready to commercialize once this is done?
 
-**Yes — to *start*, via cold calls, with discipline.** Completing the above clears the real
-blockers: legal entity + contracts (insulation), SMS deliverability, a repeatable
-onboarding + go-live check, billing, monitoring, and a credible website/demo. With those
-done we can legally and operationally take a paying customer.
-
-Two conditions on "ready":
-- **Start with a small pilot (1–3 customers), not a blast.** Use the first few to shake out
+**Yes — ready to *start*, via cold calls, with two conditions:**
+- **Start with a small pilot (1–3 customers), not a blast** — use the first few to shake out
   onboarding bugs and prove reliability before scaling outreach.
-- **Monitoring + Vapi balance safety must be solid first** — we're handling other people's
-  *emergency* calls; downtime is lost leads and a trust/liability hit.
+- **Monitoring + the Vapi balance safety net must be solid first** — we're handling other
+  people's *emergency* calls; downtime = lost leads + trust/liability hit.
 
-"Ready" = ready to begin selling and onboard a controlled first batch — not "finished."
+The tech (the hard part) is essentially done. The gap to revenue is the **legal wrapper +
+SMS deliverability + a repeatable/automated onboarding + billing**. Land the assigned items
+and we can confidently take our first paying locksmith. "Ready" = ready to begin and onboard
+a controlled first batch — not "everything finished."
+
+### Still worth a thought (not blockers)
+- **Customer support / who responds** when a customer says "my calls stopped" (even an
+  informal channel + response-time expectation).
+- **Data deletion mechanism** — the privacy policy will promise we can delete a customer's
+  data; the button/script to actually do it should exist.
+- **Cancellation / refund handling** (part of billing).
