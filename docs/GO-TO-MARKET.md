@@ -9,6 +9,28 @@ Status: ☐ not started · ◐ in progress · ☑ done.
 
 ---
 
+## Friday gate (2026-06-26) — minimum to START cold calling
+
+Goal: by end of Friday's meeting, be able to start cold calling. "Ready to cold call" is a
+LOWER bar than "ready to charge a customer" — there's a lag of days/weeks between the first
+call and the first signed customer, so the heavy items (legal, A2P/10DLC, billing,
+onboarding automation) finish *during* the sales pipeline, not before the first dial.
+
+Minimum to dial:
+- ☐ **A price to quote** — Abdul + Miguel, **decided at the meeting** (the one hard blocker).
+- ☐ **A v1 cold-call script + basic objection answers** — Jordan.
+- ☑ **A working demo** — the live M&J line already proves the product (dedicated demo number
+  is a nice-to-have, not a blocker).
+- ◐ **A booking link to send prospects** — Calendly (have Miguel's; Abdul's pending).
+- ☑ **A target call list** — already in `outreach/contacted.csv` (Calgary shops).
+- ◐ **Basic credibility** — one-page site (Jordan) ideal; not strictly blocking first calls.
+
+NOT required to start calling (must land before the first *close/switch-on*, not before the
+first dial): incorporation, legal docs, A2P/10DLC, billing, onboarding automation, monitoring.
+
+Discipline: don't cold-call faster than we can onboard. Start with a **small pilot batch** so
+the first "yes" isn't left unserved while we finish contracts + SMS registration.
+
 ## Near-term: test the setup at the next meeting
 
 - ☐ **Dry-run the full onboarding with Jordan playing a customer.** Walk Jordan through the
