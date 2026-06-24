@@ -18,10 +18,11 @@ onboarding automation) finish *during* the sales pipeline, not before the first 
 
 Minimum to dial:
 - ☐ **A price to quote** — Abdul + Miguel, **decided at the meeting** (the one hard blocker).
-- ☐ **A v1 cold-call script + basic objection answers** — Jordan.
+- ☐ **A v1 cold-call pitch + basic objection answers** — Abdul.
 - ☑ **A working demo** — the live M&J line already proves the product (dedicated demo number
   is a nice-to-have, not a blocker).
-- ◐ **A booking link to send prospects** — Calendly (have Miguel's; Abdul's pending).
+- ☑ **A booking link to send prospects** — Calendly ready
+  (https://calendly.com/miguel-dispango/30min); Jordan embeds it in the landing page.
 - ☑ **A target call list** — already in `outreach/contacted.csv` (Calgary shops).
 - ◐ **Basic credibility** — one-page site (Jordan) ideal; not strictly blocking first calls.
 
@@ -58,6 +59,11 @@ the first "yes" isn't left unserved while we finish contracts + SMS registration
     breaks, plus a **Vapi low-balance alert + auto-reload**.
   - **Why:** all customers run off the system; if the webhook dies or the prepaid balance
     hits $0, lines go silent and we must know before a customer does.
+- ☐ **Cold-call pitch / script.**
+  - **What we're doing:** write the actual pitch used on calls — opener, the value in one
+    line, answers to the common objections, and the ask (book a demo).
+  - **Why:** this is what turns a cold dial into a booked demo; Abdul is doing the calling,
+    so Abdul owns the script. Needed for the Friday gate.
 - ☐ **Pricing** (with Miguel — see Decisions).
 
 ## Miguel
@@ -104,11 +110,11 @@ the first "yes" isn't left unserved while we finish contracts + SMS registration
     price → contract → payment → onboard.
   - **Why:** we have the front (outreach) and back (onboarding); the middle (how a call
     becomes a paying customer) is undefined.
-- ☐ **Calendar integration.**
-  - **What we're doing:** embedding the booking link into the site/sales flow.
-  - **Why:** a prospect should be able to book a demo in one click.
-  - Abdul's Calendly link: `<PENDING — Abdul to provide>`
-  - Miguel's link (reference): https://calendly.com/miguel-dispango/30min
+- ☐ **Calendar integration on the landing page.**
+  - **What we're doing:** embed the Calendly booking widget into the landing page so a
+    potential customer can schedule a meeting in one click.
+  - **Why:** turns a website visitor into a booked demo with no back-and-forth.
+  - Booking link to embed: https://calendly.com/miguel-dispango/30min
 - ☐ **Step-by-step setup document + new-customer runbook.**
   - **What we're doing:** one clear document with the EXACT setup steps (below), used both
     as our internal checklist and as the customer's guide.
