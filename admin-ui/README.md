@@ -1,6 +1,6 @@
 # Admin UI
 
-A single, self-contained page (`page.html`) for the Dispango team to onboard and
+A single, self-contained page (`index.html`) for the Dispango team to onboard and
 manage locksmith clients. It calls the `admin` Supabase Edge Function (validated
 create, list, update, test-SMS) using an admin token entered at runtime and kept
 only in the browser's localStorage. The page holds no secrets.
@@ -12,13 +12,13 @@ rewrites `text/html` to `text/plain` on both Edge Functions and Storage (an
 anti-phishing measure), so a Supabase URL would show the raw source instead of
 rendering. Host it on any static host that serves `text/html`:
 
-- **Netlify Drop** (fastest): https://app.netlify.com/drop → drag `page.html` in →
-  you get an instant URL.
+- **Netlify Drop** (fastest): https://app.netlify.com/drop → drag this `admin-ui`
+  folder in → the site root serves the tool (it's named `index.html`).
 - **Vercel / Cloudflare Pages / GitHub Pages** — also fine.
 - **Locally** — `python3 -m http.server` in this folder, then open
-  `http://localhost:8000/page.html`.
+  `http://localhost:8000/`.
 
-The API base URL is hard-coded in `page.html`, so the page works from any origin
+The API base URL is hard-coded in `index.html`, so the page works from any origin
 (the `admin` function returns `Access-Control-Allow-Origin: *`).
 
 ## Use
