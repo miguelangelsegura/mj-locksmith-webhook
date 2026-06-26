@@ -133,7 +133,12 @@ async function recomputeActive(clientId: string): Promise<void> {
 
 async function signwellCreateDocument(client: any, token: string): Promise<{ url: string; documentId: string }> {
   const redirectUrl = `${PUBLIC_BASE_URL}/billing/onboarding/${token}/pay`;
-  const resp = await fetch("https://www.signwell.com/api/v1/documents/", {
+  // Create FROM TEMPLATE: this endpoint pulls the file + fields + placeholders
+  // from the template. (The from-scratch /documents endpoint ignores template_id
+  // and demands inline files/fields — that produced the 422 "no files / no fields".)
+  // Recipient maps to the template slot via `placeholder_name`; `id` is just our
+  // own handle for the recipient. `template_fields` prefill by `api_id` alone.
+  const resp = await fetch("https://www.signwell.com/api/v1/document_templates/documents", {
     method: "POST",
     headers: { "X-Api-Key": SIGNWELL_API_KEY!, "Content-Type": "application/json" },
     body: JSON.stringify({
