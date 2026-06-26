@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- ============================================================= -->
+<!-- SEO / link preview. Edit the text; swap the URL for your real -->
+<!-- domain once you have one (see website/README.md).             -->
+<!-- ============================================================= -->
+<title>Dispango — AI receptionist & dispatch for locksmiths</title>
+<meta name="description" content="Dispango is an AI receptionist for locksmiths. It answers every call, captures the job, and texts the lead straight to your phone — 24/7, even when you're on a job." />
+<meta property="og:title" content="Dispango — never miss another locksmith call" />
+<meta property="og:description" content="An AI receptionist that answers your calls, captures the job, and texts you the lead instantly. Built for locksmiths." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://REPLACE-WITH-YOUR-DOMAIN" />
+<!-- og:image: add a 1200x630 preview image URL when you have a domain -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bed'/%3E%3Ccircle cx='11' cy='22' r='2.4' fill='white'/%3E%3Cpath d='M11 17a5 5 0 0 1 5 5' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M11 12a10 10 0 0 1 10 10' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+
+<link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
+
+<style>
+  :root {
+    --ink:#0e1a2b; --text:#48566a; --muted:#8694a6;
+    --brand:#2f6bed; --brand-700:#1f51c4; --brand-50:#eef3fe;
+    --emerald:#10b981; --bg:#ffffff; --soft:#f5f8fd; --line:#e7edf6;
+    --radius:14px; --shadow:0 14px 40px rgba(16,40,80,.10);
+    --maxw:1080px;
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+         color:var(--text); background:var(--bg); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3 { color:var(--ink); line-height:1.15; margin:0 0 .4em; letter-spacing:-.02em; }
+  h1 { font-size:clamp(2.1rem,5vw,3.4rem); font-weight:800; }
+  h2 { font-size:clamp(1.5rem,3.4vw,2.2rem); font-weight:800; }
+  h3 { font-size:1.12rem; font-weight:700; }
+  p { margin:0 0 1rem; }
+  a { color:var(--brand); text-decoration:none; }
+  .wrap { max-width:var(--maxw); margin:0 auto; padding:0 22px; }
+  section { padding:72px 0; }
+  .eyebrow { color:var(--brand); font-weight:700; font-size:.8rem; letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px; }
+
+  .btn { display:inline-block; border:none; cursor:pointer; font:inherit; font-weight:700; font-size:.98rem;
+         padding:13px 22px; border-radius:11px; transition:transform .06s ease, box-shadow .2s ease; }
+  .btn-primary { background:linear-gradient(180deg,var(--brand),var(--brand-700)); color:#fff; box-shadow:0 8px 22px rgba(47,107,237,.32); }
+  .btn-primary:hover { transform:translateY(-1px); }
+  .btn-ghost { background:#fff; color:var(--ink); border:1px solid var(--line); }
+  .btn-light { background:#fff; color:var(--brand-700); }
+
+  /* Header */
+  header { position:sticky; top:0; z-index:20; background:rgba(255,255,255,.86); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  .nav { display:flex; align-items:center; justify-content:space-between; height:66px; }
+  .logo { display:flex; align-items:center; gap:10px; font-weight:800; color:var(--ink); font-size:1.18rem; letter-spacing:-.02em; }
+  .logo svg { width:30px; height:30px; display:block; }
+  .nav-links { display:flex; align-items:center; gap:26px; }
+  .nav-links a:not(.btn) { color:var(--text); font-weight:600; font-size:.95rem; }
+  .nav-links a:not(.btn):hover { color:var(--ink); }
+  @media (max-width:760px){ .nav-links a:not(.btn){ display:none; } }
+
+  /* Hero */
+  .hero { background:radial-gradient(900px 380px at 75% -10%, var(--brand-50), transparent), var(--bg); }
+  .hero-grid { display:grid; grid-template-columns:1.1fr .9fr; gap:48px; align-items:center; }
+  @media (max-width:860px){ .hero-grid{ grid-template-columns:1fr; gap:34px; } }
+  .hero p.lead { font-size:1.18rem; max-width:33ch; }
+  .cta-row { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
+  .trustline { margin-top:18px; color:var(--muted); font-size:.9rem; font-weight:600; }
+
+  /* Phone mock */
+  .phone { width:280px; max-width:100%; margin:0 auto; background:var(--ink); border-radius:30px; padding:14px; box-shadow:var(--shadow); }
+  .phone-screen { background:#0b1422; border-radius:20px; padding:18px 14px 22px; }
+  .phone-bar { color:var(--muted); font-size:.72rem; text-align:center; margin-bottom:14px; letter-spacing:.04em; }
+  .bubble { background:#162840; color:#dfe8f5; border-radius:14px 14px 14px 4px; padding:12px 14px; font-size:.86rem; line-height:1.5; box-shadow:0 6px 16px rgba(0,0,0,.25); }
+  .bubble .from { color:#7fa6ff; font-weight:700; font-size:.72rem; letter-spacing:.04em; margin-bottom:6px; }
+  .bubble b { color:#fff; }
+
+  /* Steps */
+  .soft { background:var(--soft); }
+  .grid { display:grid; gap:20px; }
+  .cols-4 { grid-template-columns:repeat(4,1fr); }
+  .cols-3 { grid-template-columns:repeat(3,1fr); }
+  .cols-2 { grid-template-columns:repeat(2,1fr); }
+  @media (max-width:860px){ .cols-4,.cols-3{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:560px){ .cols-4,.cols-3,.cols-2{ grid-template-columns:1fr; } }
+  .card { background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:22px; }
+  .step-n { width:30px; height:30px; border-radius:9px; background:var(--brand-50); color:var(--brand-700); font-weight:800; display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
+  .benefit { display:flex; gap:12px; align-items:flex-start; }
+  .check { flex:0 0 22px; width:22px; height:22px; border-radius:7px; background:rgba(16,185,129,.12); color:var(--emerald); display:flex; align-items:center; justify-content:center; font-weight:800; margin-top:2px; }
+  .benefit h3 { margin-bottom:2px; }
+  .benefit p { margin:0; font-size:.95rem; }
+
+  .center { text-align:center; }
+  .section-head { max-width:620px; margin:0 auto 40px; }
+
+  /* FAQ */
+  details { background:#fff; border:1px solid var(--line); border-radius:12px; padding:4px 18px; margin-bottom:12px; }
+  details summary { cursor:pointer; font-weight:700; color:var(--ink); padding:14px 0; list-style:none; display:flex; justify-content:space-between; gap:12px; }
+  details summary::-webkit-details-marker { display:none; }
+  details summary::after { content:"+"; color:var(--brand); font-weight:800; }
+  details[open] summary::after { content:"–"; }
+  details p { padding-bottom:14px; margin:0; }
+
+  /* CTA band */
+  .band { background:linear-gradient(160deg,#0e1a2b,#16263b); border-radius:22px; color:#cdd8e6; text-align:center; padding:54px 24px; }
+  .band h2 { color:#fff; }
+
+  footer { border-top:1px solid var(--line); padding:40px 0; color:var(--muted); font-size:.9rem; }
+  .foot-grid { display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px; }
+  footer .logo { font-size:1.05rem; margin-bottom:8px; }
+  footer a { color:var(--text); }
+  .legal { max-width:420px; }
+</style>
+</head>
+<body>
+
+<!-- ================================================================ -->
+<!-- EDIT ME: all business details + your Calendly link live here.    -->
+<!-- Change these values, save, and re-host. Nothing else to touch.   -->
+<!-- ================================================================ -->
+<script>
+  window.DISPANGO = {
+    calendly: "https://calendly.com/REPLACE-WITH-YOUR-LINK/demo",
+    email:    "hello@dispango.example",
+    phone:    "(000) 000-0000",
+    legalName:"Dispango",
+    address:  "123 Placeholder St, Suite 000, Your City, ON  A1A 1A1, Canada"
+  };
+</script>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#top" aria-label="Dispango home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f6bed"/><stop offset="1" stop-color="#1f51c4"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#g)"/><circle cx="11" cy="22" r="2.4" fill="#fff"/><path d="M11 17a5 5 0 0 1 5 5" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M11 12a10 10 0 0 1 10 10" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+      Dispango
+    </a>
+    <nav class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#why">Why Dispango</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn-primary js-book" href="#book">Book a demo</a>
+    </nav>
+  </div>
+</header>
+
+<a id="top"></a>
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">AI receptionist for locksmiths</div>
+      <h1>Never miss another call. Never lose another job.</h1>
+      <p class="lead">Dispango answers every call in a natural voice, captures the job details, and texts the lead straight to your phone — 24/7, even when you're under a lock.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary js-book" href="#book">Book a demo</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <div class="trustline">Built for Canadian locksmiths · Works with your existing number</div>
+    </div>
+    <div>
+      <div class="phone" aria-hidden="true">
+        <div class="phone-screen">
+          <div class="phone-bar">New lead · just now</div>
+          <div class="bubble">
+            <div class="from">DISPANGO</div>
+            <b>URGENT — car lockout</b><br/>
+            Call back: (416) 555-0142<br/>
+            Where: Queen St W &amp; Bathurst<br/>
+            Name: Marcus<br/>
+            Notes: keys locked in running car, has toddler inside.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="soft">
+  <div class="wrap">
+    <div class="section-head center">
+      <div class="eyebrow">How it works</div>
+      <h2>A receptionist that never sleeps</h2>
+      <p>No app for your customers, no new number to advertise. It just answers the calls you'd otherwise miss.</p>
+    </div>
+    <div class="grid cols-4">
+      <div class="card"><div class="step-n">1</div><h3>The call comes in</h3><p>A customer dials your number. If you're busy or it's after hours, Dispango picks up.</p></div>
+      <div class="card"><div class="step-n">2</div><h3>It gathers the job</h3><p>In a natural voice, it asks the right questions — name, location, what's wrong, how urgent.</p></div>
+      <div class="card"><div class="step-n">3</div><h3>You get a text</h3><p>The full lead lands on your phone in seconds, so you can call back or roll out.</p></div>
+      <div class="card"><div class="step-n">4</div><h3>It remembers</h3><p>Repeat callers are greeted by name — no re-explaining the same job twice.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <div class="section-head center">
+      <div class="eyebrow">Why locksmiths use it</div>
+      <h2>Every missed call is a job that went to the next guy</h2>
+    </div>
+    <div class="grid cols-2">
+      <div class="benefit"><div class="check">✓</div><div><h3>Catch every lead</h3><p>Answer calls at 2&nbsp;a.m., on a job, or while driving — without picking up the phone.</p></div></div>
+      <div class="benefit"><div class="check">✓</div><div><h3>Keeps your own number</h3><p>No new line to print on the truck. It works with the number you already advertise.</p></div></div>
+      <div class="benefit"><div class="check">✓</div><div><h3>Sounds human</h3><p>A natural voice that gathers details properly — most callers don't realize it's AI.</p></div></div>
+      <div class="benefit"><div class="check">✓</div><div><h3>Filters the junk</h3><p>Wrong numbers and robocalls get handled — you only hear about real jobs.</p></div></div>
+      <div class="benefit"><div class="check">✓</div><div><h3>Cheaper than an answering service</h3><p>A flat monthly rate, no per-minute human operators, no missed-call voicemail tag.</p></div></div>
+      <div class="benefit"><div class="check">✓</div><div><h3>Set up in a day</h3><p>We handle the configuration. You forward your calls and start getting leads by text.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="soft">
+  <div class="wrap" style="max-width:760px;">
+    <div class="section-head center"><div class="eyebrow">FAQ</div><h2>Questions, answered</h2></div>
+    <details><summary>Does it use my own phone number?</summary><p>Yes. You forward your existing line to Dispango, so the number on your truck and your ads stays exactly the same.</p></details>
+    <details><summary>Will it sound like a robot?</summary><p>No. It uses a natural, conversational voice and asks questions like a real receptionist would. Most callers never realize they're talking to AI.</p></details>
+    <details><summary>What does it cost?</summary><p>A simple flat monthly plan — no per-call charges. Book a quick demo and we'll walk you through pricing for your shop.</p></details>
+    <details><summary>What happens to my callers' information?</summary><p>It's used only to send you the lead and is stored securely. We follow Canadian privacy rules (PIPEDA). See our <a href="privacy.html">privacy policy</a>.</p></details>
+    <details><summary>What if I'm available to answer myself?</summary><p>Dispango only steps in when you can't get to the phone — busy, after hours, or no answer. When you pick up, it stays out of the way.</p></details>
+  </div>
+</section>
+
+<section id="book">
+  <div class="wrap">
+    <div class="band">
+      <div class="eyebrow" style="color:#7fa6ff;">Book a demo</div>
+      <h2>Stop sending jobs to the next guy</h2>
+      <p style="max-width:46ch;margin:0 auto 22px;">See exactly how Dispango would answer your calls — a free 15-minute walkthrough, no pressure.</p>
+      <a class="btn btn-light js-book" href="#book">Book your demo</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div class="legal">
+      <div class="logo">
+        <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#2f6bed"/><circle cx="11" cy="22" r="2.4" fill="#fff"/><path d="M11 17a5 5 0 0 1 5 5" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M11 12a10 10 0 0 1 10 10" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+        Dispango
+      </div>
+      <div data-legal-name>Dispango</div>
+      <div data-address>—</div>
+      <div style="margin-top:6px;">
+        <a data-email href="#">email</a> · <a data-phone href="#">phone</a>
+      </div>
+    </div>
+    <div>
+      <div><a href="#how">How it works</a></div>
+      <div><a href="#why">Why Dispango</a></div>
+      <div><a href="#faq">FAQ</a></div>
+      <div><a href="privacy.html">Privacy</a></div>
+    </div>
+  </div>
+  <div class="wrap" style="margin-top:24px;">© <span data-year></span> <span data-legal-name>Dispango</span>. All rights reserved.</div>
+</footer>
+
+<!-- JSON-LD for richer Google results. Update name/url/contact to match. -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"Organization",
+  "name":"Dispango",
+  "description":"AI receptionist and call-dispatch service for locksmiths.",
+  "url":"https://REPLACE-WITH-YOUR-DOMAIN",
+  "areaServed":"CA"
+}
+</script>
+
+<script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+<script>
+  (function () {
+    var c = window.DISPANGO || {};
+    // Footer identity
+    document.querySelectorAll("[data-legal-name]").forEach(function(el){ el.textContent = c.legalName || "Dispango"; });
+    var a = document.querySelector("[data-address]"); if (a) a.textContent = c.address || "";
+    var em = document.querySelector("[data-email]"); if (em && c.email) { em.textContent = c.email; em.href = "mailto:" + c.email; }
+    var ph = document.querySelector("[data-phone]"); if (ph && c.phone) { ph.textContent = c.phone; ph.href = "tel:" + c.phone.replace(/[^0-9+]/g,""); }
+    var y = document.querySelector("[data-year]"); if (y) y.textContent = new Date().getFullYear();
+
+    // Book-a-demo buttons -> Calendly popup (or email fallback if link not set yet)
+    var configured = c.calendly && c.calendly.indexOf("REPLACE-WITH-YOUR-LINK") === -1;
+    document.querySelectorAll(".js-book").forEach(function(btn){
+      btn.addEventListener("click", function(e){
+        e.preventDefault();
+        if (configured && window.Calendly) { window.Calendly.initPopupWidget({ url: c.calendly }); }
+        else if (configured) { window.open(c.calendly, "_blank"); }
+        else { window.location.href = "mailto:" + (c.email || "") + "?subject=Dispango%20demo"; }
+      });
+    });
+  })();
+</script>
+</body>
+</html>

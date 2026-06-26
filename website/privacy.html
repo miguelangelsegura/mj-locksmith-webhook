@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Privacy Policy — Dispango</title>
+<meta name="robots" content="all" />
+<style>
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;
+         color:#48566a; line-height:1.7; background:#fff; }
+  .wrap { max-width:760px; margin:0 auto; padding:48px 22px 80px; }
+  h1,h2 { color:#0e1a2b; letter-spacing:-.02em; }
+  h1 { font-size:2rem; }
+  h2 { font-size:1.2rem; margin-top:32px; }
+  a { color:#2f6bed; }
+  .back { font-weight:600; font-size:.9rem; }
+  .muted { color:#8694a6; font-size:.9rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Back to Dispango</a>
+  <h1>Privacy Policy</h1>
+  <p class="muted">Last updated: <span data-date>—</span>. This is a starting template — have it reviewed before you rely on it.</p>
+
+  <p>Dispango (<span data-legal-name>Dispango</span>, "we", "us") provides an AI call-answering and
+  lead-dispatch service for locksmith businesses. This policy explains what we collect and how we handle it,
+  in line with Canada's <em>Personal Information Protection and Electronic Documents Act</em> (PIPEDA).</p>
+
+  <h2>What we collect</h2>
+  <p>When someone calls a business that uses Dispango, our system may capture the caller's phone number, name,
+  service address, and details of their request, along with a recording/transcript and summary of the call.</p>
+
+  <h2>Why we collect it</h2>
+  <p>Solely to deliver the lead to the locksmith business the caller contacted, and to operate and improve the
+  service. We do not sell personal information.</p>
+
+  <h2>How it's stored and shared</h2>
+  <p>Information is stored securely and shared only with the locksmith business that received the call.
+  We retain it only as long as needed for that purpose.</p>
+
+  <h2>Your choices</h2>
+  <p>To access, correct, or delete information we hold about you, or to ask a question, contact us at
+  <a data-email href="#">our email</a>.</p>
+
+  <h2>Contact</h2>
+  <p><span data-legal-name>Dispango</span><br/>
+  <span data-address>—</span><br/>
+  <a data-email href="#">email</a></p>
+</div>
+
+<script>
+  // Reuses the same details you set in index.html — keep them in sync.
+  var c = { email:"hello@dispango.example", legalName:"Dispango",
+            address:"123 Placeholder St, Suite 000, Your City, ON  A1A 1A1, Canada" };
+  document.querySelectorAll("[data-legal-name]").forEach(function(el){ el.textContent = c.legalName; });
+  var a=document.querySelector("[data-address]"); if(a) a.textContent=c.address;
+  document.querySelectorAll("[data-email]").forEach(function(el){ el.textContent=c.email; el.href="mailto:"+c.email; });
+  var d=document.querySelector("[data-date]"); if(d) d.textContent=new Date().toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"});
+</script>
+</body>
+</html>
