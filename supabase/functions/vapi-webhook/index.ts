@@ -320,6 +320,13 @@ async function countRecentCalls(phone: string | null): Promise<number> {
   return count ?? 0;
 }
 
+async function isBannedCaller(phone: string | null): Promise<boolean> {
+  if (!phone || !supabase) return false;
+  const { data } = await supabase
+    .from("banned_callers").select("caller_phone").eq("caller_phone", phone).limit(1);
+  return !!(data && data.length > 0);
+}
+
 // Spoken greeting must not read the street/house number aloud (caller ID is spoofable).
 function greetingLocation(addr: string | null): string | null {
   if (!addr) return null;
@@ -338,6 +345,10 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
   }
   try {
     const phone = extractCallerPhone(payload);
+    if (await isBannedCaller(phone)) {
+      console.log(`[vapi] blocked banned caller phone=${phone}`);
+      return Response.json({ error: "This number has been blocked." });
+    }
     if (await countRecentCalls(phone) >= RATE_LIMIT_PER_DAY) {
       console.log(`[vapi] rate-limited phone=${phone} (>=${RATE_LIMIT_PER_DAY}/day)`);
       return Response.json({
