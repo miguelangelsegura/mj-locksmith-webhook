@@ -18,7 +18,9 @@ const supabase = supabaseUrl && supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey)
   : null;
 
-const VAPI_SECRET = Deno.env.get("VAPI_SECRET");
+// Prefer a dedicated heartbeat token (so an external cron/UptimeRobot URL doesn't carry the
+// webhook's VAPI_SECRET); fall back to VAPI_SECRET if no dedicated token is set.
+const HEARTBEAT_TOKEN = Deno.env.get("HEARTBEAT_TOKEN") ?? Deno.env.get("VAPI_SECRET");
 const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
 const TWILIO_MESSAGING_SERVICE_SID = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
@@ -100,10 +102,10 @@ async function checkVapiBalance(): Promise<string | null> {
 }
 
 Deno.serve(async (req) => {
-  if (VAPI_SECRET) {
+  if (HEARTBEAT_TOKEN) {
     const token = new URL(req.url).searchParams.get("token") ?? "";
     const provided = req.headers.get("x-vapi-secret") || token;
-    if (!constantTimeEqual(provided, VAPI_SECRET)) {
+    if (!constantTimeEqual(provided, HEARTBEAT_TOKEN)) {
       return Response.json({ error: "unauthorized" }, { status: 401 });
     }
   }
