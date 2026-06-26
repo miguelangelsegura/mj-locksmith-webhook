@@ -147,6 +147,13 @@ async function signwellCreateDocument(client: any, token: string): Promise<{ url
       embedded_signing: false,
       redirect_url: redirectUrl,
       metadata: { onboarding_token: token, client_id: client.id },
+      // Dispango is the "Document Sender" identity. That placeholder has no
+      // signing fields, so it's NOT a recipient (SignWell has no non-signing
+      // recipient flag — a 2nd recipient would be a phantom signer). The sender
+      // identity is set here; copied_contacts gives it the completed-doc CC.
+      custom_requester_name: "Dispango",
+      custom_requester_email: OPS_FROM_EMAIL,
+      copied_contacts: [{ name: "Dispango", email: OPS_FROM_EMAIL }],
       recipients: [{
         id: "1",
         placeholder_name: "Client",
