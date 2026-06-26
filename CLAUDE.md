@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Backend for a Vapi voice-agent dispatch app (locksmith use case). A Vapi assistant answers inbound calls and extracts structured lead data; when the call ends, Vapi POSTs an `end-of-call-report` to a **Supabase Edge Function** ([supabase/functions/vapi-webhook/index.ts](supabase/functions/vapi-webhook/index.ts)) that authenticates the request, persists the call to Supabase, and texts the full lead to the locksmith via Twilio SMS.
 
-Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres + Twilio SMS** — this is the **live call path** (the deployed webhook). Note: `main.py` is a separate **FastAPI** service Jordan maintains for the **`/admin` onboarding API**; it also still carries a *legacy duplicate* of the webhook that is **not** the deployed call handler. Don't confuse the two — the Edge Function answers calls.
+Stack: **Vapi → Supabase Edge Function (Deno/TypeScript) → Supabase Postgres + Twilio SMS** — this is the **live call path** (the deployed webhook). Client onboarding now runs through the **`admin` Edge Function + `admin-ui/` static page** (see [Admin / onboarding tooling](#admin--onboarding-tooling)), not raw SQL. Note: `main.py` is a **legacy** FastAPI service — it carries an old duplicate of *both* the webhook and the `/admin` API, and is **not** deployed for either; the Edge Functions are live. Don't confuse them.
 
 **Telephony & billing:** the phone number (`+16514444875`) is a **BYO Twilio number** (`provider: twilio`) imported into Vapi — *not* a Vapi-provided number. One Twilio account does double duty: it **receives the inbound calls** and **sends the dispatch SMS**. Cost splits two ways — **Twilio** = the number + call carriage + SMS (cheap, mostly fixed); **Vapi** = the AI minutes (STT + LLM + TTS, ~90% of per-call cost — the "call credits"). Live voice stack (tuned in the Vapi dashboard, not the repo): STT OpenAI `gpt-4o-mini-transcribe`, LLM Anthropic **Claude Haiku 4.5** @ temp 0.6, TTS Vapi voice "Elliot".
 
@@ -78,6 +78,17 @@ asked" *global* rule, for this project only):
 
 - `clients`: `id`, `vapi_assistant_id`, `active`, `dispatch_phone`, plus routing columns `inbound_number` (the dedicated Vapi number a locksmith forwards to — primary routing key, with `vapi_assistant_id` as fallback), `cell_number`, `answer_mode` (`human_first | ai_first | scheduled`), `ring_timeout_seconds`, `business_hours`.
 - `calls`: keyed by `vapi_call_id` (upsert), stores structured fields, transcript, summary, `raw_payload`, and the `notified_at`/`notified_phone` dispatch markers.
+
+## Admin / onboarding tooling
+
+Onboarding a locksmith = getting a correct `clients` row. This is done through a small admin app, not raw SQL (manual inserts silently broke the live system twice).
+
+- **`admin` Edge Function** ([supabase/functions/admin/index.ts](supabase/functions/admin/index.ts)) — token-authed JSON API: `GET`/`POST /clients`, `PATCH /clients/:id`, `POST /clients/:id/test-sms`. Validates E.164 `dispatch_phone`, rejects a duplicate `vapi_assistant_id`, and the test-SMS confirms the dispatch number end-to-end before a real call ever comes in. Reuses the webhook's `clients` table + Twilio REST send.
+- **Auth gate = `ADMIN_API_TOKEN`** presented as the `x-admin-token` header (constant-time compare). `verify_jwt = false`; **fails closed** (503) when the secret is unset. Set it with `supabase secrets set ADMIN_API_TOKEN=…`. Separate trust boundary from `VAPI_SECRET` — do not conflate.
+- **`admin-ui/index.html`** — a single self-contained static page (clients table, validated new-client form, test-SMS button, active toggle) that calls the `admin` API with the token entered at runtime and kept **only** in the browser's localStorage. The page holds no secrets. See [admin-ui/README.md](admin-ui/README.md).
+- **Supabase CANNOT serve the UI.** It rewrites `text/html` → `text/plain` on **both** Edge Functions and Storage (anti-phishing on the shared `*.supabase.co` domain), so the page renders as raw text from any Supabase URL. Host `admin-ui/` on an external static host (Netlify Drop / Vercel / etc.). The API base URL is hard-coded in the page so it works from any origin (the `admin` function returns `Access-Control-Allow-Origin: *`).
+- **Defunct to delete:** the deployed Edge Functions `admin-ui` and `admin-ui-publish` (from the abandoned attempt to serve HTML from Supabase) are inert no-ops — remove them from the dashboard. The legacy `/admin` endpoints in `main.py` are superseded.
+- **Not yet built** (see [docs/ADMIN-DASHBOARD-SPEC.md](docs/ADMIN-DASHBOARD-SPEC.md)): Vapi number/assistant provisioning automation, leads/analytics views, billing, and Supabase RLS for multi-tenant isolation.
 
 ## Cold outreach (the `/locksmith-outreach` skill)
 
