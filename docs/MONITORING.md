@@ -4,6 +4,8 @@ Reliability layer for the live system. **Lean hybrid:** a free external uptime m
 "is it down," plus a scheduled `heartbeat-monitor` Edge Function for deeper checks, plus a
 caller-ban blocklist. Alerts go to `OPS_PHONE` (SMS) and optionally email (Resend).
 
+**Live public status page (share with the team):** https://stats.uptimerobot.com/hML4iaFnfz
+
 ---
 
 ## 1. Uptime monitor (catches "Function down") — no code
