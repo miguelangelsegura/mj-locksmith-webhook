@@ -15,6 +15,15 @@ the instant lead text → benefits → pricing → social proof → setup → bo
   have them (don't present invented quotes as real).
 - **Slide 10 — contact:** replace the email / phone / domain placeholders.
 
+## `Dispango-sales-playbook.pdf` (internal)
+
+An 8-page internal playbook that defines the sales motion end to end:
+**identify → cold call → follow up → close → onboard**. Cover, a one-page
+overview (the five stages + principles + which tool we use at each), one page per
+stage with **goal / do-this steps / tips** and a script-or-tool callout, and a
+closing cadence-and-metrics page. Internal use — not for prospects. Edit the
+source `Dispango-sales-playbook.pptx` and re-export to PDF.
+
 ## `Dispango-brochure.pdf`
 
 A one-page (letter-size) brochure to **email or print as a leave-behind** after a
@@ -39,6 +48,7 @@ assets can be regenerated or restyled in code. To rebuild:
 npm install pptxgenjs sharp
 node build-deck.js          # writes Dispango-demo-deck.pptx
 node build-brochure.js      # writes Dispango-brochure.pptx (then export to PDF)
+node build-playbook.js      # writes Dispango-sales-playbook.pptx (then export to PDF)
 ```
 
 Brand: navy `#0C1726`, brand blue `#2F6BED`, emerald `#0FAE7A` — matches the
