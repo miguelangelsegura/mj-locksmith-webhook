@@ -188,10 +188,29 @@ hand someone the keys without starting the car first.* Lives inside Jordan's run
     auto-reload** — same protection (no customer drains the others, clear per-customer cost)
     without the overhead.
 
-## Deferred (not needed for launch)
+## Post-Friday priorities — close competitive gaps (vs voice.ai)
 
-- **Customer-facing call log / dashboard.** Locksmiths get an SMS per lead, which is enough
-  to launch; a dashboard is a retention nice-to-have for later.
+After Friday, work these to reach parity / differentiation against the competitor (voice.ai).
+Ordered by how often each shows up in a sales conversation:
+
+1. **Customer dashboard / call-log (BUMPED from deferred).** Competitor leads with a dashboard
+   + "3× leads" stats; we show only an SMS. A simple per-customer call log turns "a script"
+   into "a product." Highest-priority gap.
+2. **Appointment booking.** Their AI books the job; ours captures + texts the lead. Add a
+   booking/callback capability (or at least a strong "instant warm lead" story).
+3. **Live human transfer / escalation.** Competitor escalates urgent calls to dispatch/tech
+   live; we modeled `answer_mode: human_first` but haven't built the warm transfer.
+4. **Per-shop FAQ config.** Let the agent answer service-area / hours / pricing-basics per shop
+   (a per-client FAQ field).
+5. **CRM / dispatch-software integration.** Lower priority — most solo shops don't run one.
+6. **Social proof.** An M&J case study ("caught X after-hours leads in month one") to counter
+   their "350+ shops."
+
+Compete on a different axis too: **Canadian/CASL-native, local owner-run service, and price.**
+
+## Deferred (nothing right now)
+
+- The customer dashboard moved up to Post-Friday priorities above.
 
 ---
 
