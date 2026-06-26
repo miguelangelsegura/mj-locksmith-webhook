@@ -32,6 +32,37 @@ first dial): incorporation, legal docs, A2P/10DLC, billing, onboarding automatio
 Discipline: don't cold-call faster than we can onboard. Start with a **small pilot batch** so
 the first "yes" isn't left unserved while we finish contracts + SMS registration.
 
+## Weekly update — 2026-06-26: assignments & next-week targets
+
+Locked at today's check-in. **Pricing** discussion deferred to the next meeting (Miguel to
+prep a pricing to-do list).
+
+**Decision pending — parent company name:** everyone brainstorms today and posts ideas in the
+WhatsApp group, then we vote on the best. Needed before incorporation can be filed.
+
+### Abdul
+- **Lead the incorporation process** — finalize details **Monday**, **completion target Tuesday**.
+- **Register the product trade name** (Bengal/Dispango — confirm exact brand) under the parent corp.
+- **Integrate the monitoring dashboard into the admin UI** — surface health/heartbeat + the
+  caller-ban controls inside the admin tool.
+- **Refine the demo deck / demo pitch.**
+
+### Miguel
+- **Insurance** — find **general liability + errors & omissions (E&O)** options; **present
+  findings Monday** for the team to pick one and get a quote.
+- **Post-payment landing page** + **sales workflow** build.
+- **Pricing** — prep the to-do list for the next meeting.
+
+### Jordan
+- **Cold-call sales pitch** (taken over from Abdul; draft in `sales/cold-call-pitch.md`).
+- **Onboarding walkthrough** — Monday, the team goes step-by-step through the onboarding
+  process with Jordan (pushed from today).
+
+### This-week timeline
+- **Monday:** insurance findings presented · onboarding walkthrough with Jordan · incorporation
+  details finalized.
+- **Tuesday:** incorporation completion target.
+
 ## Near-term: test the setup at the next meeting
 
 - ☐ **Dry-run the full onboarding with Jordan playing a customer.** Walk Jordan through the
