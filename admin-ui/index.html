@@ -24,9 +24,18 @@
   table { width:100%; border-collapse:collapse; margin-top:6px; font-size:13px; }
   th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
   th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
-  .pill { font-size:11px; padding:2px 8px; border-radius:999px; }
+  .pill { font-size:11px; padding:2px 8px; border-radius:999px; white-space:nowrap; }
   .pill.on { background:rgba(62,207,142,.15); color:var(--ok); }
   .pill.off { background:rgba(154,163,178,.15); color:var(--muted); }
+  .pill.info { background:rgba(79,124,255,.15); color:var(--accent); }
+  .pill.warn { background:rgba(245,179,80,.15); color:#f5b350; }
+  .pill.bad { background:rgba(255,93,93,.15); color:var(--danger); }
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; padding:20px; z-index:10; }
+  .overlay.hidden { display:none; }
+  .modal { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; max-width:540px; width:100%; }
+  .modal h3 { margin:0 0 4px; font-size:16px; }
+  .linkbox { display:flex; gap:8px; margin-top:10px; }
+  .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
   .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:#1f2330; border:1px solid var(--line); padding:11px 16px; border-radius:10px; font-size:13px; max-width:90%; opacity:0; transition:opacity .2s; pointer-events:none; }
   .toast.show { opacity:1; }
   .toast.err { border-color:var(--danger); }
@@ -69,6 +78,7 @@
         <div><label>Business name *</label><input id="f_business_name" /></div>
         <div><label>Agent name</label><input id="f_agent_name" placeholder="e.g. Mike" /></div>
         <div><label>Vapi assistant ID *</label><input id="f_vapi_assistant_id" /></div>
+        <div><label>Owner phone * (E.164)</label><input id="f_owner_phone" placeholder="+14165551234" /></div>
         <div><label>Dispatch phone * (E.164)</label><input id="f_dispatch_phone" placeholder="+14165551234" /></div>
         <div><label>Inbound number (E.164)</label><input id="f_inbound_number" placeholder="+16514444875" /></div>
       </div>
@@ -77,12 +87,42 @@
     </div>
   </div>
 </div>
+
+<div id="overlay" class="overlay hidden">
+  <div class="modal">
+    <h3>Onboarding link</h3>
+    <div class="muted">Generate a sign &amp; pay link for <b id="modalBiz"></b>, then send it to the client.</div>
+    <div id="modalForm">
+      <label>Client contact email *</label>
+      <input id="m_email" type="email" placeholder="owner@theirshop.com" autocomplete="off" />
+      <div class="err" id="modalErr"></div>
+      <div class="modal-actions">
+        <button class="ghost" id="modalCancel">Cancel</button>
+        <button id="modalGen">Generate link</button>
+      </div>
+    </div>
+    <div id="modalResult" class="hidden">
+      <label>Send this link to the client:</label>
+      <div class="linkbox">
+        <input id="m_link" readonly />
+        <button id="m_copy" class="sm">Copy</button>
+      </div>
+      <div class="muted" style="margin-top:8px">They sign the contract, then pay — and activate automatically.</div>
+      <div class="modal-actions">
+        <button class="ghost" id="modalClose">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
   var API = 'https://yqyvybukyfokyfsjzyso.supabase.co/functions/v1/admin';
+  var BILLING_API = 'https://yqyvybukyfokyfsjzyso.supabase.co/functions/v1/billing';
   var KEY = 'dispango_admin_token';
   var $ = function (id) { return document.getElementById(id); };
+  var clientsCache = [];
 
   function token() { return localStorage.getItem(KEY) || ''; }
   function esc(v) { return v == null ? '' : String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -94,8 +134,8 @@
     setTimeout(function(){ t.className = 'toast ' + (kind || ''); }, 3200);
   }
 
-  function api(path, method, body) {
-    return fetch(API + path, {
+  function api(path, method, body, base) {
+    return fetch((base || API) + path, {
       method: method || 'GET',
       headers: { 'x-admin-token': token(), 'Content-Type': 'application/json' },
       body: body ? JSON.stringify(body) : undefined
@@ -122,11 +162,26 @@
     }).catch(function(){ $('loginErr').textContent = 'Network error.'; });
   }
 
+  // Derive a single lifecycle state from the billing columns the webhooks manage.
+  function lifecycle(c) {
+    var cs = c.contract_status, ss = c.subscription_status, active = !!c.active, hasLink = !!c.onboarding_token;
+    if (active && cs === 'signed' && ss === 'active') return { label: 'Active', cls: 'on' };
+    if (active && cs === 'none') return { label: 'Legacy', cls: 'info' };
+    if (ss === 'past_due') return { label: 'Past due', cls: 'warn' };
+    if (ss === 'unpaid' || ss === 'canceled') return { label: 'Lapsed', cls: 'bad' };
+    if (cs === 'declined') return { label: 'Declined', cls: 'bad' };
+    if (cs === 'signed') return { label: 'Signed · unpaid', cls: 'info' };
+    if (cs === 'sent') return { label: 'Link sent · unsigned', cls: 'off' };
+    if (!hasLink && cs === 'none' && !active) return { label: 'Added · no link', cls: 'off' };
+    return { label: '—', cls: 'off' };
+  }
+
   function rowsHtml(clients) {
     if (!clients.length) return '<div class="muted" style="margin-top:10px">No clients yet. Add one below.</div>';
     var h = '<table><thead><tr><th>Business</th><th>Agent</th><th>Dispatch</th><th>Inbound</th><th>Status</th><th></th></tr></thead><tbody>';
     clients.forEach(function (c) {
-      var pill = c.active ? '<span class="pill on">active</span>' : '<span class="pill off">inactive</span>';
+      var lc = lifecycle(c);
+      var pill = '<span class="pill ' + lc.cls + '">' + esc(lc.label) + '</span>';
       h += '<tr>' +
         '<td>' + esc(c.business_name) + '</td>' +
         '<td>' + esc(c.agent_name) + '</td>' +
@@ -134,6 +189,7 @@
         '<td>' + esc(c.inbound_number) + '</td>' +
         '<td>' + pill + '</td>' +
         '<td class="actions">' +
+          '<button class="ghost sm" data-act="link" data-id="' + esc(c.id) + '">Onboarding link</button>' +
           '<button class="ghost sm" data-act="test" data-id="' + esc(c.id) + '">Test SMS</button>' +
           '<button class="ghost sm" data-act="toggle" data-id="' + esc(c.id) + '" data-active="' + (c.active ? '1' : '0') + '">' + (c.active ? 'Deactivate' : 'Activate') + '</button>' +
         '</td>' +
@@ -147,7 +203,8 @@
     api('/clients').then(function (res) {
       if (res.status === 401) { localStorage.removeItem(KEY); show('login'); return; }
       if (res.status !== 200) { $('tableWrap').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || 'Error') + '</div>'; return; }
-      $('tableWrap').innerHTML = rowsHtml(res.body.clients || []);
+      clientsCache = res.body.clients || [];
+      $('tableWrap').innerHTML = rowsHtml(clientsCache);
     });
   }
 
@@ -156,6 +213,7 @@
     var body = {
       business_name: $('f_business_name').value.trim(),
       vapi_assistant_id: $('f_vapi_assistant_id').value.trim(),
+      owner_phone: $('f_owner_phone').value.trim(),
       dispatch_phone: $('f_dispatch_phone').value.trim()
     };
     var agent = $('f_agent_name').value.trim();
@@ -168,7 +226,7 @@
       $('create').disabled = false;
       if (res.status === 201) {
         toast('Client created', 'ok');
-        ['f_business_name','f_agent_name','f_vapi_assistant_id','f_dispatch_phone','f_inbound_number'].forEach(function(id){ $(id).value=''; });
+        ['f_business_name','f_agent_name','f_vapi_assistant_id','f_owner_phone','f_dispatch_phone','f_inbound_number'].forEach(function(id){ $(id).value=''; });
         loadClients();
       } else {
         $('createErr').textContent = (res.body && res.body.error) || ('Error ' + res.status);
@@ -191,6 +249,45 @@
     });
   }
 
+  var linkClientId = null;
+  function openLinkModal(id) {
+    var c = clientsCache.filter(function (x) { return x.id === id; })[0] || {};
+    linkClientId = id;
+    $('modalBiz').textContent = c.business_name || 'this client';
+    $('m_email').value = c.contact_email || '';
+    $('modalErr').textContent = '';
+    $('m_link').value = '';
+    $('modalForm').className = '';
+    $('modalResult').className = 'hidden';
+    $('overlay').className = 'overlay';
+    $('m_email').focus();
+  }
+  function closeModal() { $('overlay').className = 'overlay hidden'; linkClientId = null; }
+  function generateLink() {
+    var email = $('m_email').value.trim();
+    if (!email) { $('modalErr').textContent = 'Enter the client’s contact email.'; return; }
+    $('modalErr').textContent = '';
+    $('modalGen').disabled = true;
+    api('/onboarding', 'POST', { client_id: linkClientId, contact_email: email }, BILLING_API).then(function (res) {
+      $('modalGen').disabled = false;
+      if (res.status === 200 && res.body && res.body.onboarding_url) {
+        $('m_link').value = res.body.onboarding_url;
+        $('modalForm').className = 'hidden';
+        $('modalResult').className = '';
+        loadClients();
+      } else {
+        $('modalErr').textContent = (res.body && res.body.error) || ('Error ' + res.status);
+      }
+    }).catch(function(){ $('modalGen').disabled = false; $('modalErr').textContent = 'Network error.'; });
+  }
+  function copyLink() {
+    var v = $('m_link').value;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(v).then(function(){ toast('Link copied', 'ok'); }, function(){ fallbackCopy(); });
+    } else { fallbackCopy(); }
+    function fallbackCopy() { $('m_link').select(); try { document.execCommand('copy'); toast('Link copied', 'ok'); } catch (e) { toast('Copy failed — select manually', 'err'); } }
+  }
+
   // Wire up
   $('connect').addEventListener('click', connect);
   $('token').addEventListener('keydown', function (e) { if (e.key === 'Enter') connect(); });
@@ -201,9 +298,17 @@
     var btn = e.target.closest('button[data-act]');
     if (!btn) return;
     var id = btn.getAttribute('data-id');
-    if (btn.getAttribute('data-act') === 'test') testSms(id);
+    var act = btn.getAttribute('data-act');
+    if (act === 'link') openLinkModal(id);
+    else if (act === 'test') testSms(id);
     else toggleActive(id, btn.getAttribute('data-active') === '1');
   });
+  $('modalCancel').addEventListener('click', closeModal);
+  $('modalClose').addEventListener('click', closeModal);
+  $('modalGen').addEventListener('click', generateLink);
+  $('m_copy').addEventListener('click', copyLink);
+  $('m_email').addEventListener('keydown', function (e) { if (e.key === 'Enter') generateLink(); });
+  $('overlay').addEventListener('click', function (e) { if (e.target === $('overlay')) closeModal(); });
 
   // Boot
   if (token()) { show('app'); loadClients(); } else { show('login'); }

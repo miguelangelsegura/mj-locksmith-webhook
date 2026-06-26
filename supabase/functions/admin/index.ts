@@ -42,8 +42,8 @@ const PHONE_RE = /^\+\d{10,15}$/;
 // so the tool can't write arbitrary/computed columns (id, created_at, etc.).
 const WRITABLE_FIELDS = [
   "business_name", "agent_name", "vapi_assistant_id", "dispatch_phone",
-  "inbound_number", "cell_number", "answer_mode", "ring_timeout_seconds",
-  "business_hours", "timezone", "active",
+  "owner_phone", "inbound_number", "cell_number", "answer_mode",
+  "ring_timeout_seconds", "business_hours", "timezone", "active",
 ];
 
 const CORS = {
@@ -106,11 +106,15 @@ async function createClientRow(body: Record<string, unknown>): Promise<Response>
   const businessName = String(body.business_name ?? "").trim();
   const assistantId = String(body.vapi_assistant_id ?? "").trim();
   const dispatchPhone = normalizePhone(body.dispatch_phone);
+  const ownerPhone = normalizePhone(body.owner_phone);
 
   if (!businessName) return json({ error: "business_name is required" }, 400);
   if (!assistantId) return json({ error: "vapi_assistant_id is required" }, 400);
   if (!dispatchPhone) {
     return json({ error: "dispatch_phone must be E.164, e.g. +14165551234" }, 400);
+  }
+  if (!ownerPhone) {
+    return json({ error: "owner_phone must be E.164, e.g. +14165551234" }, 400);
   }
 
   // Reject duplicate assistant before insert for a clean error (the column is
@@ -125,7 +129,10 @@ async function createClientRow(body: Record<string, unknown>): Promise<Response>
   row.business_name = businessName;
   row.vapi_assistant_id = assistantId;
   row.dispatch_phone = dispatchPhone;
-  if (!("active" in row)) row.active = true;
+  row.owner_phone = ownerPhone;
+  // New clients start inactive: the billing flow (sign + pay) flips active=true
+  // via recomputeActive. Never let a client be born active before onboarding.
+  row.active = false;
 
   const { data, error } = await supabase!.from("clients").insert(row).select();
   if (error) return json({ error: error.message }, 400);
@@ -139,6 +146,11 @@ async function updateClientRow(id: string, body: Record<string, unknown>): Promi
     const normalized = normalizePhone(patch.dispatch_phone);
     if (!normalized) return json({ error: "dispatch_phone must be E.164" }, 400);
     patch.dispatch_phone = normalized;
+  }
+  if ("owner_phone" in patch) {
+    const normalized = normalizePhone(patch.owner_phone);
+    if (!normalized) return json({ error: "owner_phone must be E.164" }, 400);
+    patch.owner_phone = normalized;
   }
   if (Object.keys(patch).length === 0) {
     return json({ error: "no writable fields in body" }, 400);
