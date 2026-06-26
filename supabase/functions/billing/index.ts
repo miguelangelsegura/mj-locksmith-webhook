@@ -51,7 +51,17 @@ const OPS_EMAIL = Deno.env.get("OPS_EMAIL");
 const OPS_FROM_EMAIL = Deno.env.get("OPS_FROM_EMAIL") || "onboarding@dispango.com";
 
 const PUBLIC_BASE_URL = (Deno.env.get("PUBLIC_BASE_URL") || "").replace(/\/$/, "");
+// Where the styled "you're all set" page is hosted (off Supabase, since the
+// edge runtime rewrites text/html → text/plain). When unset, fall back to the
+// in-function /done route (plain text, but functional).
+const PUBLIC_SITE_URL = (Deno.env.get("PUBLIC_SITE_URL") || "").replace(/\/$/, "");
 const CONTRACTS_BUCKET = "contracts";
+
+function donePageUrl(token: string): string {
+  return PUBLIC_SITE_URL
+    ? `${PUBLIC_SITE_URL}/done.html`
+    : `${PUBLIC_BASE_URL}/billing/onboarding/${token}/done`;
+}
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -290,7 +300,7 @@ async function onboardingPay(token: string): Promise<Response> {
 
   // Already paid? Send them to the confirmation rather than charging twice.
   if (client.subscription_status === "active") {
-    return Response.redirect(`${PUBLIC_BASE_URL}/billing/onboarding/${token}/done`, 302);
+    return Response.redirect(donePageUrl(token), 302);
   }
 
   try {
@@ -300,7 +310,7 @@ async function onboardingPay(token: string): Promise<Response> {
       client_reference_id: client.id,
       customer_email: client.contact_email || undefined,
       subscription_data: { metadata: { client_id: client.id, onboarding_token: token } },
-      success_url: `${PUBLIC_BASE_URL}/billing/onboarding/${token}/done`,
+      success_url: donePageUrl(token),
       cancel_url: `${PUBLIC_BASE_URL}/billing/onboarding/${token}/pay`,
     }, { idempotencyKey: `checkout_${token}` });
     return Response.redirect(session.url!, 302);
