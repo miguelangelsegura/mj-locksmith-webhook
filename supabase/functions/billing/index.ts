@@ -147,13 +147,12 @@ async function signwellCreateDocument(client: any, token: string): Promise<{ url
       embedded_signing: false,
       redirect_url: redirectUrl,
       metadata: { onboarding_token: token, client_id: client.id },
-      // Dispango is the "Document Sender" identity. That placeholder has no
-      // signing fields, so it's NOT a recipient (SignWell has no non-signing
-      // recipient flag — a 2nd recipient would be a phantom signer). The sender
-      // identity is set here; copied_contacts gives it the completed-doc CC.
-      custom_requester_name: "Dispango",
-      custom_requester_email: OPS_FROM_EMAIL,
-      copied_contacts: [{ name: "Dispango", email: OPS_FROM_EMAIL }],
+      // SignWell requires a recipient for EVERY template placeholder. The
+      // "Document Sender" placeholder has no signing fields (it's a preassigned
+      // copy slot), so exclude it per-document — leaving the Client as the sole
+      // recipient, so the doc completes on the Client's signature alone.
+      // (case-sensitive — must match the template's placeholder name exactly.)
+      exclude_placeholders: ["Document Sender"],
       recipients: [{
         id: "1",
         placeholder_name: "Client",
@@ -168,7 +167,10 @@ async function signwellCreateDocument(client: any, token: string): Promise<{ url
   });
   if (!resp.ok) throw new Error(`signwell create ${resp.status}: ${await resp.text()}`);
   const doc = await resp.json();
-  const signingUrl = doc?.recipients?.[0]?.signing_url ?? doc?.embedded_signing_url ?? null;
+  // Match the Client recipient by the id we assigned (response keeps it) rather
+  // than by index, so we never hand back the wrong recipient's URL.
+  const client_recipient = (doc?.recipients ?? []).find((r: any) => r?.id === "1");
+  const signingUrl = client_recipient?.signing_url ?? doc?.embedded_signing_url ?? null;
   if (!signingUrl) throw new Error("signwell: no signing_url in response");
   return { url: signingUrl, documentId: doc.id };
 }
