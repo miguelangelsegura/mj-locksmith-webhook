@@ -106,8 +106,10 @@
       <div class="linkbox">
         <input id="m_link" readonly />
         <button id="m_copy" class="sm">Copy</button>
+        <button id="m_send" class="sm">Email to client</button>
       </div>
       <div class="muted" style="margin-top:8px">They sign the contract, then pay — and activate automatically.</div>
+      <div id="m_sendMsg" style="margin-top:8px;font-size:13px;min-height:16px"></div>
       <div class="modal-actions">
         <button class="ghost" id="modalClose">Done</button>
       </div>
@@ -257,6 +259,7 @@
     $('m_email').value = c.contact_email || '';
     $('modalErr').textContent = '';
     $('m_link').value = '';
+    $('m_sendMsg').textContent = '';
     $('modalForm').className = '';
     $('modalResult').className = 'hidden';
     $('overlay').className = 'overlay';
@@ -287,6 +290,24 @@
     } else { fallbackCopy(); }
     function fallbackCopy() { $('m_link').select(); try { document.execCommand('copy'); toast('Link copied', 'ok'); } catch (e) { toast('Copy failed — select manually', 'err'); } }
   }
+  function sendLink() {
+    var url = $('m_link').value;
+    if (!url) return;
+    var msg = $('m_sendMsg');
+    $('m_send').disabled = true;
+    msg.textContent = 'Sending…'; msg.style.color = 'var(--muted)';
+    api('/onboarding/send', 'POST', { client_id: linkClientId, onboarding_url: url }, BILLING_API).then(function (res) {
+      $('m_send').disabled = false;
+      if (res.status === 200 && res.body && res.body.sent) {
+        msg.textContent = '✓ Sent to ' + res.body.to;
+        msg.style.color = 'var(--ok)';
+        toast('Email sent', 'ok');
+      } else {
+        msg.textContent = (res.body && res.body.error) || ('Error ' + res.status);
+        msg.style.color = 'var(--danger)';
+      }
+    }).catch(function () { $('m_send').disabled = false; msg.textContent = 'Network error.'; msg.style.color = 'var(--danger)'; });
+  }
 
   // Wire up
   $('connect').addEventListener('click', connect);
@@ -307,6 +328,7 @@
   $('modalClose').addEventListener('click', closeModal);
   $('modalGen').addEventListener('click', generateLink);
   $('m_copy').addEventListener('click', copyLink);
+  $('m_send').addEventListener('click', sendLink);
   $('m_email').addEventListener('keydown', function (e) { if (e.key === 'Enter') generateLink(); });
   $('overlay').addEventListener('click', function (e) { if (e.target === $('overlay')) closeModal(); });
 

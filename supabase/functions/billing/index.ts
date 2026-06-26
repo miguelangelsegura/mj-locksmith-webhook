@@ -122,6 +122,68 @@ async function notifyOps(subject: string, text: string): Promise<void> {
   }
 }
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// Client-facing send of the onboarding link via Resend. Unlike notifyOps (an
+// internal fire-and-forget alert), this is triggered by the operator from the
+// admin UI, so it RETURNS success/failure for inline feedback instead of just
+// logging. Deliverability to arbitrary client addresses requires OPS_FROM_EMAIL's
+// domain to be verified in Resend.
+async function sendOnboardingEmail(
+  to: string,
+  businessName: string,
+  url: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!RESEND_API_KEY) return { ok: false, error: "email not configured (RESEND_API_KEY unset)" };
+  const forShop = businessName ? ` for ${businessName}` : "";
+  const text =
+    `Hi,\n\n` +
+    `You're almost set up with Dispango${forShop}.\n\n` +
+    `Use this secure link to sign your agreement and set up payment:\n${url}\n\n` +
+    `Once you've signed and payment is set up, your AI receptionist goes live — nothing else needed on your end.\n\n` +
+    `Questions? Just reply to this email.\n\n` +
+    `— The Dispango team`;
+  const html =
+    `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">` +
+    `<p>Hi,</p>` +
+    `<p>You're almost set up with Dispango${businessName ? ` for <b>${escapeHtml(businessName)}</b>` : ""}.</p>` +
+    `<p>Use this secure link to sign your agreement and set up payment:</p>` +
+    `<p><a href="${escapeHtml(url)}" style="display:inline-block;background:#4f7cff;color:#fff;text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:600">Sign &amp; get started</a></p>` +
+    `<p style="color:#555;font-size:13px">Or paste this link into your browser:<br>${escapeHtml(url)}</p>` +
+    `<p>Once you've signed and payment is set up, your AI receptionist goes live — nothing else needed on your end.</p>` +
+    `<p>Questions? Just reply to this email.</p>` +
+    `<p>— The Dispango team</p>` +
+    `</div>`;
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: OPS_FROM_EMAIL,
+        to,
+        ...(OPS_EMAIL ? { reply_to: OPS_EMAIL } : {}),
+        subject: "Sign & activate your Dispango AI receptionist",
+        text,
+        html,
+      }),
+    });
+    if (!resp.ok) {
+      const body = await resp.text();
+      console.log(`[onboarding-email] failed ${resp.status}: ${body}`);
+      return { ok: false, error: `resend ${resp.status}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.log(`[onboarding-email] error: ${e}`);
+    return { ok: false, error: String(e) };
+  }
+}
+
 // active = contract signed AND subscription paid. Single source of truth for the
 // flag the vapi-webhook reads. Called from both webhooks; whichever lands last
 // flips the agent on. Never throws into the caller's webhook path.
@@ -271,6 +333,30 @@ async function createOnboarding(body: Record<string, unknown>): Promise<Response
 
   console.log(`[billing] onboarding created client=${clientId} doc=${doc.documentId}`);
   return json({ created: true, onboarding_url: doc.url, token });
+}
+
+// Email an already-generated onboarding link to the client. The link is supplied
+// by the admin UI (the one it just generated) — we don't regenerate (no second
+// SignWell doc) and don't refetch. Recipient is the STORED contact_email, set by
+// createOnboarding, so the operator can't redirect it via the request body.
+async function sendOnboardingLink(body: Record<string, unknown>): Promise<Response> {
+  if (!supabase) return json({ error: "supabase not configured" }, 503);
+  const clientId = String(body.client_id ?? "").trim();
+  const url = String(body.onboarding_url ?? "").trim();
+  if (!clientId) return json({ error: "client_id is required" }, 400);
+  if (!url) return json({ error: "onboarding_url is required" }, 400);
+
+  const { data } = await supabase
+    .from("clients").select("business_name, contact_email").eq("id", clientId).limit(1);
+  const client = data?.[0];
+  if (!client) return json({ error: "client not found" }, 404);
+  const to = String(client.contact_email ?? "").trim();
+  if (!to) return json({ error: "client has no contact_email — generate the link first" }, 400);
+
+  const result = await sendOnboardingEmail(to, String(client.business_name ?? ""), url);
+  if (!result.ok) return json({ error: `email send failed: ${result.error}` }, 502);
+  console.log(`[billing] onboarding email sent client=${clientId} to=${to}`);
+  return json({ sent: true, to });
 }
 
 async function onboardingPay(token: string): Promise<Response> {
@@ -561,6 +647,15 @@ Deno.serve(async (req) => {
         return json({ error: "unauthorized" }, 401);
       }
       return await createOnboarding(await req.json());
+    }
+
+    if (req.method === "POST" && path === "/onboarding/send") {
+      if (!ADMIN_API_TOKEN) return json({ error: "admin API not configured" }, 503);
+      if (!constantTimeEqual(req.headers.get("x-admin-token") ?? "", ADMIN_API_TOKEN)) {
+        console.log("[billing] rejected: bad/missing admin token");
+        return json({ error: "unauthorized" }, 401);
+      }
+      return await sendOnboardingLink(await req.json());
     }
 
     return json({ error: "not found" }, 404);
