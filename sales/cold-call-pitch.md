@@ -1,6 +1,6 @@
 # Cold-Call Pitch — Locksmith AI Receptionist (v1)
 
-**Owner:** Abdul · **Use:** phone outreach to locksmith owners · **Status:** v1 draft for Friday
+**Owner:** Abdul · **Use:** phone outreach to locksmith owners · **Status:** v1.1 — v1 script by Abdul; v1.1 adds pre-call prep, voicemail/gatekeeper scripts, extra objections, and booking mechanics.
 
 This script is built from proven, well-regarded sales methodologies, adapted to our product
 and the locksmith reality. Read the structure, then make it your own — say it like a human,
@@ -20,6 +20,21 @@ not a script.
 nights, weekends, and holidays** — exactly when you can't pick up — and a locked-out customer
 just dials the next locksmith. A mid-size shop gets ~40 calls/week and misses ~9.
 *(Sources at bottom.)*
+
+---
+
+## Before you dial (2-minute prep)
+
+- **Know the shop.** Skim their website / Google listing for hours and any "24/7," "emergency,"
+  or "mobile" claims — then quote it back ("your site says 24/7 — who's actually picking up at
+  2am?"). Personalized beats generic every time.
+- **Fill the tokens.** `[Name]` (the owner if you can find them), `[Shop Name]`, `[DEMO NUMBER]`,
+  `[PRICE]` — never read a raw placeholder out loud.
+- **Have two things open:** the **demo line** (to hand them the experience live) and your
+  **Calendly** (to book on the spot).
+- **Call at the right time.** Mid-morning or early afternoon on weekdays; avoid the Friday and
+  weekend emergency rush when they're slammed.
+- **One goal:** a booked demo or a live demo-line call. Nothing else counts as a win.
 
 ---
 
@@ -65,12 +80,37 @@ pitch the product yet.
 *Why:* "Would you be opposed" lets them say *no* to feel in control while moving forward; the
 live demo is our strongest asset — let them experience it.
 
+*Booking:* if they'll take the 15 minutes, pin it down **before you hang up** — "Does Thursday
+2pm or Friday 10am work? I'll send a calendar invite right now." A vague "sometime this week"
+rarely happens; a specific time on both calendars does.
+
+---
+
+## When you don't reach the owner
+
+Most first attempts won't get the owner live — have these ready.
+
+### Voicemail (~15 seconds; leave a reason to call back)
+> "Hi [Name], it's Abdul — I'll be quick. Most locksmiths are quietly losing six to nine jobs a
+> week to after-hours calls they never see. We fix that, and I can show you in 15 minutes. I'll
+> text you a one-pager so you know I'm real — call or text me back at [YOUR NUMBER]."
+
+*Why:* lead with the pain and a specific number, promise proof, make the callback effortless.
+Send the SMS + one-pager (brochure) right after — the voicemail and text work as a pair.
+
+### Gatekeeper (a receptionist, spouse, or employee answers)
+> "Hey, maybe you can help me — I'm trying to reach whoever handles the phones and the missed
+> calls for the shop. Is that [Name], or is that you?"
+
+*Why:* be warm and honest; don't pitch the gatekeeper. If the owner's out, get the best time to
+reach them and a direct line — don't leave the full pitch second-hand.
+
 ---
 
 ## Objection handling
 
 - **"How much is it?"**
-  > "Fair question — it's [PRICE PLACEHOLDER — fill after pricing is set], less than one job a
+  > "Fair question — it's [PRICE — see sales/pricing-model.md], less than one job a
   > month. But before price, let me show you it actually works for your shop — if it doesn't
   > catch you real leads, price doesn't matter. Got 15 minutes this week?"
   *Anchor to value (one recovered job pays for it), then redirect to the demo.*
@@ -94,6 +134,23 @@ live demo is our strongest asset — let them experience it.
   > what: call the demo line, and I'll text you a one-pager right after. What number's best?"
   *(Capture the cell + permission to text → that's a small commitment.)*
 
+- **"I've already got a guy who covers nights."**
+  > "Smart — so you already know the after-hours calls are worth catching. The question is what
+  > that costs you and whether he grabs every one. This catches 100% of them, in your shop's
+  > name, for a lot less than a person — and it never sleeps or misses one. Worth 15 minutes to
+  > compare?"
+
+- **"How'd you get my number? / Who is this?"**
+  > "Totally fair — your number's listed publicly on your site and Google; I'm a local Canadian
+  > company, not an overseas call-center. If you'd rather I never call again, just say the word
+  > and you're off my list — but give me 20 seconds first?"
+  *(Honesty + CASL footing + a real opt-out lowers the temperature fast.)*
+
+- **"Not interested."** *(graceful breakup — don't argue)*
+  > "No problem, I won't keep you. One thing — can I text you a 60-second one-pager so it's there
+  > if a busy weekend reminds you? If not, I'll leave you be."
+  *(A "no" you respect often earns a later "yes." Log it and move on.)*
+
 ---
 
 ## Why us (keep in your back pocket — differentiators vs the big players)
@@ -110,6 +167,9 @@ live demo is our strongest asset — let them experience it.
   or "15 minutes this week."
 - Talk less than half the time. The discovery questions do the selling.
 - Log every call outcome in `outreach/contacted.csv` (replied / booked / not-interested).
+- **Companion assets:** the full sales motion → `sales/Dispango-sales-playbook.pdf`; the one-pager
+  you promise to text → `sales/Dispango-brochure.pdf`; pricing → `sales/pricing-model.md`; find and
+  source shops to call → the `/locksmith-outreach` skill.
 
 ---
 
