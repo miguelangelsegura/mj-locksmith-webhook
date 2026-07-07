@@ -48,7 +48,7 @@ const WRITABLE_FIELDS = [
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, content-type, x-admin-token",
 };
 
@@ -183,6 +183,60 @@ async function testSms(id: string): Promise<Response> {
   }
 }
 
+const NON_LEAD_OUTCOMES = new Set(["wrong_number", "spam", "info_only"]);
+
+async function health(): Promise<Response> {
+  const now = Date.now();
+  const hourAgo = new Date(now - 60 * 60 * 1000).toISOString();
+  const twoMinAgo = new Date(now - 2 * 60 * 1000).toISOString();
+  const { data: unsent } = await supabase!
+    .from("calls").select("vapi_call_id, outcome")
+    .is("notified_at", null).gte("ended_at", hourAgo).lte("ended_at", twoMinAgo);
+  const unsentLeads = (unsent ?? []).filter((c) =>
+    !NON_LEAD_OUTCOMES.has(String(c.outcome ?? "").trim().toLowerCase().replace(/ /g, "_"))
+  ).length;
+  const { data: recent } = await supabase!
+    .from("calls").select("caller_phone").gte("ended_at", hourAgo).not("caller_phone", "is", null);
+  const counts: Record<string, number> = {};
+  for (const r of recent ?? []) counts[r.caller_phone as string] = (counts[r.caller_phone as string] ?? 0) + 1;
+  const abusers = Object.entries(counts).filter(([, n]) => n >= 6).map(([phone, calls]) => ({ phone, calls }));
+  return json({
+    ok: unsentLeads === 0 && abusers.length === 0,
+    callsLastHour: (recent ?? []).length,
+    unsentLeads, abusers,
+    checkedAt: new Date(now).toISOString(),
+  });
+}
+
+async function listBanned(): Promise<Response> {
+  const { data, error } = await supabase!
+    .from("banned_callers").select("*").order("created_at", { ascending: false });
+  if (error) return json({ error: error.message }, 400);
+  return json({ banned: data ?? [] });
+}
+
+async function banCaller(body: Record<string, unknown>): Promise<Response> {
+  const phone = normalizePhone(body.caller_phone);
+  if (!phone) return json({ error: "caller_phone must be E.164, e.g. +14165551234" }, 400);
+  const reason = typeof body.reason === "string" ? (body.reason.trim() || null) : null;
+  const { data, error } = await supabase!
+    .from("banned_callers").upsert({ caller_phone: phone, reason }, { onConflict: "caller_phone" }).select();
+  if (error) return json({ error: error.message }, 400);
+  console.log(`[admin] banned caller=${phone}`);
+  return json({ banned: true, caller: data?.[0] ?? null }, 201);
+}
+
+async function unbanCaller(phone: string): Promise<Response> {
+  const normalized = normalizePhone(phone);
+  if (!normalized) return json({ error: "invalid phone" }, 400);
+  const { data, error } = await supabase!
+    .from("banned_callers").delete().eq("caller_phone", normalized).select();
+  if (error) return json({ error: error.message }, 400);
+  if (!data || data.length === 0) return json({ error: "not found" }, 404);
+  console.log(`[admin] unbanned caller=${normalized}`);
+  return json({ unbanned: true });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -224,6 +278,20 @@ Deno.serve(async (req) => {
     const itemMatch = path.match(/^\/clients\/([^/]+)$/);
     if (req.method === "PATCH" && itemMatch) {
       return await updateClientRow(itemMatch[1], await req.json());
+    }
+
+    if (req.method === "GET" && path === "/health") {
+      return await health();
+    }
+    if (req.method === "GET" && path === "/banned") {
+      return await listBanned();
+    }
+    if (req.method === "POST" && path === "/banned") {
+      return await banCaller(await req.json());
+    }
+    const banMatch = path.match(/^\/banned\/([^/]+)$/);
+    if (req.method === "DELETE" && banMatch) {
+      return await unbanCaller(decodeURIComponent(banMatch[1]));
     }
 
     return json({ error: "not found" }, 404);

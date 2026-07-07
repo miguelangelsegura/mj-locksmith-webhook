@@ -68,6 +68,11 @@
   <!-- App -->
   <div id="app" class="hidden">
     <div class="card">
+      <div class="row"><strong>Monitoring</strong><button id="refreshHealth" class="ghost sm">Refresh</button></div>
+      <div id="healthWrap"><div class="muted" style="margin-top:10px">Loading…</div></div>
+    </div>
+
+    <div class="card">
       <div class="row"><strong>Clients</strong><button id="refresh" class="ghost sm">Refresh</button></div>
       <div id="tableWrap"><div class="muted" style="margin-top:10px">Loading…</div></div>
     </div>
@@ -84,6 +89,17 @@
       </div>
       <div class="err" id="createErr"></div>
       <div style="margin-top:12px"><button id="create">Create client</button></div>
+    </div>
+
+    <div class="card">
+      <div class="row"><strong>Banned numbers</strong><button id="refreshBanned" class="ghost sm">Refresh</button></div>
+      <div id="bannedWrap"><div class="muted" style="margin-top:10px">Loading…</div></div>
+      <div class="grid" style="margin-top:12px">
+        <div><label>Phone to ban (E.164)</label><input id="f_ban_phone" placeholder="+14165551234" /></div>
+        <div><label>Reason</label><input id="f_ban_reason" placeholder="e.g. repeat spammer" /></div>
+      </div>
+      <div class="err" id="banErr"></div>
+      <div style="margin-top:12px"><button id="banBtn">Ban number</button></div>
     </div>
   </div>
 </div>
@@ -158,7 +174,7 @@
     localStorage.setItem(KEY, val);
     $('loginErr').textContent = 'Checking…';
     api('/clients').then(function (res) {
-      if (res.status === 200) { $('loginErr').textContent = ''; show('app'); loadClients(); }
+      if (res.status === 200) { $('loginErr').textContent = ''; show('app'); loadAll(); }
       else if (res.status === 401) { $('loginErr').textContent = 'That token was rejected.'; localStorage.removeItem(KEY); }
       else { $('loginErr').textContent = (res.body && res.body.error) || ('Error ' + res.status); }
     }).catch(function(){ $('loginErr').textContent = 'Network error.'; });
@@ -309,6 +325,82 @@
     }).catch(function () { $('m_send').disabled = false; msg.textContent = 'Network error.'; msg.style.color = 'var(--danger)'; });
   }
 
+  function loadAll() { loadClients(); loadHealth(); loadBanned(); }
+
+  function healthHtml(h) {
+    var pill = h.ok
+      ? '<span class="pill on">healthy</span>'
+      : '<span class="pill" style="background:rgba(255,93,93,.15);color:var(--danger)">needs attention</span>';
+    var abusers = (h.abusers && h.abusers.length)
+      ? h.abusers.map(function (a) { return esc(a.phone) + ' (' + esc(a.calls) + '/hr)'; }).join(', ')
+      : 'none';
+    var unsent = h.unsentLeads ? '<span style="color:var(--danger)">' + esc(h.unsentLeads) + '</span>' : '0';
+    return '<div style="margin-top:10px">' + pill + '</div>' +
+      '<table><tbody>' +
+        '<tr><td>Calls (last hour)</td><td>' + esc(h.callsLastHour) + '</td></tr>' +
+        '<tr><td>Unsent lead texts</td><td>' + unsent + '</td></tr>' +
+        '<tr><td>Possible abuse</td><td>' + abusers + '</td></tr>' +
+      '</tbody></table>' +
+      '<div class="muted" style="margin-top:6px">Checked ' + esc((h.checkedAt || '').replace('T',' ').slice(0,19)) + ' UTC</div>';
+  }
+
+  function loadHealth() {
+    $('healthWrap').innerHTML = '<div class="muted" style="margin-top:10px">Loading…</div>';
+    api('/health').then(function (res) {
+      if (res.status !== 200) { $('healthWrap').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || 'Error') + '</div>'; return; }
+      $('healthWrap').innerHTML = healthHtml(res.body);
+    });
+  }
+
+  function bannedHtml(list) {
+    if (!list.length) return '<div class="muted" style="margin-top:10px">No banned numbers.</div>';
+    var h = '<table><thead><tr><th>Number</th><th>Reason</th><th>Since</th><th></th></tr></thead><tbody>';
+    list.forEach(function (b) {
+      h += '<tr>' +
+        '<td>' + esc(b.caller_phone) + '</td>' +
+        '<td>' + esc(b.reason) + '</td>' +
+        '<td>' + esc((b.created_at || '').slice(0, 10)) + '</td>' +
+        '<td class="actions"><button class="ghost sm" data-unban="' + esc(b.caller_phone) + '">Unban</button></td>' +
+      '</tr>';
+    });
+    return h + '</tbody></table>';
+  }
+
+  function loadBanned() {
+    $('bannedWrap').innerHTML = '<div class="muted" style="margin-top:10px">Loading…</div>';
+    api('/banned').then(function (res) {
+      if (res.status !== 200) { $('bannedWrap').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || 'Error') + '</div>'; return; }
+      $('bannedWrap').innerHTML = bannedHtml(res.body.banned || []);
+    });
+  }
+
+  function banNumber() {
+    $('banErr').textContent = '';
+    var phone = $('f_ban_phone').value.trim();
+    if (!phone) { $('banErr').textContent = 'Enter a phone number.'; return; }
+    var body = { caller_phone: phone };
+    var reason = $('f_ban_reason').value.trim();
+    if (reason) body.reason = reason;
+    $('banBtn').disabled = true;
+    api('/banned', 'POST', body).then(function (res) {
+      $('banBtn').disabled = false;
+      if (res.status === 201) {
+        toast('Number banned', 'ok');
+        $('f_ban_phone').value = ''; $('f_ban_reason').value = '';
+        loadBanned();
+      } else {
+        $('banErr').textContent = (res.body && res.body.error) || ('Error ' + res.status);
+      }
+    }).catch(function () { $('banBtn').disabled = false; $('banErr').textContent = 'Network error.'; });
+  }
+
+  function unbanNumber(phone) {
+    api('/banned/' + encodeURIComponent(phone), 'DELETE').then(function (res) {
+      if (res.status === 200) { toast('Unbanned', 'ok'); loadBanned(); }
+      else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
+    });
+  }
+
   // Wire up
   $('connect').addEventListener('click', connect);
   $('token').addEventListener('keydown', function (e) { if (e.key === 'Enter') connect(); });
@@ -332,8 +424,16 @@
   $('m_email').addEventListener('keydown', function (e) { if (e.key === 'Enter') generateLink(); });
   $('overlay').addEventListener('click', function (e) { if (e.target === $('overlay')) closeModal(); });
 
+  $('refreshHealth').addEventListener('click', loadHealth);
+  $('refreshBanned').addEventListener('click', loadBanned);
+  $('banBtn').addEventListener('click', banNumber);
+  $('bannedWrap').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-unban]');
+    if (btn) unbanNumber(btn.getAttribute('data-unban'));
+  });
+
   // Boot
-  if (token()) { show('app'); loadClients(); } else { show('login'); }
+  if (token()) { show('app'); loadAll(); } else { show('login'); }
 </script>
 </body>
 </html>
