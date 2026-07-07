@@ -68,12 +68,31 @@ async function main() {
     s.addText(n, { x, y: 3.15, w: 1.95, h: 1.0, align: "center", fontFace: FONT, fontSize: 40, bold: true, color: col, margin: 0 });
     s.addText(l, { x: x + 0.15, y: 4.15, w: 1.65, h: 0.7, align: "center", fontFace: FONT, fontSize: 12.5, color: MUTED, margin: 0 });
   };
-  stat(7.2, "2 AM", "when lockouts\nactually happen", INK);
-  stat(9.25, "1st", "to answer\nwins the job", BLUE);
-  stat(11.3, "0", "voicemails most\ncallers leave", EMERALD);
+  stat(7.2, "2 in 3", "calls are after-hours\nor mid-job", INK);
+  stat(9.25, "~9", "jobs/week a busy\nshop misses", BLUE);
+  stat(11.3, "0", "voicemails callers\nleave", EMERALD);
   s.addNotes("Make it visceral: 'When someone's locked out at 2am, do they leave a voicemail and wait? No — they call the next number.' Ask: 'Roughly how many calls a week do you think you miss after hours or when you're on a job?' Let them say the number — it sells the rest.");
 
-  // ---- Slide 3: Solution statement ----
+  // ---- Slide 3: Old way vs new way (the contrast) ----
+  s = p.addSlide(); s.background = { color: WHITE }; logo(s, false);
+  title(s, "The difference is who answers");
+  const vsPanel = (x, head, tint, edge, headColor, items, glyph, glyphColor) => {
+    s.addShape(p.shapes.ROUNDED_RECTANGLE, { x, y: 2.55, w: 5.75, h: 4.25, rectRadius: 0.14, fill: { color: tint }, line: { color: edge, width: 1 } });
+    s.addText(head, { x: x + 0.45, y: 2.9, w: 5.0, h: 0.5, fontFace: FONT, fontSize: 18, bold: true, color: headColor, margin: 0 });
+    items.forEach((t, i) => {
+      s.addText(glyph, { x: x + 0.45, y: 3.6 + i * 0.72, w: 0.4, h: 0.6, align: "center", valign: "middle", fontFace: FONT, fontSize: 15, bold: true, color: glyphColor, margin: 0 });
+      s.addText(t, { x: x + 0.95, y: 3.6 + i * 0.72, w: 4.5, h: 0.65, fontFace: FONT, fontSize: 13, color: TEXT, lineSpacingMultiple: 1.1, valign: "middle", margin: 0 });
+    });
+  };
+  vsPanel(MX, "Without Dispango", "FBF1EF", "F0D9D3", "B4432E",
+    ["The call rings out or hits voicemail", "The caller won't wait — they dial the next shop", "That job, and the customer, is gone for good", "An answering service just takes a message, and bills per call"],
+    "✕", "C0503A");
+  vsPanel(MX + 6.15, "With Dispango", BRAND50, ICE, BLUE_DK,
+    ["Answered in your shop's name, 24/7", "The job is captured in a natural conversation", "The full lead is texted to you in seconds", "You call back a warm lead — and win it"],
+    "✓", EMERALD);
+  s.addNotes("The most important slide — the contrast. Point left, then right: 'Right now an after-hours call does this. With Dispango, the exact same call does this.' Same call, opposite outcome.");
+
+  // ---- Slide 4: Solution statement ----
   s = p.addSlide(); s.background = { color: BLUE };
   s.addImage({ data: markInk, x: MX, y: 0.55, w: 0.5, h: 0.5 });
   s.addText("Meet Dispango", { x: MX, y: 2.05, w: W - 2 * MX, h: 0.9, fontFace: FONT, fontSize: 40, bold: true, color: WHITE, margin: 0 });
@@ -154,6 +173,20 @@ async function main() {
   });
   s.addNotes("Don't read all six — hit the two that matched their pain from slide 2. If they said after-hours, lead with 'catch every lead.' If they worried about robots, lead with 'sounds human.' Make it about them.");
 
+  // ---- Slide: The math (ROI) ----
+  s = p.addSlide(); s.background = { color: SOFT }; logo(s, false);
+  title(s, "One caught job pays for the month");
+  s.addText("It doesn't have to catch every call — just a few you'd have lost. The math works on the first one.", { x: MX, y: 2.3, w: W - 2 * MX, h: 0.7, fontFace: FONT, fontSize: 16, color: TEXT, lineSpacingMultiple: 1.25, margin: 0 });
+  const mathStat = (x, n, l) => {
+    s.addShape(p.shapes.ROUNDED_RECTANGLE, { x, y: 3.35, w: 3.7, h: 2.55, rectRadius: 0.12, fill: { color: WHITE }, line: { color: LINE, width: 1 }, shadow: shadow() });
+    s.addText(n, { x: x + 0.2, y: 3.75, w: 3.3, h: 1.0, align: "center", fontFace: FONT, fontSize: 33, bold: true, color: BLUE, margin: 0 });
+    s.addText(l, { x: x + 0.3, y: 4.8, w: 3.1, h: 0.95, align: "center", fontFace: FONT, fontSize: 12.5, color: TEXT, lineSpacingMultiple: 1.15, margin: 0 });
+  };
+  mathStat(MX, "$150–$250", "the value of one\nafter-hours lockout");
+  mathStat(MX + 3.95, "2–3 jobs", "a month is all it takes\nto pay for itself");
+  mathStat(MX + 7.9, "the rest", "is profit you were\nlosing to voicemail");
+  s.addNotes("The ROI slide. 'You're not buying software — you're buying back jobs you're already losing. Catch two a month and it's paid for; everything after is money you weren't seeing.' Tie to the number they gave you on the problem slide.");
+
   // ---- Slide 7: Pricing ----
   s = p.addSlide(); s.background = { color: WHITE }; logo(s, false);
   title(s, "Simple, flat monthly pricing");
@@ -170,20 +203,20 @@ async function main() {
   s.addText("Book a demo", { x: 8.4, y: 5.2, w: 3.4, h: 0.7, align: "center", valign: "middle", fontFace: FONT, fontSize: 15, bold: true, color: WHITE, margin: 0 });
   s.addNotes("PLACEHOLDER PRICE — set $XXX before any real call. Anchor on value, not cost: 'One after-hours lockout is usually $150–$250. The plan pays for itself the first job you'd have otherwise missed.' Then go quiet and let them react.");
 
-  // ---- Slide 8: Social proof ----
+  // ---- Slide 8: Risk reversal + hear it live ----
   s = p.addSlide(); s.background = { color: SOFT }; logo(s, false);
-  title(s, "Built for working locksmiths");
-  s.addText("Placeholder — drop in real customer quotes once a few shops are live. Social proof is the strongest trust lever on a sales call.", { x: MX, y: 2.05, w: 9.5, h: 0.6, fontFace: FONT, fontSize: 13, italic: true, color: MUTED, margin: 0 });
-  for (let i = 0; i < 3; i++) {
-    const x = MX + i * 4.05;
-    s.addShape(p.shapes.ROUNDED_RECTANGLE, { x, y: 2.95, w: 3.8, h: 3.4, rectRadius: 0.12, fill: { color: WHITE }, line: { color: LINE, width: 1 }, shadow: shadow() });
-    s.addText("★★★★★", { x: x + 0.35, y: 3.25, w: 3.1, h: 0.4, fontFace: FONT, fontSize: 16, color: "F5B301", margin: 0 });
-    s.addText("“Replace with a real customer quote — ideally a specific result, like jobs won after hours.”", { x: x + 0.35, y: 3.7, w: 3.1, h: 1.7, fontFace: FONT, fontSize: 13.5, color: INK, lineSpacingMultiple: 1.25, margin: 0 });
-    s.addShape(p.shapes.OVAL, { x: x + 0.35, y: 5.5, w: 0.6, h: 0.6, fill: { color: BRAND50 } });
-    s.addText(["AB", "CD", "EF"][i], { x: x + 0.35, y: 5.5, w: 0.6, h: 0.6, align: "center", valign: "middle", fontFace: FONT, fontSize: 13, bold: true, color: BLUE_DK, margin: 0 });
-    s.addText([{ text: "Add customer name\n", options: { bold: true, color: INK } }, { text: "Shop name · City", options: { color: MUTED, fontSize: 11 } }], { x: x + 1.1, y: 5.5, w: 2.5, h: 0.6, fontFace: FONT, fontSize: 12.5, margin: 0, valign: "middle" });
-  }
-  s.addNotes("If you have a real testimonial or even a screenshot of a happy text from a customer, use it here instead. Until then, you can skip this slide live or speak to early results. Never present fabricated quotes as real.");
+  title(s, "Hear it yourself — then decide");
+  s.addText("Don't take our word for it. Call the demo line right now, act like a locked-out customer, and hear exactly what your callers would.", { x: MX, y: 2.35, w: 6.3, h: 1.4, fontFace: FONT, fontSize: 16, color: TEXT, lineSpacingMultiple: 1.3, margin: 0 });
+  s.addShape(p.shapes.ROUNDED_RECTANGLE, { x: MX, y: 4.0, w: 6.3, h: 1.35, rectRadius: 0.12, fill: { color: INK }, shadow: shadow() });
+  s.addImage({ data: ic.phone[WHITE], x: MX + 0.42, y: 4.45, w: 0.45, h: 0.45 });
+  s.addText([{ text: "Call the live demo\n", options: { fontSize: 12, color: ICE } }, { text: "(000) 000-0000", options: { fontSize: 23, bold: true, color: WHITE } }], { x: MX + 1.15, y: 4.12, w: 4.9, h: 1.1, fontFace: FONT, valign: "middle", margin: 0 });
+  s.addShape(p.shapes.ROUNDED_RECTANGLE, { x: 8.0, y: 2.4, w: 4.2, h: 4.25, rectRadius: 0.14, fill: { color: WHITE }, line: { color: LINE, width: 1 }, shadow: shadow() });
+  s.addText("No risk to try", { x: 8.4, y: 2.78, w: 3.4, h: 0.5, fontFace: FONT, fontSize: 17, bold: true, color: INK, margin: 0 });
+  ["Free trial — hear it on your own number", "We do the setup for you", "Keep your number, cancel anytime", "No long contract, no per-call fees"].forEach((t, i) => {
+    s.addImage({ data: ic.check[EMERALD], x: 8.4, y: 3.55 + i * 0.72, w: 0.3, h: 0.3 });
+    s.addText(t, { x: 8.82, y: 3.48 + i * 0.72, w: 3.28, h: 0.62, fontFace: FONT, fontSize: 12.5, color: INK, valign: "middle", margin: 0 });
+  });
+  s.addNotes("Replaces fabricated testimonials — never fake social proof. Risk-reversal + live proof are the strongest pre-launch trust levers. On a call, actually dial the demo line on speaker and let them hear it. Swap in a real customer quote/screenshot here once you have one.");
 
   // ---- Slide 9: Onboarding ----
   s = p.addSlide(); s.background = { color: WHITE }; logo(s, false);
