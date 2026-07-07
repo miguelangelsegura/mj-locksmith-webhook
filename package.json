@@ -1,0 +1,13 @@
+{
+  "name": "dispango-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build tooling for Dispango sales collateral (demo deck generator).",
+  "scripts": {
+    "build:deck": "cd sales && node build-deck.js"
+  },
+  "devDependencies": {
+    "pptxgenjs": "^4.0.1",
+    "sharp": "^0.35.3"
+  }
+}
