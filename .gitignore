@@ -19,3 +19,4 @@ supabase/.branches/
 
 # Outreach ledger — holds scraped business PII, do not commit
 outreach/contacted.csv
+node_modules/
