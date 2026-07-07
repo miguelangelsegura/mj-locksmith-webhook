@@ -15,6 +15,7 @@
 //   POST   /clients                 create a client (validated)
 //   PATCH  /clients/:id             update a client (e.g. active toggle)
 //   POST   /clients/:id/test-sms    send a test dispatch SMS to the client's number
+//   GET    /health                  live monitoring summary (unsent leads, abuse, call count)
 //   GET    /banned                  list banned caller numbers
 //   POST   /banned                  ban a caller (body: caller_phone, reason)
 //   DELETE /banned/:phone           unban a caller
@@ -203,6 +204,35 @@ async function unbanCaller(phone: string): Promise<Response> {
   return json({ unbanned: true });
 }
 
+const NON_LEAD_OUTCOMES = new Set(["wrong_number", "spam", "info_only"]);
+
+async function health(): Promise<Response> {
+  const now = Date.now();
+  const hourAgo = new Date(now - 60 * 60 * 1000).toISOString();
+  const twoMinAgo = new Date(now - 2 * 60 * 1000).toISOString();
+
+  const { data: unsent } = await supabase!
+    .from("calls").select("vapi_call_id, outcome")
+    .is("notified_at", null).gte("ended_at", hourAgo).lte("ended_at", twoMinAgo);
+  const unsentLeads = (unsent ?? []).filter((c) =>
+    !NON_LEAD_OUTCOMES.has(String(c.outcome ?? "").trim().toLowerCase().replace(/ /g, "_"))
+  ).length;
+
+  const { data: recent } = await supabase!
+    .from("calls").select("caller_phone").gte("ended_at", hourAgo).not("caller_phone", "is", null);
+  const counts: Record<string, number> = {};
+  for (const r of recent ?? []) counts[r.caller_phone as string] = (counts[r.caller_phone as string] ?? 0) + 1;
+  const abusers = Object.entries(counts).filter(([, n]) => n >= 6).map(([phone, calls]) => ({ phone, calls }));
+
+  return json({
+    ok: unsentLeads === 0 && abusers.length === 0,
+    callsLastHour: (recent ?? []).length,
+    unsentLeads,
+    abusers,
+    checkedAt: new Date(now).toISOString(),
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -246,6 +276,9 @@ Deno.serve(async (req) => {
       return await updateClientRow(itemMatch[1], await req.json());
     }
 
+    if (req.method === "GET" && path === "/health") {
+      return await health();
+    }
     if (req.method === "GET" && path === "/banned") {
       return await listBanned();
     }
