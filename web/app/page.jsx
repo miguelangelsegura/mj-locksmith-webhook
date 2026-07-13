@@ -120,7 +120,7 @@ const TINTS = {
 
 const STEPS = [
   { h: "Your Number Rings", p: "Forward your existing line to Dispango. Callers dial the same number as always." },
-  { h: "Dispango Answers", p: "In your shop's name, in a natural voice — 24/7, on the very first rush." },
+  { h: "Dispango Answers", p: "In your shop's name, in a natural voice — around the clock, on the very first rush." },
   { h: "It Captures the Job", p: "Name, number, address, the problem and how urgent it is — every single time." },
   { h: "You Get the Lead", p: "Texted straight to your phone in seconds, ready for you to dispatch." },
 ];
