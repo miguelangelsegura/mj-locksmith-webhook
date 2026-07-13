@@ -1,0 +1,333 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic:
+          - navigation:
+            - list:
+              - listitem:
+                - link "Skip to content" [ref=e6] [cursor=pointer]:
+                  - /url: "#main"
+              - listitem:
+                - link "Skip to footer" [ref=e7] [cursor=pointer]:
+                  - /url: "#footer"
+        - generic [ref=e8]:
+          - link "Navigation landmark MNP graphic" [ref=e10] [cursor=pointer]:
+            - /url: /en/
+            - img "MNP-logo-lt" [ref=e11]
+          - navigation [ref=e17]:
+            - list [ref=e18]:
+              - listitem [ref=e19]:
+                - link "About" [ref=e20] [cursor=pointer]:
+                  - /url: /en/about
+              - listitem [ref=e21]:
+                - link "Media" [ref=e22] [cursor=pointer]:
+                  - /url: /en/media
+              - listitem [ref=e23]:
+                - link "Offices" [ref=e24] [cursor=pointer]:
+                  - /url: /en/offices
+              - listitem [ref=e25]:
+                - link "Personnel" [ref=e26] [cursor=pointer]:
+                  - /url: /en/personnel
+              - listitem [ref=e27]:
+                - link "MNP Portal" [ref=e28] [cursor=pointer]:
+                  - /url: https://portal.mnp.ca
+              - listitem [ref=e29]:
+                - link "Client Upload" [ref=e30] [cursor=pointer]:
+                  - /url: /en/client-upload
+              - listitem [ref=e31]:
+                - link "Payment" [ref=e32] [cursor=pointer]:
+                  - /url: https://securepayment.mnp.ca/
+              - listitem [ref=e33]:
+                - link [ref=e34] [cursor=pointer]:
+                  - /url: https://www.mnp.ca/fr/points-de-vue/bibliotheque/shareholders-beware-does-your-buy-sell-clause-set-a-fair-price/
+        - navigation [ref=e51]:
+          - list [ref=e56]:
+            - listitem [ref=e57]:
+              - button "Services" [ref=e58] [cursor=pointer]
+            - listitem [ref=e59]:
+              - button "Industries" [ref=e60] [cursor=pointer]
+            - listitem [ref=e61]:
+              - button "Business Insights" [ref=e62] [cursor=pointer]
+            - listitem [ref=e63]:
+              - button "Careers" [ref=e64] [cursor=pointer]
+            - listitem [ref=e65]:
+              - button "Social Responsibility" [ref=e66] [cursor=pointer]
+            - listitem [ref=e67]:
+              - button "Diversity" [ref=e68] [cursor=pointer]
+            - listitem [ref=e69]:
+              - button "Search" [ref=e70] [cursor=pointer]:
+                - generic [ref=e72]: search
+    - main [ref=e74]:
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - 'heading "Shareholders Beware: Does Your Buy-Sell Clause Set a Fair Price?" [level=1] [ref=e81]'
+            - heading [level=2]
+          - time [ref=e84]: January 21, 2016
+        - generic [ref=e85]:
+          - generic [ref=e87]:
+            - 'heading "Shareholders Beware: Does Your Buy-Sell Clause Set a Fair Price?" [level=2] [ref=e89]'
+            - list [ref=e91]:
+              - listitem [ref=e92]:
+                - link "Share on LinkedIn" [ref=e93] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/shareArticle?mini=true&title=&summary=&source=&url=https://www.mnp.ca/en/insights/directory/shareholders-beware-does-your-buy-sell-clause-set-a-fair-price
+              - listitem [ref=e99]:
+                - link "Share on Facebook" [ref=e100] [cursor=pointer]:
+                  - /url: https://www.facebook.com/sharer/sharer.php?u=https://www.mnp.ca/en/insights/directory/shareholders-beware-does-your-buy-sell-clause-set-a-fair-price
+              - listitem [ref=e103]:
+                - link "Share on Twitter" [ref=e104] [cursor=pointer]:
+                  - /url: https://twitter.com/intent/tweet?url=https://www.mnp.ca/en/insights/directory/shareholders-beware-does-your-buy-sell-clause-set-a-fair-price
+          - generic [ref=e109]:
+            - generic [ref=e110]:
+              - generic [ref=e111]:
+                - generic [ref=e112]: Synopsis
+                - generic [ref=e113]: 4 Minute Read
+              - paragraph [ref=e115]: If your shareholders’ agreement has a buy-sell clause, be sure to read this overview of some commonly used pricing mechanisms and the pros and cons of each.
+              - link "Read more" [ref=e117] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=e121]:
+              - link [ref=e123] [cursor=pointer]:
+                - /url: /en/personnel/catherine-tremblay
+              - generic [ref=e125]:
+                - link "Catherine Tremblay, CPA, FEEE/FCBV, ASA, CFF" [ref=e127] [cursor=pointer]:
+                  - /url: /en/personnel/catherine-tremblay
+                - generic [ref=e128]: Partner, Valuation and Litigation Support
+      - generic [ref=e130]:
+        - generic [ref=e132]:
+          - generic [ref=e133]: Insight
+          - button "Insight" [ref=e138] [cursor=pointer]
+        - generic [ref=e140]:
+          - paragraph [ref=e141]:
+            - emphasis [ref=e142]: This article was originally created for the Canadian Institute of Chartered Business Valuators
+          - paragraph [ref=e143]: Just as every apartment needs a fire escape, every shareholders’ agreement needs a buy-sell clause to set a price for the company’s shares on the occurrence of certain triggering events. A buy-sell clause outlines a process and pricing mechanism for the sale of the shares of a departing shareholder (e.g. upon death, disability, retirement, etc.) that necessitates a change in the ownership of a closely-held private company. The purpose of the clause is to provide a pre-determined procedure that ensures a fair price for all shareholders, while ensuring an orderly transfer of control to the remaining owners. Yet, in this author’s experience, these clauses can often create havoc if the pricing provisions are not properly thought out. This article provides an overview of some commonly used pricing mechanisms and discusses the pros and cons of each.
+          - heading "Don’t use Book Value!" [level=2] [ref=e144]
+          - paragraph [ref=e145]:
+            - text: The pricing mechanism in the buy-sell clause should be designed to ensure that both the buying and selling shareholders will be able to automatically transact at a price that is fair to all parties. One solution commonly adopted is for the shareholders to base the price on the net
+            - strong [ref=e146]: book value
+            - text: "of the company. Net book value is simply the difference between the assets and liabilities reported on a company’s balance sheet at a point in time. The calculation of net book value is typically a straightforward mathematical exercise, but it may not result in a fair price. To understand why, consider the following example:"
+          - list [ref=e147]:
+            - listitem [ref=e148]: When ABC Corp. was founded, it issued 100 shares at $1 per share, allocated evenly between two shareholders; the shareholders used bank debt and personal loans to finance all of ABC’s operating assets.
+            - listitem [ref=e149]: The shareholders’ agreement specifies that the shares are to be transacted at net book value upon a triggering event.
+            - listitem [ref=e150]: The company becomes highly profitable, earning an average of $100,000 in after-tax profits per year; these are distributed to the shareholders every year, such that the net book value of the company remains $100.
+            - listitem [ref=e151]: Ten years later, one of the two shareholders has suddenly been involved in a fatal accident. In accordance with the buy-sell clause, her shares must be offered by her estate to the other shareholder for total consideration of $50 ($1x50) based on the net book value.
+          - paragraph [ref=e152]:
+            - text: Because ABC’s balance sheet will present its assets and liabilities based on their historical cost, and not their current fair market value, a pricing mechanism based on book value will tend to significantly understate the value of the shares. The formula disregards the value of intangible assets and goodwill that may have developed within the company, since their historical cost is nil and their fair market value is not recognized on the balance sheet (in accordance with generally accepted accounting principles). It also ignores any appreciation in the value of certain tangible assets, such as real estate.
+            - strong
+          - heading "Other Methods" [level=2] [ref=e153]
+          - paragraph [ref=e154]: "If book value is not a reliable method, then are there any other simple methods that can be used? Here are three possibilities, along with some caveats:"
+          - list [ref=e155]:
+            - listitem [ref=e156]:
+              - text: A
+              - strong [ref=e157]: periodic price-setting strategy
+              - text: "involves a meeting between the shareholders to negotiate a price to be used if a triggering event occurs. Used properly, this method can result in a realistic, agreed-upon valuation of the company based on the ground-level view of its owners: because neither owner knows whether she will the buyer or seller, there is a motivation to arrive at a reasonable value. However, there are also pitfalls. If not updated regularly, the price may lose its relevance. Additionally, the method can be time-consuming, may lead to disputes over value opinions, and may lead to unfair prices when one party is more knowledgeable about the business than the other."
+            - listitem [ref=e158]:
+              - text: The
+              - strong [ref=e159]: formula approach
+              - text: arrives at a price using inputs such as the company’s earnings, revenues and assets, and applying multiples or valuation ratios thereto. Formulas are easy to use; however, over time, the company’s circumstances may evolve, and a formula that once made sense may no longer result in a fair price. For example, a company may choose to apply a formula using a multiple of EBITDA (earnings before interest, taxes, depreciation and amortization) to value its business operations. However, the company may, in the future, accumulate a large cash or investment balance. The value of these so-called “redundant assets” (which are assets not required to run the day-to-day business operations) is typically not accounted for in an EBITDA multiple, so the formula would need to specifically address the possible future existence of redundant assets to avoid an understatement of value. Another issue is that the historical EBITDA used in a pricing formula may no longer be representative of current or anticipated future results (for example, if the company wins or loses a major customer). In valuing a company, it is the prospective profitability that investors look to; historical results are relevant only insofar as they are useful predictors of the future.
+            - listitem [ref=e160]:
+              - text: A
+              - strong [ref=e161]: shotgun arrangement
+              - text: "enables shareholders to part ways by allowing them to make an offer to acquire the other shareholdings, at a price set by the offeror. The other shareholder(s) must decide if they will either (i) sell their shares at that price, or (ii) buy the offeror’s shares at the same price. If the offer is set too high, the other shareholder(s) will choose to sell their shares and reap the rewards of an inflated price; if the offer is too low, the offeror will end up having the offer turned around on him by the offeree shareholders and have his shares purchased ‘on the cheap’. In a perfect world in which each party has equal knowledge and funding, the shotgun clause would be a fair solution that meets the objective of ensuring that current shareholders can remain in control of who ‘joins their club’. However, an imbalance of wealth may make the shotgun clause problematic: shareholders with more money than the other owners may use their resources to their advantage. A wealthy shareholder can trigger the shotgun and offer a low price, knowing that the other owners would be unable to afford the purchase of his shares even at the low price, and they would therefore be forced to sell at that price. Another example is where one shareholding is very small relative to the other, for example, 10%-90%: the 10% shareholder may not have the financial resources available to buy out a 90% stake."
+          - heading "Fair Market Value" [level=2] [ref=e162]
+          - paragraph [ref=e163]:
+            - text: In order to avoid the drawbacks associated with the various approaches outlined above, it may be advisable to hire a third party valuator to determine the
+            - strong [ref=e164]: fair market value
+            - text: of the shares. Fair market value is the amount that an item (such as a company’s shares) would realize in the open market. Fair market value looks at what a company’s assets are actually worth, rather than their historical cost.
+          - paragraph [ref=e165]: The advantage of a fair market value determination is that it results in an objective and current measure of the shares’ worth, provided by an arms-length professional with expertise in business valuation such as a Chartered Business Valuator (CBV). While there is a cost associated with hiring a professional, it may pale in comparison to the cost of litigation in the event that the parties are unable to arrive at a price that is mutually agreeable and supportable.
+          - heading "Conclusion" [level=2] [ref=e166]
+          - paragraph [ref=e167]: When drafting a shareholders’ agreement, it is important that shareholders, their financial advisors and legal counsel give adequate consideration to the buy-sell clause, particularly in relation to the price-setting mechanism. Approaches that may appear easy-to-use and appropriate at a given time may become irrelevant and outdated, resulting in much acrimony and litigation. A proper, arm’s length appraisal by a Chartered Business Valuator may prove to be a sound approach in the long run.
+          - paragraph [ref=e168]: Make sure you have an adequate fire escape!
+          - paragraph [ref=e169]:
+            - text: To learn more, contact Catherine Tremblay, CPA, CA, CBV, ASA, CFF, National Leader, Valuations, at 514.861.9724 or
+            - link "catherine.tremblay@mnp.ca" [ref=e170] [cursor=pointer]:
+              - /url: mailto:catherine.tremblay@mnp.ca
+            - text: .
+        - generic [ref=e174]:
+          - heading "Related Content" [level=3] [ref=e176]
+          - list [ref=e177]:
+            - listitem [ref=e178]:
+              - generic [ref=e179]:
+                - generic [ref=e180]: Performance
+                - generic [ref=e181]:
+                  - generic [ref=e182]:
+                    - generic [ref=e183]: July 03, 2026
+                    - heading [level=3] [ref=e184]:
+                      - link [ref=e185] [cursor=pointer]:
+                        - /url: /en/insights/directory/how-stabilize-your-credit-30-days-playbook-businesses-lenders
+                        - text: "How to stabilize your credit in 30 days: A playbook for businesses and lenders"
+                    - paragraph [ref=e187]: The most valuable window in a deteriorating credit situation is also the shortest. This practical 30-day sprint can help you stabilize business performance.
+                  - paragraph [ref=e190]:
+                    - 'link "Read More About How to stabilize your credit in 30 days: A playbook for businesses and lenders" [ref=e191] [cursor=pointer]':
+                      - /url: /en/insights/directory/how-stabilize-your-credit-30-days-playbook-businesses-lenders
+                      - text: Read more
+            - listitem [ref=e192]:
+              - generic [ref=e193]:
+                - generic [ref=e194]: Confidence
+                - generic [ref=e195]:
+                  - generic [ref=e196]:
+                    - generic [ref=e197]: July 01, 2026
+                    - heading [level=3] [ref=e198]:
+                      - link [ref=e199] [cursor=pointer]:
+                        - /url: /en/insights/directory/igaming-canada-key-compliance-regulatory-assurance-issues-operators
+                        - text: "iGaming in Canada: Key compliance, regulatory, and assurance issues operators need to watch for"
+                    - paragraph [ref=e201]: As Canada’s iGaming landscape continues to evolve, operators are facing increasing pressure to align regulatory obligations across multiple jurisdictions.
+                  - paragraph [ref=e204]:
+                    - 'link "Read More About iGaming in Canada: Key compliance, regulatory, and assurance issues operators need to watch for" [ref=e205] [cursor=pointer]':
+                      - /url: /en/insights/directory/igaming-canada-key-compliance-regulatory-assurance-issues-operators
+                      - text: Read more
+            - listitem [ref=e206]:
+              - generic [ref=e207]:
+                - generic [ref=e208]: Performance
+                - generic [ref=e209]:
+                  - generic [ref=e210]:
+                    - generic [ref=e211]: June 29, 2026
+                    - heading [level=3] [ref=e212]:
+                      - link [ref=e213] [cursor=pointer]:
+                        - /url: /en/insights/directory/quebec-introduces-a-new-refundable-tax-credit-for-access-to-homeownership
+                        - text: Quebec introduces a new refundable tax credit for access to homeownership
+                    - paragraph [ref=e215]: Quebec has introduced a refundable tax credit for access to homeownership. Discover when the new measure applies and the eligibility requirements.
+                  - paragraph [ref=e218]:
+                    - link "Read More About Quebec introduces a new refundable tax credit for access to homeownership" [ref=e219] [cursor=pointer]:
+                      - /url: /en/insights/directory/quebec-introduces-a-new-refundable-tax-credit-for-access-to-homeownership
+                      - text: Read more
+      - generic [ref=e222]:
+        - heading "Insights" [level=2] [ref=e224]
+        - generic [ref=e225]:
+          - link "View all" [ref=e227] [cursor=pointer]:
+            - /url: /en/insights/directory
+          - list [ref=e228]:
+            - listitem [ref=e229]:
+              - generic [ref=e230]:
+                - generic [ref=e231]: Performance
+                - link [ref=e233] [cursor=pointer]:
+                  - /url: /en/insights/directory/how-stabilize-your-credit-30-days-playbook-businesses-lenders
+                - generic [ref=e235]:
+                  - generic [ref=e236]:
+                    - paragraph [ref=e237]: July 03, 2026
+                    - heading [level=3] [ref=e238]:
+                      - link [ref=e239] [cursor=pointer]:
+                        - /url: /en/insights/directory/how-stabilize-your-credit-30-days-playbook-businesses-lenders
+                        - text: "How to stabilize your credit in 30 days: A playbook for businesses and lenders"
+                    - paragraph [ref=e241]: The most valuable window in a deteriorating credit situation is also the shortest. This practical 30-day sprint can help you stabilize business performance.
+                  - paragraph [ref=e244]:
+                    - 'link "Read More About How to stabilize your credit in 30 days: A playbook for businesses and lenders" [ref=e245] [cursor=pointer]':
+                      - /url: /en/insights/directory/how-stabilize-your-credit-30-days-playbook-businesses-lenders
+                      - text: Read more
+            - listitem [ref=e246]:
+              - generic [ref=e247]:
+                - generic [ref=e248]: Confidence
+                - link [ref=e250] [cursor=pointer]:
+                  - /url: /en/insights/directory/igaming-canada-key-compliance-regulatory-assurance-issues-operators
+                - generic [ref=e252]:
+                  - generic [ref=e253]:
+                    - paragraph [ref=e254]: July 01, 2026
+                    - heading [level=3] [ref=e255]:
+                      - link [ref=e256] [cursor=pointer]:
+                        - /url: /en/insights/directory/igaming-canada-key-compliance-regulatory-assurance-issues-operators
+                        - text: "iGaming in Canada: Key compliance, regulatory, and assurance issues operators need to watch for"
+                    - paragraph [ref=e258]: As Canada’s iGaming landscape continues to evolve, operators are facing increasing pressure to align regulatory obligations across multiple jurisdictions.
+                  - paragraph [ref=e261]:
+                    - 'link "Read More About iGaming in Canada: Key compliance, regulatory, and assurance issues operators need to watch for" [ref=e262] [cursor=pointer]':
+                      - /url: /en/insights/directory/igaming-canada-key-compliance-regulatory-assurance-issues-operators
+                      - text: Read more
+            - listitem [ref=e263]:
+              - generic [ref=e264]:
+                - generic [ref=e265]: Performance
+                - link [ref=e267] [cursor=pointer]:
+                  - /url: /en/insights/directory/quebec-introduces-a-new-refundable-tax-credit-for-access-to-homeownership
+                - generic [ref=e269]:
+                  - generic [ref=e270]:
+                    - paragraph [ref=e271]: June 29, 2026
+                    - heading [level=3] [ref=e272]:
+                      - link [ref=e273] [cursor=pointer]:
+                        - /url: /en/insights/directory/quebec-introduces-a-new-refundable-tax-credit-for-access-to-homeownership
+                        - text: Quebec introduces a new refundable tax credit for access to homeownership
+                    - paragraph [ref=e275]: Quebec has introduced a refundable tax credit for access to homeownership. Discover when the new measure applies and the eligibility requirements.
+                  - paragraph [ref=e278]:
+                    - link "Read More About Quebec introduces a new refundable tax credit for access to homeownership" [ref=e279] [cursor=pointer]:
+                      - /url: /en/insights/directory/quebec-introduces-a-new-refundable-tax-credit-for-access-to-homeownership
+                      - text: Read more
+    - contentinfo [ref=e281]:
+      - generic [ref=e284]:
+        - region "Navigation links" [ref=e285]:
+          - list [ref=e286]:
+            - listitem [ref=e287]:
+              - link "Payment" [ref=e288] [cursor=pointer]:
+                - /url: https://securepayment.mnp.ca/
+            - listitem [ref=e289]:
+              - link "MNP Portal" [ref=e290] [cursor=pointer]:
+                - /url: https://portal.mnp.ca
+            - listitem [ref=e291]:
+              - link "About" [ref=e292] [cursor=pointer]:
+                - /url: /en/about
+          - generic [ref=e293]:
+            - text: Social Media
+            - list [ref=e294]:
+              - listitem [ref=e295]:
+                - link "MNP Glassdoor page" [ref=e296] [cursor=pointer]:
+                  - /url: https://www.glassdoor.ca/Overview/Working-at-MNP-LLP-EI_IE112544.11,18.htm
+              - listitem [ref=e301]:
+                - link "MNP LinkedIn page" [ref=e302] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/company/mnp
+              - listitem [ref=e308]:
+                - link "MNP Instagram page" [ref=e309] [cursor=pointer]:
+                  - /url: https://www.instagram.com/mnpllp/
+              - listitem [ref=e315]:
+                - link "MNP Facebook page" [ref=e316] [cursor=pointer]:
+                  - /url: https://www.facebook.com/MNPLLP/
+        - region "Navigation links" [ref=e320]:
+          - list [ref=e323]:
+            - listitem [ref=e324]:
+              - link "Personnel" [ref=e325] [cursor=pointer]:
+                - /url: /en/personnel
+            - listitem [ref=e326]:
+              - link "Offices" [ref=e327] [cursor=pointer]:
+                - /url: /en/offices
+        - region "Navigation links" [ref=e328]:
+          - list [ref=e329]:
+            - listitem [ref=e330]:
+              - link "Accessibility Standards" [ref=e331] [cursor=pointer]:
+                - /url: /en/about/accessibility-standards
+            - listitem [ref=e332]:
+              - link "Privacy Policy" [ref=e333] [cursor=pointer]:
+                - /url: /en/privacy-policy
+            - listitem [ref=e334]:
+              - link "Editorial Disclaimer" [ref=e335] [cursor=pointer]:
+                - /url: /en/privacy-policy/editorial-disclaimer
+        - region "Sponsor links" [ref=e336]:
+          - text: Global Alliance
+          - list [ref=e337]:
+            - listitem [ref=e338]:
+              - link "Praxity Logo" [ref=e339] [cursor=pointer]:
+                - /url: /en/about#praxity
+                - img "Praxity Logo" [ref=e340]
+          - text: Proud to Support
+          - list [ref=e394]:
+            - listitem [ref=e395]:
+              - link "Learn more about our partnership with Special Olympics Canada" [ref=e396] [cursor=pointer]:
+                - /url: /en/diversity-equity-and-inclusion/special-olympics-committee
+                - img "Learn more about our partnership with Special Olympics Canada" [ref=e397]
+            - listitem [ref=e398]:
+              - img "Canada's Great Kitchen Party presented by MNP" [ref=e399]
+            - listitem [ref=e400]:
+              - img "MacKayForums" [ref=e401]
+        - region "Award links" [ref=e402]:
+          - text: Business insights that make an impact
+          - paragraph [ref=e403]: Sign up to receive the monthly MNP Business Insights Newsletter.
+          - generic [ref=e404]:
+            - textbox "Email address" [ref=e405]
+            - button "Subscribe to MNP Business insights newsletter, opens the subscription form in a modal" [ref=e406] [cursor=pointer]: Sign Me Up
+      - paragraph [ref=e412]: Copyright 2026 MNP LLP – All Rights Reserved
+      - img "MNP black coffee mug" [ref=e415]
+  - iframe [ref=e424]:
+    - generic [ref=f3e6]:
+      - text: protected by
+      - strong [ref=f3e7]: reCAPTCHA
+  - dialog "Cookie notice banner" [ref=e425]:
+    - generic [ref=e426]: About Cookies On This Site
+    - generic [ref=e427]: Our site uses cookies and other technologies to tailor your experience and understand how you and other visitors use our site.
+    - button "I Understand" [ref=e428] [cursor=pointer]
+    - button "Options, Opens the preference dialog." [ref=e429] [cursor=pointer]: Options
+    - button "banner close button" [ref=e430] [cursor=pointer]:
+      - img "banner close icon" [ref=e431]

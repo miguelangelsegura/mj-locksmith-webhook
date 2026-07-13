@@ -1,0 +1,46 @@
+- main [ref=f14e2]:
+  - generic [ref=f14e3]:
+    - link "Dispango" [ref=f14e4] [cursor=pointer]:
+      - /url: /
+    - link "← Back to site" [ref=f14e10] [cursor=pointer]:
+      - /url: /
+  - generic [ref=f14e11]:
+    - heading "Get Started" [level=1] [ref=f14e12]
+    - paragraph [ref=f14e13]: Tell us about your shop. Next you'll sign a short agreement and start your 14-day free trial — then we get your line live, usually the same day.
+    - generic [ref=f14e14]:
+      - generic [ref=f14e15]:
+        - text: Business name
+        - textbox "Business name" [ref=f14e16]:
+          - /placeholder: Rapid Plumbing
+      - generic [ref=f14e17]:
+        - text: Email
+        - textbox "Email" [ref=f14e18]:
+          - /placeholder: you@yourshop.ca
+      - generic [ref=f14e19]:
+        - text: Phone number for leads
+        - textbox "Phone number for leads" [ref=f14e20]:
+          - /placeholder: (647) 555-0198
+        - paragraph [ref=f14e21]: Where we'll text your captured jobs. Canadian/US numbers.
+      - generic [ref=f14e22]:
+        - generic [ref=f14e23]:
+          - text: Your trade
+          - combobox "Your trade" [ref=f14e24]:
+            - option "Locksmith" [selected]
+            - option "Plumber"
+            - option "HVAC"
+            - option "Electrician"
+            - option "Contractor"
+            - option "Garage Doors"
+            - option "Roofer"
+            - option "Other"
+        - generic [ref=f14e25]:
+          - text: Receptionist voice
+          - combobox "Receptionist voice" [ref=f14e26]:
+            - option "No preference" [selected]
+            - option "Elliot"
+            - option "Ava"
+            - option "Cole"
+            - option "Harper"
+      - textbox [ref=f14e27]
+      - button "Continue to sign & start trial" [ref=f14e28]
+      - paragraph [ref=f14e29]: 14-day free trial · cancel anytime · keep your number

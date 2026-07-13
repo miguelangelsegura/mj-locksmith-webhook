@@ -1,0 +1,46 @@
+- generic [active] [ref=f3e1]:
+  - link "Skip to content":
+    - /url: "#geist-skip-nav"
+  - generic [ref=f3e3]:
+    - banner [ref=f3e4]:
+      - link "Vercel logo":
+        - /url: /home
+        - button "Vercel Logo":
+          - img "Vercel Logo"
+      - navigation [ref=f3e5]:
+        - navigation [ref=f3e6]:
+          - link [ref=f3e7] [cursor=pointer]:
+            - /url: /signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fdispango-mqmv0jg7i-00-yeah-baby.vercel.app%252F%26nonce%3Deee6b942bfc12008a81c27ca85315486fae94f305ee10388813678a8d2bc20b5
+            - paragraph [ref=f3e9]: Sign Up
+    - main [ref=f3e10]:
+      - generic [ref=f3e12]:
+        - heading "Log in to Vercel" [level=1] [ref=f3e15]
+        - generic [ref=f3e16]:
+          - generic [ref=f3e17]:
+            - textbox "Email Address" [ref=f3e19]
+            - button "Continue with Email" [ref=f3e21] [cursor=pointer]
+          - generic [ref=f3e24]:
+            - button "Continue with Google" [ref=f3e25] [cursor=pointer]:
+              - generic [ref=f3e30]:
+                - generic [ref=f3e31]: Continue with
+                - text: Google
+            - button "Continue with GitHub" [ref=f3e32] [cursor=pointer]:
+              - generic [ref=f3e36]:
+                - generic [ref=f3e37]: Continue with
+                - text: GitHub
+            - button "Continue with Apple" [ref=f3e38] [cursor=pointer]:
+              - generic [ref=f3e42]:
+                - generic [ref=f3e43]: Continue with
+                - text: Apple
+            - button "Continue with SAML SSO" [ref=f3e45] [cursor=pointer]
+            - button "Continue with Passkey" [ref=f3e50] [cursor=pointer]
+            - button "Show other options" [ref=f3e55] [cursor=pointer]
+        - paragraph [ref=f3e58]:
+          - text: Don't have an account?
+          - link "Sign Up" [ref=f3e59] [cursor=pointer]:
+            - /url: /signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fdispango-mqmv0jg7i-00-yeah-baby.vercel.app%252F%26nonce%3Deee6b942bfc12008a81c27ca85315486fae94f305ee10388813678a8d2bc20b5
+      - generic [ref=f3e62]:
+        - link "Terms" [ref=f3e63] [cursor=pointer]:
+          - /url: /legal/terms
+        - link "Privacy Policy" [ref=f3e64] [cursor=pointer]:
+          - /url: /legal/privacy-policy

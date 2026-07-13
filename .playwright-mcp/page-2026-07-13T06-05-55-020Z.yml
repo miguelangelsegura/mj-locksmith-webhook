@@ -1,0 +1,999 @@
+- generic [ref=f7e3]:
+  - complementary "Contact and book a demo":
+    - link "Contact us":
+      - /url: "#contact"
+    - button "Book a demo"
+  - navigation [ref=f7e4]:
+    - generic [ref=f7e5]:
+      - link "calio." [ref=f7e6] [cursor=pointer]:
+        - /url: "#"
+      - generic [ref=f7e8]:
+        - link "How it works" [ref=f7e9] [cursor=pointer]:
+          - /url: "#how-it-works"
+        - link "Features" [ref=f7e10] [cursor=pointer]:
+          - /url: "#features"
+        - link "Industries" [ref=f7e11] [cursor=pointer]:
+          - /url: "#industries"
+        - link "Pricing" [ref=f7e12] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "Book a demo" [ref=f7e13] [cursor=pointer]:
+          - /url: "#book-demo"
+        - link "Contact" [ref=f7e14] [cursor=pointer]:
+          - /url: "#contact"
+      - generic [ref=f7e15]:
+        - link "Sign in" [ref=f7e16] [cursor=pointer]:
+          - /url: /login
+        - link "Get started" [ref=f7e17] [cursor=pointer]:
+          - /url: /start
+  - generic [ref=f7e19]:
+    - generic [ref=f7e20]:
+      - generic [ref=f7e21]: AI-powered · Available 24 hours a day
+      - heading [level=1] [ref=f7e23]:
+        - text: Every callanswered.
+        - generic [ref=f7e24]: Every bookingmade.
+      - paragraph [ref=f7e25]: Calio is an AI receptionist provider. We answer your calls, book your appointments, connect to your existing systems, and give you a full dashboard to run it all, or we run it for you.
+      - generic [ref=f7e26]:
+        - link "Get started" [ref=f7e27] [cursor=pointer]:
+          - /url: /start
+        - link "Book a demo" [ref=f7e30] [cursor=pointer]:
+          - /url: "#book-demo"
+      - paragraph [ref=f7e33]: Live in under an hour · Cancel anytime
+      - generic [ref=f7e34]:
+        - link "Calio on Instagram" [ref=f7e35] [cursor=pointer]:
+          - /url: https://www.instagram.com/caliohq
+        - link "Calio on LinkedIn" [ref=f7e38] [cursor=pointer]:
+          - /url: https://www.linkedin.com/company/caliohq/
+    - generic [ref=f7e43]:
+      - generic [ref=f7e44]: AI speaking
+      - generic [ref=f7e55]:
+        - generic [ref=f7e57]: 9:41
+        - generic [ref=f7e67]:
+          - generic [ref=f7e71]:
+            - paragraph [ref=f7e72]: Calio AI Receptionist
+            - paragraph [ref=f7e75]: Active call
+          - generic [ref=f7e87]: 0:00
+        - generic [ref=f7e89]: Live transcript
+        - generic [ref=f7e92]: Calio AI
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - paragraph: Messages
+                  - paragraph: Calio
+              - generic: now
+            - paragraph: Hi Jamie, your haircut is confirmed for Fri at 1:00 PM. See you then!
+        - generic:
+          - generic:
+            - generic:
+              - paragraph: Booked by Calio
+            - paragraph: SMS sent to Jamie. Your calendar slot for Friday at 1 PM is filled.
+  - generic [ref=f7e109]:
+    - generic [ref=f7e111]:
+      - paragraph [ref=f7e112]: Built for the call rush
+      - heading "Five calls hit at once. You can only handle one. Calio handles all." [level=2] [ref=f7e113]: Five calls hit at once.You can only handle one.Calio handles all.
+      - paragraph [ref=f7e114]: The point is not that Calio answers quickly. It answers everyone at the exact same time, understands what each caller wants, and moves the business forward before a voicemail even starts.
+    - generic [ref=f7e116]:
+      - generic [ref=f7e117]:
+        - generic [ref=f7e118]:
+          - generic [ref=f7e119]:
+            - paragraph [ref=f7e120]: Old way
+            - heading "One front desk. Five callers." [level=3] [ref=f7e121]
+            - paragraph [ref=f7e122]: The receptionist can answer one person. The rest hit voicemail.
+          - generic [ref=f7e123]: 4 sent to voicemail
+        - generic "Front desk receptionist handling one call while four callers go to voicemail" [ref=f7e124]:
+          - generic [ref=f7e125]:
+            - paragraph [ref=f7e126]: One human receptionist
+            - paragraph [ref=f7e127]: One person can answer one call.
+          - strong [ref=f7e129]: 1/5
+        - generic [ref=f7e130]:
+          - generic [ref=f7e131]:
+            - generic [ref=f7e132]:
+              - generic [ref=f7e133]:
+                - generic [ref=f7e134]: "1"
+                - generic [ref=f7e135]:
+                  - paragraph [ref=f7e136]: Jamie
+                  - paragraph [ref=f7e137]: Book Friday
+              - generic [ref=f7e138]: Active
+            - generic [ref=f7e139]: Receptionist is on this call
+          - generic [ref=f7e149]:
+            - generic [ref=f7e150]:
+              - generic [ref=f7e151]:
+                - generic [ref=f7e152]: "2"
+                - generic [ref=f7e153]:
+                  - paragraph [ref=f7e154]: Sarah
+                  - paragraph [ref=f7e155]: Reschedule visit
+              - generic [ref=f7e156]: Missed
+            - generic [ref=f7e157]: Sent to voicemail
+          - generic [ref=f7e159]:
+            - generic [ref=f7e160]:
+              - generic [ref=f7e161]:
+                - generic [ref=f7e162]: "3"
+                - generic [ref=f7e163]:
+                  - paragraph [ref=f7e164]: Noah
+                  - paragraph [ref=f7e165]: Pricing question
+              - generic [ref=f7e166]: Missed
+            - generic [ref=f7e167]: Sent to voicemail
+          - generic [ref=f7e169]:
+            - generic [ref=f7e170]:
+              - generic [ref=f7e171]:
+                - generic [ref=f7e172]: "4"
+                - generic [ref=f7e173]:
+                  - paragraph [ref=f7e174]: Mia
+                  - paragraph [ref=f7e175]: New customer
+              - generic [ref=f7e176]: Missed
+            - generic [ref=f7e177]: Sent to voicemail
+          - generic [ref=f7e179]:
+            - generic [ref=f7e180]:
+              - generic [ref=f7e181]:
+                - generic [ref=f7e182]: "5"
+                - generic [ref=f7e183]:
+                  - paragraph [ref=f7e184]: Liam
+                  - paragraph [ref=f7e185]: Cancel visit
+              - generic [ref=f7e186]: Missed
+            - generic [ref=f7e187]: Sent to voicemail
+      - generic [ref=f7e189]: vs
+      - generic [ref=f7e190]:
+        - generic [ref=f7e191]:
+          - generic [ref=f7e192]:
+            - generic [ref=f7e193]: calio.
+            - paragraph [ref=f7e194]: Calio way
+            - heading "Calio handled all 5 callers." [level=3] [ref=f7e195]
+          - generic [ref=f7e196]: 5 active · 0 waiting
+        - generic [ref=f7e199]:
+          - generic [ref=f7e209]:
+            - paragraph [ref=f7e210]: calio AI receptionist
+            - paragraph [ref=f7e211]: Every caller is answered, understood, and moved forward.
+          - strong [ref=f7e213]: 5/5
+        - generic [ref=f7e214]:
+          - generic [ref=f7e215]:
+            - generic [ref=f7e216]:
+              - generic [ref=f7e222]:
+                - paragraph [ref=f7e223]: Jamie
+                - paragraph [ref=f7e224]: calio AI receptionist
+              - generic [ref=f7e225]: Booked 1:00 PM
+            - paragraph [ref=f7e238]: Book Friday
+          - generic [ref=f7e239]:
+            - generic [ref=f7e240]:
+              - generic [ref=f7e246]:
+                - paragraph [ref=f7e247]: Sarah
+                - paragraph [ref=f7e248]: calio AI receptionist
+              - generic [ref=f7e249]: Rescheduled
+            - paragraph [ref=f7e262]: Reschedule visit
+          - generic [ref=f7e263]:
+            - generic [ref=f7e264]:
+              - generic [ref=f7e270]:
+                - paragraph [ref=f7e271]: Noah
+                - paragraph [ref=f7e272]: calio AI receptionist
+              - generic [ref=f7e273]: Answered
+            - paragraph [ref=f7e286]: Pricing question
+          - generic [ref=f7e287]:
+            - generic [ref=f7e288]:
+              - generic [ref=f7e294]:
+                - paragraph [ref=f7e295]: Mia
+                - paragraph [ref=f7e296]: calio AI receptionist
+              - generic [ref=f7e297]: Intake sent
+            - paragraph [ref=f7e310]: New customer
+          - generic [ref=f7e311]:
+            - generic [ref=f7e312]:
+              - generic [ref=f7e318]:
+                - paragraph [ref=f7e319]: Liam
+                - paragraph [ref=f7e320]: calio AI receptionist
+              - generic [ref=f7e321]: Slot reopened
+            - paragraph [ref=f7e334]: Cancel visit
+        - text: calio.
+    - generic [ref=f7e335]:
+      - generic [ref=f7e336]:
+        - generic [ref=f7e337]:
+          - paragraph [ref=f7e338]: 0s
+          - paragraph [ref=f7e339]: hold time
+        - generic [ref=f7e341]:
+          - paragraph [ref=f7e342]: ∞
+          - paragraph [ref=f7e343]: simultaneous calls
+      - generic [ref=f7e344]:
+        - generic [ref=f7e345]:
+          - paragraph [ref=f7e346]: Every caller greeted
+          - paragraph [ref=f7e347]: No line, no queue, no voicemail cliff.
+        - generic [ref=f7e348]:
+          - paragraph [ref=f7e349]: Every intent routed
+          - paragraph [ref=f7e350]: Bookings, FAQs, cancellations, intake.
+        - generic [ref=f7e351]:
+          - paragraph [ref=f7e352]: Every outcome logged
+          - paragraph [ref=f7e353]: Calendar, SMS, and dashboard updated.
+  - generic [ref=f7e356]:
+    - generic [ref=f7e358]:
+      - paragraph [ref=f7e359]: Built around your business
+      - heading [level=2] [ref=f7e360]:
+        - text: Not a bot.
+        - generic [ref=f7e361]: A staff membertrained on your business.100% customizable.
+      - paragraph [ref=f7e362]: "Calio doesn't hand you a generic AI and wish you luck. Every receptionist is custom-built for your business: your staff, your services, your prices, your tone. It knows who's working, what they offer, and exactly how you want customers to be handled."
+      - generic [ref=f7e363]:
+        - generic [ref=f7e368]:
+          - paragraph [ref=f7e369]: Knows your entire team
+          - paragraph [ref=f7e370]: Add every staff member, their working hours, and which services they provide. The AI books with the right person every time.
+        - generic [ref=f7e375]:
+          - paragraph [ref=f7e376]: Fluent in your service menu
+          - paragraph [ref=f7e377]: Every service, duration, and price is loaded in. Customers can ask about anything. The AI answers like it's been working there for years.
+        - generic [ref=f7e382]:
+          - paragraph [ref=f7e383]: Handles calls your way
+          - paragraph [ref=f7e384]: Tell it exactly how to greet callers, what to say when you're full, how to handle cancellations, and what questions to always ask. You're in control.
+    - generic [ref=f7e386]:
+      - generic [ref=f7e388]:
+        - button "Hair Salon" [ref=f7e389] [cursor=pointer]
+        - button "Dental Clinic" [ref=f7e390] [cursor=pointer]
+        - button "Barbershop" [ref=f7e391] [cursor=pointer]
+        - button "Auto Repair" [ref=f7e392] [cursor=pointer]
+        - button "Physiotherapy" [ref=f7e393] [cursor=pointer]
+        - button "Nail Salon" [ref=f7e394] [cursor=pointer]
+        - button "Tattoo Studio" [ref=f7e395] [cursor=pointer]
+        - button "Real Estate" [ref=f7e396] [cursor=pointer]
+      - generic [ref=f7e397]:
+        - generic [ref=f7e398]:
+          - generic [ref=f7e399]:
+            - generic [ref=f7e400]: A
+            - generic [ref=f7e401]:
+              - paragraph [ref=f7e402]: Alex
+              - paragraph [ref=f7e403]: AI Receptionist · Maple Hair Salon
+          - generic [ref=f7e404]: Live
+        - generic [ref=f7e406]:
+          - generic [ref=f7e407]:
+            - paragraph [ref=f7e408]: Personality & tone
+            - generic [ref=f7e409]: "\"Warm, professional, and confident. Always greet by name if provided. Never say 'I don't know' - offer to take a message instead.\""
+          - generic [ref=f7e410]:
+            - paragraph [ref=f7e411]: Your team
+            - generic [ref=f7e412]:
+              - generic [ref=f7e413]:
+                - generic [ref=f7e414]: S
+                - generic [ref=f7e415]:
+                  - paragraph [ref=f7e416]: Sophie L.
+                  - paragraph [ref=f7e417]: Senior Stylist
+                - generic [ref=f7e418]: Mon – Sat
+              - generic [ref=f7e419]:
+                - generic [ref=f7e420]: M
+                - generic [ref=f7e421]:
+                  - paragraph [ref=f7e422]: Marcus T.
+                  - paragraph [ref=f7e423]: Barber & Colorist
+                - generic [ref=f7e424]: Tue – Sun
+              - generic [ref=f7e425]:
+                - generic [ref=f7e426]: P
+                - generic [ref=f7e427]:
+                  - paragraph [ref=f7e428]: Priya K.
+                  - paragraph [ref=f7e429]: Nail Technician
+                - generic [ref=f7e430]: Wed – Sat
+          - generic [ref=f7e431]:
+            - paragraph [ref=f7e432]: Service menu
+            - generic [ref=f7e433]:
+              - generic [ref=f7e434]:
+                - paragraph [ref=f7e435]: Haircut
+                - paragraph [ref=f7e436]: 45 min · $55
+              - generic [ref=f7e437]:
+                - paragraph [ref=f7e438]: Cut & Colour
+                - paragraph [ref=f7e439]: 2.5 hrs · $140
+              - generic [ref=f7e440]:
+                - paragraph [ref=f7e441]: Blowout
+                - paragraph [ref=f7e442]: 30 min · $45
+              - generic [ref=f7e443]:
+                - paragraph [ref=f7e444]: Full Highlights
+                - paragraph [ref=f7e445]: 3 hrs · $185
+          - generic [ref=f7e446]:
+            - paragraph [ref=f7e447]: Special instructions
+            - generic [ref=f7e448]:
+              - paragraph [ref=f7e452]: Always ask for a callback number before confirming.
+              - paragraph [ref=f7e456]: If fully booked, offer the next 3 available slots.
+              - paragraph [ref=f7e460]: New colour clients must book a consultation first.
+  - generic [ref=f7e462]:
+    - generic [ref=f7e464]:
+      - paragraph [ref=f7e465]: Your command center
+      - heading "Everything you need. One place." [level=2] [ref=f7e466]
+      - paragraph [ref=f7e467]: "While Calio handles every call, you get a live view of it all: bookings, call logs, your team, your services, and your AI, right in your dashboard. Click around."
+    - generic [ref=f7e469]:
+      - generic [ref=f7e470]:
+        - paragraph [ref=f7e471]: Your command centre.
+        - paragraph [ref=f7e472]: Go ahead, click around.
+      - generic [ref=f7e474]:
+        - generic [ref=f7e475]: app.calio.ca/portal
+        - generic [ref=f7e485]:
+          - generic [ref=f7e486]:
+            - generic [ref=f7e487]:
+              - paragraph [ref=f7e488]: calio.
+              - paragraph [ref=f7e489]: BUSINESS PORTAL
+            - generic [ref=f7e494]:
+              - paragraph [ref=f7e495]: Maple Hair Salon
+              - paragraph [ref=f7e498]: AI active
+            - navigation [ref=f7e499]:
+              - button "Overview" [ref=f7e502] [cursor=pointer]
+              - generic [ref=f7e506]:
+                - paragraph [ref=f7e507]: Activity
+                - generic [ref=f7e508]:
+                  - button "Bookings" [ref=f7e509] [cursor=pointer]
+                  - button "Call Logs" [ref=f7e513] [cursor=pointer]
+                  - button "Customers" [ref=f7e517] [cursor=pointer]
+                  - button "SMS History" [ref=f7e521] [cursor=pointer]
+              - generic [ref=f7e525]:
+                - paragraph [ref=f7e526]: AI Receptionist
+                - generic [ref=f7e527]:
+                  - button "My AI Receptionist" [ref=f7e528] [cursor=pointer]
+                  - button "Staff & Services" [ref=f7e532] [cursor=pointer]
+              - generic [ref=f7e536]:
+                - paragraph [ref=f7e537]: Account
+                - generic [ref=f7e538]:
+                  - button "Billing" [ref=f7e539] [cursor=pointer]
+                  - button "Settings" [ref=f7e543] [cursor=pointer]
+            - button "Sign out" [ref=f7e548] [cursor=pointer]
+          - generic [ref=f7e553]:
+            - generic [ref=f7e554]:
+              - heading "Maple Hair Salon" [level=1] [ref=f7e555]
+              - paragraph [ref=f7e556]: AI receptionist is live and answering calls
+            - generic [ref=f7e557]:
+              - generic [ref=f7e558]:
+                - generic [ref=f7e562]:
+                  - paragraph [ref=f7e563]: Your AI receptionist is active
+                  - paragraph [ref=f7e564]: Lily is answering calls and booking 24/7.
+                - generic [ref=f7e565]:
+                  - generic [ref=f7e566]: Live
+                  - button "⏸ Pause AI" [ref=f7e569] [cursor=pointer]
+              - generic [ref=f7e570]:
+                - generic [ref=f7e571] [cursor=pointer]:
+                  - paragraph [ref=f7e572]: "248"
+                  - paragraph [ref=f7e573]: Total Calls
+                  - paragraph [ref=f7e574]: Last 30 days
+                - generic [ref=f7e575] [cursor=pointer]:
+                  - paragraph [ref=f7e576]: "91"
+                  - paragraph [ref=f7e577]: Bookings Made
+                  - paragraph [ref=f7e578]: Via AI
+                - generic [ref=f7e579] [cursor=pointer]:
+                  - paragraph [ref=f7e580]: "6"
+                  - paragraph [ref=f7e581]: This Week
+                  - paragraph [ref=f7e582]: Upcoming
+              - generic [ref=f7e583]:
+                - generic [ref=f7e584] [cursor=pointer]:
+                  - paragraph [ref=f7e588]: View call logs
+                  - paragraph [ref=f7e589]: 248 total calls
+                - generic [ref=f7e590] [cursor=pointer]:
+                  - paragraph [ref=f7e594]: Manage bookings
+                  - paragraph [ref=f7e595]: 14 upcoming
+                - generic [ref=f7e596] [cursor=pointer]:
+                  - paragraph [ref=f7e600]: Staff & Services
+                  - paragraph [ref=f7e601]: 4 staff members
+                - generic [ref=f7e602] [cursor=pointer]:
+                  - paragraph [ref=f7e606]: AI Receptionist
+                  - paragraph [ref=f7e607]: Configure Lily
+              - generic [ref=f7e608]:
+                - paragraph [ref=f7e609]: Today's Schedule
+                - generic [ref=f7e610]:
+                  - generic [ref=f7e611]:
+                    - paragraph [ref=f7e612]: 10:00 AM
+                    - generic [ref=f7e614]:
+                      - paragraph [ref=f7e615]: Sarah K.
+                      - paragraph [ref=f7e616]: Full Highlights
+                    - paragraph [ref=f7e617]: Sophie L.
+                  - generic [ref=f7e618]:
+                    - paragraph [ref=f7e619]: 1:00 PM
+                    - generic [ref=f7e621]:
+                      - paragraph [ref=f7e622]: Jamie T.
+                      - paragraph [ref=f7e623]: Haircut
+                    - paragraph [ref=f7e624]: Sophie L.
+                  - generic [ref=f7e625]:
+                    - paragraph [ref=f7e626]: 2:00 PM
+                    - generic [ref=f7e628]:
+                      - paragraph [ref=f7e629]: Noah A.
+                      - paragraph [ref=f7e630]: Cut & Colour
+                    - paragraph [ref=f7e631]: Marcus T.
+  - generic [ref=f7e633]:
+    - generic [ref=f7e635]:
+      - paragraph [ref=f7e636]: Your receptionist, your voice
+      - heading "Pick a voice that fits your brand." [level=2] [ref=f7e637]
+      - paragraph [ref=f7e638]: Every Calio receptionist sounds human. Sample a few styles here, then choose the exact tone during setup.
+    - generic [ref=f7e639]:
+      - generic [ref=f7e640]:
+        - generic [ref=f7e641]:
+          - button "All" [pressed] [ref=f7e642] [cursor=pointer]
+          - button "Female" [ref=f7e643] [cursor=pointer]
+          - button "Male" [ref=f7e644] [cursor=pointer]
+          - button "Neutral" [ref=f7e645] [cursor=pointer]
+        - paragraph [ref=f7e646]: Change anytime in your portal
+      - generic [ref=f7e648]:
+        - button "Preview Elliot, Canadian accent, Warm, professional" [ref=f7e649] [cursor=pointer]:
+          - generic [ref=f7e653]:
+            - generic [ref=f7e654]: Elliot
+            - generic [ref=f7e655]: Canadian · Warm, professional
+        - button "Preview Savannah, American accent, Friendly, approachable" [ref=f7e667] [cursor=pointer]:
+          - generic [ref=f7e671]:
+            - generic [ref=f7e672]: Savannah
+            - generic [ref=f7e673]: American · Friendly, approachable
+        - button "Preview Adam, American accent, Dominant, firm" [ref=f7e685] [cursor=pointer]:
+          - generic [ref=f7e689]:
+            - generic [ref=f7e690]: Adam
+            - generic [ref=f7e691]: American · Dominant, firm
+        - button "Preview Bill, American accent, Wise, mature, balanced" [ref=f7e703] [cursor=pointer]:
+          - generic [ref=f7e707]:
+            - generic [ref=f7e708]: Bill
+            - generic [ref=f7e709]: American · Wise, mature, balanced
+        - button "Preview Brian, American accent, Deep, resonant, comforting" [ref=f7e721] [cursor=pointer]:
+          - generic [ref=f7e725]:
+            - generic [ref=f7e726]: Brian
+            - generic [ref=f7e727]: American · Deep, resonant, comforting
+        - button "Preview Callum, American accent, Husky, distinctive" [ref=f7e739] [cursor=pointer]:
+          - generic [ref=f7e743]:
+            - generic [ref=f7e744]: Callum
+            - generic [ref=f7e745]: American · Husky, distinctive
+        - button "Preview Charlie, Australian accent, Deep, confident, energetic" [ref=f7e757] [cursor=pointer]:
+          - generic [ref=f7e761]:
+            - generic [ref=f7e762]: Charlie
+            - generic [ref=f7e763]: Australian · Deep, confident, energetic
+        - button "Preview Chris, American accent, Charming, down-to-earth" [ref=f7e775] [cursor=pointer]:
+          - generic [ref=f7e779]:
+            - generic [ref=f7e780]: Chris
+            - generic [ref=f7e781]: American · Charming, down-to-earth
+        - button "Preview Daniel, British accent, Steady, broadcaster-clear" [ref=f7e793] [cursor=pointer]:
+          - generic [ref=f7e797]:
+            - generic [ref=f7e798]: Daniel
+            - generic [ref=f7e799]: British · Steady, broadcaster-clear
+        - button "Preview Eric, American accent, Smooth, trustworthy" [ref=f7e811] [cursor=pointer]:
+          - generic [ref=f7e815]:
+            - generic [ref=f7e816]: Eric
+            - generic [ref=f7e817]: American · Smooth, trustworthy
+        - button "Preview George, British accent, Warm, captivating" [ref=f7e829] [cursor=pointer]:
+          - generic [ref=f7e833]:
+            - generic [ref=f7e834]: George
+            - generic [ref=f7e835]: British · Warm, captivating
+        - button "Preview Harry, American accent, Bold, commanding" [ref=f7e847] [cursor=pointer]:
+          - generic [ref=f7e851]:
+            - generic [ref=f7e852]: Harry
+            - generic [ref=f7e853]: American · Bold, commanding
+        - button "Preview Liam, American accent, Energetic, personable" [ref=f7e865] [cursor=pointer]:
+          - generic [ref=f7e869]:
+            - generic [ref=f7e870]: Liam
+            - generic [ref=f7e871]: American · Energetic, personable
+        - button "Preview Roger, American accent, Laid-back, casual, resonant" [ref=f7e883] [cursor=pointer]:
+          - generic [ref=f7e887]:
+            - generic [ref=f7e888]: Roger
+            - generic [ref=f7e889]: American · Laid-back, casual, resonant
+        - button "Preview Will, American accent, Relaxed, optimistic" [ref=f7e901] [cursor=pointer]:
+          - generic [ref=f7e905]:
+            - generic [ref=f7e906]: Will
+            - generic [ref=f7e907]: American · Relaxed, optimistic
+        - button "Preview Alice, British accent, Clear, engaging" [ref=f7e919] [cursor=pointer]:
+          - generic [ref=f7e923]:
+            - generic [ref=f7e924]: Alice
+            - generic [ref=f7e925]: British · Clear, engaging
+        - button "Preview Bella, American accent, Professional, bright, warm" [ref=f7e937] [cursor=pointer]:
+          - generic [ref=f7e941]:
+            - generic [ref=f7e942]: Bella
+            - generic [ref=f7e943]: American · Professional, bright, warm
+        - button "Preview Jessica, American accent, Playful, bright, warm" [ref=f7e955] [cursor=pointer]:
+          - generic [ref=f7e959]:
+            - generic [ref=f7e960]: Jessica
+            - generic [ref=f7e961]: American · Playful, bright, warm
+        - button "Preview Laura, American accent, Enthusiastic, quirky" [ref=f7e973] [cursor=pointer]:
+          - generic [ref=f7e977]:
+            - generic [ref=f7e978]: Laura
+            - generic [ref=f7e979]: American · Enthusiastic, quirky
+        - button "Preview Lily, British accent, Velvety, expressive" [ref=f7e991] [cursor=pointer]:
+          - generic [ref=f7e995]:
+            - generic [ref=f7e996]: Lily
+            - generic [ref=f7e997]: British · Velvety, expressive
+        - button "Preview Matilda, American accent, Knowledgeable, professional" [ref=f7e1009] [cursor=pointer]:
+          - generic [ref=f7e1013]:
+            - generic [ref=f7e1014]: Matilda
+            - generic [ref=f7e1015]: American · Knowledgeable, professional
+        - button "Preview Sarah, American accent, Reassuring, confident" [ref=f7e1027] [cursor=pointer]:
+          - generic [ref=f7e1031]:
+            - generic [ref=f7e1032]: Sarah
+            - generic [ref=f7e1033]: American · Reassuring, confident
+        - button "Preview River, American accent, Relaxed, neutral, informative" [ref=f7e1045] [cursor=pointer]:
+          - generic [ref=f7e1049]:
+            - generic [ref=f7e1050]: River
+            - generic [ref=f7e1051]: American · Relaxed, neutral, informative
+  - generic [ref=f7e1064]:
+    - generic [ref=f7e1066]:
+      - paragraph [ref=f7e1067]: By the numbers
+      - heading "The numbers speak for themselves." [level=2] [ref=f7e1068]
+    - generic [ref=f7e1069]:
+      - generic [ref=f7e1071]:
+        - paragraph [ref=f7e1073]: < 2s
+        - paragraph [ref=f7e1074]: Answer time
+        - paragraph [ref=f7e1075]: Before the second ring
+      - generic [ref=f7e1077]:
+        - paragraph [ref=f7e1079]: 24/7
+        - paragraph [ref=f7e1080]: Always on
+        - paragraph [ref=f7e1081]: Nights, weekends, holidays
+      - generic [ref=f7e1083]:
+        - paragraph [ref=f7e1085]: 100%
+        - paragraph [ref=f7e1086]: Calls answered
+        - paragraph [ref=f7e1087]: Zero voicemails. Ever.
+      - generic [ref=f7e1089]:
+        - paragraph [ref=f7e1091]: $0
+        - paragraph [ref=f7e1092]: Missed revenue
+        - paragraph [ref=f7e1093]: Every caller gets booked.
+  - generic [ref=f7e1095]:
+    - generic [ref=f7e1097]:
+      - paragraph [ref=f7e1098]: How it works
+      - heading "Booked before they hang up." [level=2] [ref=f7e1099]: Booked beforethey hang up.
+      - paragraph [ref=f7e1100]: One call. Greeting, availability check, confirmation, handled in seconds.
+    - generic [ref=f7e1101]: avg. booking completed in 47s
+    - generic [ref=f7e1106]:
+      - generic [ref=f7e1109]:
+        - generic [ref=f7e1110]:
+          - generic [ref=f7e1111]: Step 01
+          - generic [ref=f7e1112]: < 2s
+        - heading "Rings once. Calio answers." [level=3] [ref=f7e1116]
+        - paragraph [ref=f7e1117]: Your number, forwarded instantly. Sounds human. Picks up before the second ring.
+      - generic [ref=f7e1120]:
+        - generic [ref=f7e1121]:
+          - generic [ref=f7e1122]: Step 02
+          - generic [ref=f7e1123]: < 20s
+        - heading "Checks your calendar. Locks the slot." [level=3] [ref=f7e1127]
+        - paragraph [ref=f7e1128]: Live availability across your whole team. No double-books. No conflicts. First try.
+      - generic [ref=f7e1131]:
+        - generic [ref=f7e1132]:
+          - generic [ref=f7e1133]: Step 03
+          - generic [ref=f7e1134]: < 60s
+        - heading "Confirmed. You're both notified." [level=3] [ref=f7e1138]
+        - paragraph [ref=f7e1139]: Customer gets an SMS. Dashboard updates live. You never had to pick up the phone.
+  - generic [ref=f7e1141]:
+    - generic [ref=f7e1143]:
+      - paragraph [ref=f7e1144]: Works with your tools
+      - heading "Your tools stay. We add the phone." [level=2] [ref=f7e1145]: Your tools stay.We add the phone.
+      - paragraph [ref=f7e1146]: Calio sits on top of the software you already use. No migration, no switching costs, no disruption.
+    - generic [ref=f7e1148]:
+      - generic [ref=f7e1149]:
+        - paragraph [ref=f7e1150]: Hair & Beauty
+        - generic [ref=f7e1151]:
+          - generic [ref=f7e1152]: Fresha
+          - generic [ref=f7e1153]: Square Appointments
+          - generic [ref=f7e1154]: Vagaro
+          - generic [ref=f7e1155]: Booksy
+      - generic [ref=f7e1156]:
+        - paragraph [ref=f7e1157]: Health & Wellness
+        - generic [ref=f7e1158]:
+          - generic [ref=f7e1159]: Jane App
+          - generic [ref=f7e1160]: Mindbody
+          - generic [ref=f7e1161]: Cliniko
+          - generic [ref=f7e1162]: Boulevard
+          - generic [ref=f7e1163]: Aesthetic Record
+      - generic [ref=f7e1164]:
+        - paragraph [ref=f7e1165]: Dental
+        - generic [ref=f7e1166]:
+          - generic [ref=f7e1167]: Dentrix
+          - generic [ref=f7e1168]: Eaglesoft
+          - generic [ref=f7e1169]: ABELDent
+          - generic [ref=f7e1170]: Curve Dental
+      - generic [ref=f7e1171]:
+        - paragraph [ref=f7e1172]: Trades & Home Services
+        - generic [ref=f7e1173]:
+          - generic [ref=f7e1174]: Jobber
+          - generic [ref=f7e1175]: Housecall Pro
+          - generic [ref=f7e1176]: ServiceTitan
+      - generic [ref=f7e1177]:
+        - paragraph [ref=f7e1178]: Fitness
+        - generic [ref=f7e1179]:
+          - generic [ref=f7e1180]: Mindbody
+          - generic [ref=f7e1181]: Zen Planner
+          - generic [ref=f7e1182]: Pike13
+      - generic [ref=f7e1183]:
+        - paragraph [ref=f7e1184]: Auto Repair
+        - generic [ref=f7e1185]:
+          - generic [ref=f7e1186]: Mitchell 1
+          - generic [ref=f7e1187]: Tekmetric
+          - generic [ref=f7e1188]: Shop-Ware
+      - generic [ref=f7e1189]:
+        - paragraph [ref=f7e1190]: Restaurants
+        - generic [ref=f7e1191]:
+          - generic [ref=f7e1192]: OpenTable
+          - generic [ref=f7e1193]: Resy
+          - generic [ref=f7e1194]: SevenRooms
+    - generic [ref=f7e1196]:
+      - generic [ref=f7e1197]:
+        - paragraph [ref=f7e1198]: Don't see your platform?
+        - paragraph [ref=f7e1199]: Tell us what you use.
+      - link "Contact us" [ref=f7e1200] [cursor=pointer]:
+        - /url: "#contact"
+    - paragraph [ref=f7e1204]: Integration availability varies by plan. Done-For-You plan includes custom integration setup.
+  - generic [ref=f7e1206]:
+    - generic [ref=f7e1208]:
+      - paragraph [ref=f7e1209]: Industries
+      - heading "Built for the businesses that can't miss a call." [level=2] [ref=f7e1210]: Built for the businessesthat can't miss a call.
+      - paragraph [ref=f7e1211]: If you live on appointments, Calio was made for you.
+    - generic [ref=f7e1212]:
+      - generic [ref=f7e1214]:
+        - heading "Dental Clinics" [level=3] [ref=f7e1218]
+        - paragraph [ref=f7e1219]: Chairs stay full. Phones stay quiet.
+      - generic [ref=f7e1221]:
+        - heading "Hair & Beauty" [level=3] [ref=f7e1225]
+        - paragraph [ref=f7e1226]: Every stylist, fully booked. Automatically.
+      - generic [ref=f7e1228]:
+        - heading "Gyms & Fitness" [level=3] [ref=f7e1232]
+        - paragraph [ref=f7e1233]: Classes full. Trainers focused. Zero admin.
+      - generic [ref=f7e1235]:
+        - heading "Auto Repair" [level=3] [ref=f7e1240]
+        - paragraph [ref=f7e1241]: Jobs queued. Phones off the hook.
+      - generic [ref=f7e1243]:
+        - heading "Spas & Wellness" [level=3] [ref=f7e1247]
+        - paragraph [ref=f7e1248]: Rooms booked solid. No interruptions.
+      - generic [ref=f7e1250]:
+        - heading "Medical & Physio" [level=3] [ref=f7e1254]
+        - paragraph [ref=f7e1255]: New patients booked overnight.
+  - generic [ref=f7e1257]:
+    - generic [ref=f7e1259]:
+      - paragraph [ref=f7e1260]: THE HONEST COMPARISON
+      - heading "Calio vs. hiring a receptionist" [level=2] [ref=f7e1261]
+      - paragraph [ref=f7e1262]: The things that actually affect your bottom line. We didn't cherry-pick. There's one row a human still wins, and we left it in.
+    - generic [ref=f7e1263]:
+      - generic [ref=f7e1264]:
+        - generic [ref=f7e1265]: Dimension
+        - generic [ref=f7e1266]: Calio
+        - generic [ref=f7e1268]: Hiring a receptionist
+      - generic [ref=f7e1270]:
+        - generic [ref=f7e1271]: Monthly cost
+        - generic [ref=f7e1272]: From $499/month
+        - generic [ref=f7e1277]: $3,500–$5,500/mo, fully loaded
+      - generic [ref=f7e1282]:
+        - generic [ref=f7e1283]: Availability
+        - generic [ref=f7e1284]: 24/7, 365 — holidays included
+        - generic [ref=f7e1289]: Business hours, ~5 days a week
+      - generic [ref=f7e1294]:
+        - generic [ref=f7e1295]: Every call answered
+        - generic [ref=f7e1296]: Always picks up, instantly
+        - generic [ref=f7e1301]: Misses calls when busy or away
+      - generic [ref=f7e1306]:
+        - generic [ref=f7e1307]: Calls at the same time
+        - generic [ref=f7e1308]: Handles many at once
+        - generic [ref=f7e1313]: One caller at a time
+      - generic [ref=f7e1318]:
+        - generic [ref=f7e1319]: Time to go live
+        - generic [ref=f7e1320]: Same day
+        - generic [ref=f7e1325]: Weeks to hire and train
+      - generic [ref=f7e1330]:
+        - generic [ref=f7e1331]: Consistency
+        - generic [ref=f7e1332]: Same greeting & answers every call
+        - generic [ref=f7e1337]: Varies with mood and fatigue
+      - generic [ref=f7e1342]:
+        - generic [ref=f7e1343]: Books appointments live
+        - generic [ref=f7e1344]: During the call, 24/7
+        - generic [ref=f7e1349]: Only while on shift
+      - generic [ref=f7e1354]:
+        - generic [ref=f7e1355]: SMS confirmations & reminders
+        - generic [ref=f7e1356]: Automatic on every booking
+        - generic [ref=f7e1361]: Manual, easy to forget
+      - generic [ref=f7e1366]:
+        - generic [ref=f7e1367]: After-hours & weekends
+        - generic [ref=f7e1368]: Always covered
+        - generic [ref=f7e1373]: Overtime, on-call, or voicemail
+      - generic [ref=f7e1378]:
+        - generic [ref=f7e1379]: Sick days & turnover
+        - generic [ref=f7e1380]: Never sick, never quits
+        - generic [ref=f7e1385]: Time off, turnover, rehiring
+      - generic [ref=f7e1390]:
+        - generic [ref=f7e1392]: Complex, sensitive calls
+        - generic [ref=f7e1393]: Routes straight to your team
+        - generic [ref=f7e1397]: Excels at nuance and empathy
+    - paragraph [ref=f7e1403]: Calio handles the calls you're losing today, and hands off the ones that need a human touch.
+  - generic [ref=f7e1405]:
+    - generic [ref=f7e1407]:
+      - paragraph [ref=f7e1408]: DO THE MATH
+      - heading "What are missed calls costing you?" [level=2] [ref=f7e1409]
+      - paragraph [ref=f7e1410]: Your numbers, not ours. Slide to see what voicemail takes off your books every month.
+    - generic [ref=f7e1412]:
+      - generic [ref=f7e1413]:
+        - generic [ref=f7e1414]:
+          - generic [ref=f7e1415]:
+            - generic [ref=f7e1416]: Missed calls per week
+            - generic [ref=f7e1417]: "15"
+          - slider "Missed calls per week" [ref=f7e1418] [cursor=pointer]: "15"
+        - generic [ref=f7e1419]:
+          - generic [ref=f7e1420]:
+            - generic [ref=f7e1421]: Average appointment value
+            - generic [ref=f7e1422]: $70
+          - slider "Average appointment value" [ref=f7e1423] [cursor=pointer]: "70"
+        - generic [ref=f7e1424]:
+          - generic [ref=f7e1425]:
+            - generic [ref=f7e1426]: Callers who book elsewhere
+            - generic [ref=f7e1427]: 60%
+          - slider "Callers who book elsewhere" [ref=f7e1428] [cursor=pointer]: "60"
+      - generic [ref=f7e1429]:
+        - generic [ref=f7e1430]: $2,728
+        - paragraph [ref=f7e1431]: lost every month
+        - paragraph [ref=f7e1432]:
+          - text: Calio pays for itself
+          - generic [ref=f7e1433]: 5.5×
+          - text: over.
+        - link "Stop missing calls →" [ref=f7e1434] [cursor=pointer]:
+          - /url: "#pricing"
+        - paragraph [ref=f7e1435]: Estimate based on Calio Starter at $499/mo.
+  - generic [ref=f7e1437]:
+    - generic [ref=f7e1439]:
+      - paragraph [ref=f7e1440]: SIMPLE, HONEST PRICING
+      - heading "Your AI receptionist. Pick your plan." [level=2] [ref=f7e1441]: Your AI receptionist.Pick your plan.
+      - paragraph [ref=f7e1442]: Every plan includes a dedicated Canadian phone number, 24/7 AI call answering, real-time booking, and automatic SMS confirmations. The difference is who runs it.
+    - paragraph [ref=f7e1447]: A part-time human receptionist costs $1,500 to $3,000/mo and only works business hours.
+    - generic [ref=f7e1448]:
+      - generic [ref=f7e1450]:
+        - generic [ref=f7e1451]: STARTER
+        - generic [ref=f7e1452]:
+          - generic [ref=f7e1453]:
+            - generic [ref=f7e1454]: $499
+            - generic [ref=f7e1455]: /mo
+          - paragraph [ref=f7e1456]: Billed monthly. Cancel any time.
+        - paragraph [ref=f7e1457]: You configure it. Goes live the same day.
+        - list [ref=f7e1458]:
+          - listitem [ref=f7e1459]:
+            - generic [ref=f7e1463]: AI receptionist answers every call, 24/7
+          - listitem [ref=f7e1464]:
+            - generic [ref=f7e1468]: Real-time appointment booking on the call
+          - listitem [ref=f7e1469]:
+            - generic [ref=f7e1473]: SMS confirmation sent to customer instantly
+          - listitem [ref=f7e1474]:
+            - generic [ref=f7e1478]: 24-hour appointment reminders to reduce no-shows
+          - listitem [ref=f7e1479]:
+            - generic [ref=f7e1483]: "Handles all FAQs: hours, pricing, directions"
+          - listitem [ref=f7e1484]:
+            - generic [ref=f7e1488]: Custom name, greeting, and voice for your business
+          - listitem [ref=f7e1489]:
+            - generic [ref=f7e1493]: Spam call detection and filtering
+          - listitem [ref=f7e1494]:
+            - generic [ref=f7e1498]: Per-call transcript and AI summary
+          - listitem [ref=f7e1499]:
+            - generic [ref=f7e1503]: Full booking calendar and customer records
+          - listitem [ref=f7e1504]:
+            - generic [ref=f7e1508]: Business portal and dashboard
+          - listitem [ref=f7e1509]:
+            - generic [ref=f7e1513]: Up to 800 calls/month included
+          - listitem [ref=f7e1514]:
+            - generic [ref=f7e1518]: Email support, 48hr response
+          - listitem [ref=f7e1519]:
+            - generic [ref=f7e1523]: Automated follow-up SMS flows
+          - listitem [ref=f7e1524]:
+            - generic [ref=f7e1528]: Monthly call audit
+          - listitem [ref=f7e1529]:
+            - generic [ref=f7e1533]: Dedicated account manager
+          - listitem [ref=f7e1534]:
+            - generic [ref=f7e1538]: Custom AI call script
+          - listitem [ref=f7e1539]:
+            - generic [ref=f7e1543]: Priority same-day support
+        - link "Get started today" [ref=f7e1544] [cursor=pointer]:
+          - /url: /start
+      - generic [ref=f7e1546]:
+        - generic [ref=f7e1547]: ★ MOST POPULAR
+        - generic [ref=f7e1548]:
+          - generic [ref=f7e1549]:
+            - generic [ref=f7e1550]: $799
+            - generic [ref=f7e1551]: /mo
+          - paragraph [ref=f7e1552]: Billed monthly. Cancel any time.
+        - paragraph [ref=f7e1553]: We handle the setup and ongoing improvements. You stay in control from your portal.
+        - list [ref=f7e1554]:
+          - listitem [ref=f7e1555]:
+            - generic [ref=f7e1559]:
+              - paragraph [ref=f7e1560]: Everything in Starter
+              - paragraph [ref=f7e1561]: Fully included.
+          - listitem [ref=f7e1562]:
+            - generic [ref=f7e1566]:
+              - paragraph [ref=f7e1567]: Personal onboarding call
+              - paragraph [ref=f7e1568]: We learn your business and build everything for you.
+          - listitem [ref=f7e1569]:
+            - generic [ref=f7e1573]:
+              - paragraph [ref=f7e1574]: We configure your AI
+              - paragraph [ref=f7e1575]: Name, voice, FAQs, services, staff, hours.
+          - listitem [ref=f7e1576]:
+            - generic [ref=f7e1580]:
+              - paragraph [ref=f7e1581]: Full portal control
+              - paragraph [ref=f7e1582]: Update anything, anytime, from your dashboard.
+          - listitem [ref=f7e1583]:
+            - generic [ref=f7e1587]:
+              - paragraph [ref=f7e1588]: Automated follow-up SMS flows
+              - paragraph [ref=f7e1589]: Thank-you texts and Google review requests sent automatically after every visit.
+          - listitem [ref=f7e1590]:
+            - generic [ref=f7e1594]:
+              - paragraph [ref=f7e1595]: Monthly call audit
+              - paragraph [ref=f7e1596]: We listen to recordings, catch anything off, and fix it before your next caller notices.
+          - listitem [ref=f7e1597]:
+            - generic [ref=f7e1601]:
+              - paragraph [ref=f7e1602]: Dedicated account manager
+              - paragraph [ref=f7e1603]: A real person reachable by text every business day.
+          - listitem [ref=f7e1604]:
+            - generic [ref=f7e1608]:
+              - paragraph [ref=f7e1609]: Proactive updates
+              - paragraph [ref=f7e1610]: Changed your hours or added a service? Text us, updated within 24 hours.
+          - listitem [ref=f7e1611]:
+            - generic [ref=f7e1615]:
+              - paragraph [ref=f7e1616]: Custom AI voice and call script
+              - paragraph [ref=f7e1617]: Tailored to your exact tone.
+          - listitem [ref=f7e1618]:
+            - generic [ref=f7e1622]:
+              - paragraph [ref=f7e1623]: Priority same-day support
+              - paragraph [ref=f7e1624]: Questions answered within hours, every business day.
+          - listitem [ref=f7e1625]:
+            - generic [ref=f7e1629]:
+              - paragraph [ref=f7e1630]: Up to 1,500 calls/month
+              - paragraph [ref=f7e1631]: Included in your plan.
+        - link "Get started - we'll handle everything" [ref=f7e1632] [cursor=pointer]:
+          - /url: /start
+      - generic [ref=f7e1634]:
+        - generic [ref=f7e1635]:
+          - generic [ref=f7e1636]: CUSTOM
+          - generic [ref=f7e1637]: FULL INTEGRATION
+        - generic [ref=f7e1638]:
+          - generic [ref=f7e1639]: Talk to us
+          - paragraph [ref=f7e1641]: Tailored to your platform and workflow.
+        - paragraph [ref=f7e1642]: For businesses already running software they love. We connect your existing tools and tailor the setup to your workflow.
+        - list [ref=f7e1643]:
+          - listitem [ref=f7e1644]:
+            - generic [ref=f7e1648]:
+              - paragraph [ref=f7e1649]: Everything in Pro
+              - paragraph [ref=f7e1650]: Fully included.
+          - listitem [ref=f7e1651]:
+            - generic [ref=f7e1655]:
+              - paragraph [ref=f7e1656]: Integration with your existing software
+              - paragraph [ref=f7e1657]: Jane App, Mindbody, Fresha, Square, Dentrix, Eaglesoft, Jobber, and more.
+          - listitem [ref=f7e1658]:
+            - generic [ref=f7e1662]:
+              - paragraph [ref=f7e1663]: We build a live connection
+              - paragraph [ref=f7e1664]: To the platform you already use.
+          - listitem [ref=f7e1665]:
+            - generic [ref=f7e1669]:
+              - paragraph [ref=f7e1670]: Custom data sync
+              - paragraph [ref=f7e1671]: Configured for your exact workflow.
+          - listitem [ref=f7e1672]:
+            - generic [ref=f7e1676]:
+              - paragraph [ref=f7e1677]: Integration maintenance included
+              - paragraph [ref=f7e1678]: We keep the connection healthy, and updates are on us.
+          - listitem [ref=f7e1679]:
+            - generic [ref=f7e1683]:
+              - paragraph [ref=f7e1684]: Dedicated integration onboarding call
+              - paragraph [ref=f7e1685]: We walk through your setup together before we build anything.
+          - listitem [ref=f7e1686]:
+            - generic [ref=f7e1690]:
+              - paragraph [ref=f7e1691]: Priority same-day support
+              - paragraph [ref=f7e1692]: Questions answered within hours, every business day.
+          - listitem [ref=f7e1693]:
+            - generic [ref=f7e1697]:
+              - paragraph [ref=f7e1698]: Built for scale
+              - paragraph [ref=f7e1699]: Multi-location businesses and high-volume operations.
+        - link "Talk to us about your setup" [ref=f7e1700] [cursor=pointer]:
+          - /url: "#contact"
+        - paragraph [ref=f7e1701]: We'll confirm your platform is supported before anything starts.
+    - paragraph [ref=f7e1703]:
+      - text: Not sure which plan fits?
+      - link "Email us at hello@calio.ca" [ref=f7e1704] [cursor=pointer]:
+        - /url: mailto:hello@calio.ca
+      - text: "- we'll give you an honest recommendation."
+  - generic [ref=f7e1706]:
+    - generic [ref=f7e1708]:
+      - paragraph [ref=f7e1709]: See it in action
+      - heading "Book a free demo." [level=2] [ref=f7e1710]
+      - paragraph [ref=f7e1711]: We'll walk through your business, set up a demo receptionist together, and show you exactly how Calio can work for you.
+    - generic [ref=f7e1713]:
+      - generic [ref=f7e1714]: 30 minutes
+      - generic [ref=f7e1717]: No pitch, just a demo
+      - generic [ref=f7e1720]: We'll plan your integrations
+    - button "Schedule your free demo" [ref=f7e1725] [cursor=pointer]
+  - generic [ref=f7e1730]:
+    - generic [ref=f7e1731]:
+      - paragraph [ref=f7e1732]: Contact
+      - heading "Have questions? Let's talk." [level=2] [ref=f7e1733]
+      - paragraph [ref=f7e1734]: Whether you're curious about how Calio works or have a specific setup in mind, we reply within a few hours.
+    - paragraph [ref=f7e1735]:
+      - text: Want a live walkthrough instead?
+      - link "Book a demo call." [ref=f7e1736] [cursor=pointer]:
+        - /url: "#book-demo"
+    - generic [ref=f7e1737]:
+      - generic [ref=f7e1738]:
+        - generic [ref=f7e1739]:
+          - generic [ref=f7e1740]: Your name
+          - textbox "Sarah Mitchell" [ref=f7e1741]
+        - generic [ref=f7e1742]:
+          - generic [ref=f7e1743]: Email address
+          - textbox "sarah@example.com" [ref=f7e1744]
+      - generic [ref=f7e1745]:
+        - generic [ref=f7e1746]: Message
+        - textbox "Tell us about your business and what you're looking for…" [ref=f7e1747]
+      - generic [ref=f7e1748]:
+        - button "Send message" [ref=f7e1749] [cursor=pointer]
+        - generic [ref=f7e1750]:
+          - text: or email us directly at
+          - link "hello@calio.ca" [ref=f7e1751] [cursor=pointer]:
+            - /url: mailto:hello@calio.ca
+    - generic [ref=f7e1752]:
+      - generic [ref=f7e1753]: Follow us
+      - generic [ref=f7e1754]:
+        - link "Calio on Instagram" [ref=f7e1755] [cursor=pointer]:
+          - /url: https://www.instagram.com/caliohq
+        - link "Calio on LinkedIn" [ref=f7e1758] [cursor=pointer]:
+          - /url: https://www.linkedin.com/company/caliohq/
+  - generic [ref=f7e1762]:
+    - generic [ref=f7e1764]:
+      - link [ref=f7e1765] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+      - heading "We're on Instagram." [level=2] [ref=f7e1769]
+      - paragraph [ref=f7e1770]: Tips, product updates, and the occasional hot take on missed calls. Come give us a follow.
+      - generic [ref=f7e1771]:
+        - link "Follow @caliohq" [ref=f7e1772] [cursor=pointer]:
+          - /url: https://www.instagram.com/caliohq
+        - generic [ref=f7e1775]: New posts every week.
+    - generic [ref=f7e1778]:
+      - link [ref=f7e1779] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+        - img "Calio Instagram post about missed calls printing a receipt" [ref=f7e1780]
+        - generic [ref=f7e1782]:
+          - paragraph [ref=f7e1783]: Revenue leaks
+          - paragraph [ref=f7e1784]: Missed call math
+      - link [ref=f7e1787] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+        - img "Calio Instagram post about screening telemarketing calls" [ref=f7e1788]
+        - generic [ref=f7e1790]:
+          - paragraph [ref=f7e1791]: Cleaner lines
+          - paragraph [ref=f7e1792]: Spam shield
+      - link [ref=f7e1795] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+        - img "Calio Instagram post describing day one with an AI receptionist" [ref=f7e1796]
+        - generic [ref=f7e1798]:
+          - paragraph [ref=f7e1799]: Live fast
+          - paragraph [ref=f7e1800]: Day one
+      - link [ref=f7e1803] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+        - img "Calio Instagram post answering whether the AI voice sounds robotic" [ref=f7e1804]
+        - generic [ref=f7e1806]:
+          - paragraph [ref=f7e1807]: Human tone
+          - paragraph [ref=f7e1808]: Voice FAQ
+      - link [ref=f7e1811] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+        - img "Calio Instagram post comparing a human receptionist with Calio" [ref=f7e1812]
+        - generic [ref=f7e1814]:
+          - paragraph [ref=f7e1815]: Clear tradeoffs
+          - paragraph [ref=f7e1816]: Honest comparison
+      - link [ref=f7e1819] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+        - generic [ref=f7e1821]:
+          - paragraph [ref=f7e1822]: Revenue leaks
+          - paragraph [ref=f7e1823]: Missed call math
+      - link [ref=f7e1826] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+        - generic [ref=f7e1828]:
+          - paragraph [ref=f7e1829]: Cleaner lines
+          - paragraph [ref=f7e1830]: Spam shield
+      - link [ref=f7e1833] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+        - generic [ref=f7e1835]:
+          - paragraph [ref=f7e1836]: Live fast
+          - paragraph [ref=f7e1837]: Day one
+      - link [ref=f7e1840] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+        - generic [ref=f7e1842]:
+          - paragraph [ref=f7e1843]: Human tone
+          - paragraph [ref=f7e1844]: Voice FAQ
+      - link [ref=f7e1847] [cursor=pointer]:
+        - /url: https://www.instagram.com/caliohq
+        - generic [ref=f7e1849]:
+          - paragraph [ref=f7e1850]: Clear tradeoffs
+          - paragraph [ref=f7e1851]: Honest comparison
+  - generic [ref=f7e1856]:
+    - paragraph [ref=f7e1857]: Get started today
+    - heading "Your next customer is calling right now." [level=2] [ref=f7e1858]: Your next customeris calling right now.
+    - paragraph [ref=f7e1859]: Don't send them to voicemail. Calio answers every call, every day, starting the moment you go live.
+    - link "Get your AI receptionist" [ref=f7e1860] [cursor=pointer]:
+      - /url: /start
+  - contentinfo [ref=f7e1863]:
+    - generic [ref=f7e1864]:
+      - generic [ref=f7e1865]:
+        - generic [ref=f7e1866]: calio.
+        - generic [ref=f7e1867]:
+          - link "Calio on Instagram" [ref=f7e1868] [cursor=pointer]:
+            - /url: https://www.instagram.com/caliohq
+          - link "Calio on LinkedIn" [ref=f7e1871] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/caliohq/
+      - generic [ref=f7e1874]:
+        - link "How it works" [ref=f7e1875] [cursor=pointer]:
+          - /url: "#how-it-works"
+        - link "Features" [ref=f7e1876] [cursor=pointer]:
+          - /url: "#features"
+        - link "Pricing" [ref=f7e1877] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "Book a demo" [ref=f7e1878] [cursor=pointer]:
+          - /url: "#book-demo"
+        - link "Contact" [ref=f7e1879] [cursor=pointer]:
+          - /url: "#contact"
+        - link "Get started" [ref=f7e1880] [cursor=pointer]:
+          - /url: /start
+        - link "Dashboard" [ref=f7e1881] [cursor=pointer]:
+          - /url: /dashboard
+      - paragraph [ref=f7e1882]: © 2026 Calio. All rights reserved.

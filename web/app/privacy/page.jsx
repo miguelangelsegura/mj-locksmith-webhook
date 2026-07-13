@@ -31,7 +31,7 @@ export default function Privacy() {
       <Section h="Who we are">
         <p>
           {CONFIG.legalName} operates Dispango, an AI call-answering and lead-dispatch service
-          for locksmith businesses. When you call a business that uses Dispango, our AI
+          for home and trade-service businesses. When you call a business that uses Dispango, our AI
           receptionist answers on their behalf.
         </p>
       </Section>

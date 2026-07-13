@@ -1,0 +1,293 @@
+- generic [active] [ref=f16e1]:
+  - generic [ref=f16e2]:
+    - banner [ref=f16e4]:
+      - generic [ref=f16e5]:
+        - generic:
+          - navigation:
+            - list:
+              - listitem:
+                - link "Skip to content" [ref=f16e6] [cursor=pointer]:
+                  - /url: "#main"
+              - listitem:
+                - link "Skip to footer" [ref=f16e7] [cursor=pointer]:
+                  - /url: "#footer"
+        - navigation [ref=f16e8]:
+          - generic [ref=f16e9]:
+            - link "Navigation landmark MNP graphic" [ref=f16e11] [cursor=pointer]:
+              - /url: /en/
+              - img "MNP-logo-lt" [ref=f16e12]
+            - button "Toggle navigation" [ref=f16e19] [cursor=pointer]:
+              - generic [ref=f16e20]: menu
+    - main [ref=f16e22]:
+      - generic [ref=f16e26]:
+        - generic [ref=f16e27]:
+          - generic [ref=f16e28]:
+            - 'heading "Shareholder Buy / Sell Agreements: A Valuator’s Perspective" [level=1] [ref=f16e29]'
+            - heading [level=2]
+          - time [ref=f16e32]: October 28, 2016
+        - generic [ref=f16e33]:
+          - generic [ref=f16e35]:
+            - 'heading "Shareholder Buy / Sell Agreements: A Valuator’s Perspective" [level=2] [ref=f16e37]'
+            - list [ref=f16e39]:
+              - listitem [ref=f16e40]:
+                - link "Share on LinkedIn" [ref=f16e41] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/shareArticle?mini=true&title=&summary=&source=&url=https://www.mnp.ca/en/insights/directory/shareholder-buy-sell-agreements-a-valuators-perspective
+              - listitem [ref=f16e47]:
+                - link "Share on Facebook" [ref=f16e48] [cursor=pointer]:
+                  - /url: https://www.facebook.com/sharer/sharer.php?u=https://www.mnp.ca/en/insights/directory/shareholder-buy-sell-agreements-a-valuators-perspective
+              - listitem [ref=f16e51]:
+                - link "Share on Twitter" [ref=f16e52] [cursor=pointer]:
+                  - /url: https://twitter.com/intent/tweet?url=https://www.mnp.ca/en/insights/directory/shareholder-buy-sell-agreements-a-valuators-perspective
+          - generic [ref=f16e57]:
+            - generic [ref=f16e58]:
+              - generic [ref=f16e59]:
+                - generic [ref=f16e60]: Synopsis
+                - generic [ref=f16e61]: 5 Minute Read
+              - paragraph [ref=f16e63]: In this article, we will provide a business valuator’s perspective on Shareholder Buy / Sell Agreements, with a focus on matters relevant to trust, estate, and tax practitioners.
+              - link "Read more" [ref=f16e65] [cursor=pointer]:
+                - /url: "#"
+            - generic [ref=f16e69]:
+              - link [ref=f16e71] [cursor=pointer]:
+                - /url: /en/personnel/amanda-salvatori
+              - generic [ref=f16e73]:
+                - link "Amanda Salvatori, CPA, CA, CBV" [ref=f16e75] [cursor=pointer]:
+                  - /url: /en/personnel/amanda-salvatori
+                - generic [ref=f16e76]: Partner
+      - generic [ref=f16e78]:
+        - generic [ref=f16e80]:
+          - generic [ref=f16e81]: Insight
+          - button "Insight" [ref=f16e86] [cursor=pointer]
+          - button "Valuations" [ref=f16e87] [cursor=pointer]
+          - button "Forensics Litigation Support and Dispute Resolution" [ref=f16e88] [cursor=pointer]
+        - generic [ref=f16e91]:
+          - paragraph [ref=f16e92]:
+            - emphasis [ref=f16e93]: This article was originally published in the Society of Trust and Estate Practitioners (STEP) Toronto newsletter and is reproduced with permission.
+          - paragraph [ref=f16e94]: Formal agreements between shareholders govern the actions of the parties to the agreement. Of significance to trust, estate and tax practitioners are the buy / sell clauses dealing with exit events such as death, disability, retirement, and matrimonial dissolution, among others, and the potential need to protect the interests of family members who are not actively involved in the operations of the business.
+          - paragraph [ref=f16e95]: The drafting of shareholder agreements is most commonly the domain of lawyers, who carefully plan for various situations, while capturing the intended objectives of the shareholders. Frequently the value implications for the shareholders, including their family members and other beneficiaries are overlooked or misunderstood, which can lead to unintended outcomes, or disputes. Such outcomes can be avoided, or at least mitigated. In this article, we will provide a business valuator’s perspective on Shareholder Buy / Sell Agreements, with a focus on matters relevant to trust, estate, and tax practitioners.
+          - heading "Objectives of a Shareholder Buy/Sell Agreement" [level=2] [ref=f16e96]
+          - paragraph [ref=f16e97]: The objective of a Shareholder Buy / Sell Agreement is to provide liquidity to the exiting shareholder and ensure a continuity of operations and a smooth ownership transition for the remaining shareholders. In terms of estate planning, a well-structured clause provides greater certainty regarding the value and liquidity of a deceased’s shares. It also allows the remaining shareholders to continue to operate the business status quo without the involvement of outside parties.
+          - heading "Value Terms" [level=2] [ref=f16e98]
+          - paragraph [ref=f16e99]: When drafting or interpreting a buy / sell clause, it is important to understand the value term. There are many definitions of value including (but not limited) to fair market value, fair value, book value and value according to a formula. There are advantages and disadvantages with respect to each value term and it is important to understand the implications of the selected term.
+          - paragraph [ref=f16e100]: One value term which is frequently referred to is book value. When referencing a business, book value is often defined as total assets minus total liabilities (also known as shareholder’s equity). Book value is also used in the context of a specific asset, in which case it is often defined as the capitalized cost less accumulated amortization. Although book value is often easy to ascertain as it appears on the face of the financial statements, it has significant limitations as a proxy for fair market value. Relying on book value as a value term typically understates the value of a business as it does not credit the business for certain assets generated over the company’s lifetime such as intangible assets (e.g. customer relationships, goodwill, trademarks, patents and other intellectual property). Similarly, it may also ignore contingent liabilities which are often difficult to measure and therefore only included in the notes to the financial statements. Given these limitations, fair market value is often selected as the value term in Shareholder Buy / Sell Agreements.
+          - heading "Fair Market Value" [level=2] [ref=f16e101]
+          - paragraph [ref=f16e102]: "Fair Market Value (FMV) is defined by the Canadian Institute of Chartered Business Valuators and other international professional appraisal bodies, as follows:"
+          - paragraph [ref=f16e103]:
+            - emphasis [ref=f16e104]: the highest price, expressed in terms of cash equivalents, at which property would change hands between a hypothetical willing and able buyer and a hypothetical willing and able seller, acting at arms-length in an open and unrestricted market, when neither is under compulsion to buy or sell and when both have reasonable knowledge of the relevant facts.
+          - paragraph [ref=f16e105]: "A few aspects of FMV should be noted by those drafting or interpreting Shareholder Buy / Sell Agreements:"
+          - list [ref=f16e106]:
+            - listitem [ref=f16e107]: The use of FMV provides a value that is expressed in terms of cash equivalents at the effective date, while the actual proceeds to the shareholder may include debt (i.e. a portion of the price to be paid for the shares may be deferred). If the Shareholder Buy / Sell Agreement specifies deferred payments (with or without interest), care should be taken to ensure that the proceeds are equivalent to the FMV.
+            - listitem [ref=f16e108]: FMV of individual non-controlling shareholdings are ordinarily subject to discounts for lack of control and/or lack of marketability. The Shareholder Buy / Sell Agreement should be explicit as to whether the FMV of shares on a triggering event should or should not reflect such discounts.
+            - listitem [ref=f16e109]: "Special attention should be paid to situations which involve a business controlled by a group of family members who do not deal at arm’s length. Although the Shareholder Buy / Sell Agreement may explicitly prescribe the use of a discount for lack of control, Canada Revenue Agency’s (CRA) view (as set out in Information Circular 89-3: Policy Statement on Business Equity Valuations [IC 89-3]) is that it is a rebuttable presumption that a family group has acted in concert to control a corporation. Unless evidence is provided to the contrary, CRA would employ a rateable value for each family group member’s shares."
+            - listitem [ref=f16e110]: FMV is determined at a point in time and should not reflect hindsight information or retrospective evidence.
+            - listitem [ref=f16e111]: Other factors which can be addressed in the Shareholder Buy / Sell Agreement include whether the valuation should consider the loss to the business of the exiting shareholder’s future involvement in the business, treatment of contingent items, and treatment of latent taxes on unrealized gains on real estate and other investments, to name a few.
+          - heading "Valuation Process" [level=2] [ref=f16e112]
+          - paragraph [ref=f16e113]: "In addition to the value term, prescribing certain steps of the valuation process in the Buy / Sell Agreement can be advantageous. Some of the elements that the parties may wish to specify in the Shareholder Buy / Sell Agreement include:"
+          - list [ref=f16e114]:
+            - listitem [ref=f16e115]: Designating a specific valuator (e.g. the company’s audit firm, a specific business valuation firm) or a process for the parties to select a valuator, depending on the nature of the triggering event;
+            - listitem [ref=f16e116]: Stipulating the professional qualifications of the valuator (i.e. that the valuator be a Chartered Business Valuator or hold another comparable appraisal designation); and
+            - listitem [ref=f16e117]: The timing of the appointment of the valuator and for the delivery of the valuator’s report.
+          - heading "Valuation Mechanisms" [level=2] [ref=f16e118]
+          - paragraph [ref=f16e119]: The following paragraphs outline various valuation mechanisms which are often considered in the context of Buy / Sell Agreements. The valuation mechanism is used to determine the value of the subject shares.
+          - paragraph [ref=f16e120]: A fixed price mechanism is a price negotiated in advance. The perceived advantages of a fixed price mechanism is that the mechanism is simple (and therefore easy to understand) and inexpensive to implement. The disadvantage is that the fixed price is rarely updated and therefore does not reflect the fair market value of the shares at the time of exit.
+          - paragraph [ref=f16e121]: A shotgun clause is a mechanism whereby one party makes an offer and the other party has the option of either accepting the offer or purchasing the shares at the offered price. On the surface, the mechanism appears to be equitable; however, the efficacy of the mechanism depends on whether each party has equal financial backing and is equally informed.
+          - paragraph [ref=f16e122]: A right of first refusal clause is a mechanism whereby the remaining shareholder has the first option to buy the shares of the exiting shareholder. Although this mechanism gives the remaining shareholder the first option, the remaining shareholder may not be in a position to purchase the shares of the exiting shareholder.
+          - paragraph [ref=f16e123]: A valuation mechanism based on a formula has many perceived advantages. The formula is easy to implement and is perceived to be current at the time of exit given the fact that some of the inputs, such as EBITDA, are calculated at the time of exit. The disadvantage of a formula is that certain components of the formula, such as the valuation multiple, are static. In addition, it is difficult to structure a formula to adequately address all the potential future changes that affect a business’ operations such as growth, profitability, risk profile, competition, industry and general economic conditions.
+          - paragraph [ref=f16e124]: A price determined by an independent valuator resolves many of the challenges outlined above. The valuator can incorporate the facts and circumstances in existence at the date of exit as well as management’s best estimate of the future operations of the business in order to arrive at the fair market value of the exiting shareholder’s shares. It should specify that the valuator be independent and accredited.
+          - heading "CRA Views on Buy-Sell Agreements" [level=2] [ref=f16e125]
+          - paragraph [ref=f16e126]: FMV is a notional concept referred to (although not defined) in the Income Tax Act (the Act). However, FMV, as defined above, is the value term referred to in CRA IC 89-3.
+          - paragraph [ref=f16e127]: IC 89-3 provides some guidance regarding the CRA’s views on the role of buy-sell agreements in the determination of fair market value under section 69 and subsection 70(5) of the Act. IC 89-3 notes that the buy-sell value must be based on a reasonable estimate of fair market value and there should be no donative intent in the agreement.
+          - paragraph [ref=f16e128]:
+            - text: Given the potential that the CRA will assess a value for the shares that varies from value outlined in the Shareholder Buy / Sell Agreement, some Shareholder Buy / Sell Agreements include a clause in which the continuing shareholders will indemnify the deceased shareholder’s estate for the payment of
+            - link "additional income" [ref=f16e129] [cursor=pointer]:
+              - /url: /en/insights/directory/if-i-earn-extra-income-how-do-i-report-this-on-my-tax-return
+            - text: taxes where CRA has assessed a higher FMV than the Shareholder Buy / Sell agreement price.
+          - heading "Conclusion" [level=2] [ref=f16e130]
+          - paragraph [ref=f16e131]: As illustrated above, there are many points to consider when drafting and interpreting a Buy / Sell Agreement. Although some key points to consider have been outlined, a business valuator should be consulted regarding the valuation aspects of the agreement so that unintended outcomes can be avoided.
+        - generic [ref=f16e135]:
+          - heading "Related Content" [level=3] [ref=f16e137]
+          - list [ref=f16e138]:
+            - listitem [ref=f16e139]:
+              - generic [ref=f16e140]:
+                - generic [ref=f16e141]: Confidence
+                - generic [ref=f16e142]:
+                  - generic [ref=f16e143]:
+                    - generic [ref=f16e144]: October 13, 2023
+                    - heading [level=3] [ref=f16e145]:
+                      - link [ref=f16e146] [cursor=pointer]:
+                        - /url: /en/insights/directory/bullying-in-the-workplace-what-it-looks-like-and-the-role-you-play-in-stopping-it
+                        - text: "Bullying in the workplace: What it looks like and the role you play in stopping it"
+                    - paragraph [ref=f16e148]: Workplace bullying affects every member of an organization.
+                  - paragraph [ref=f16e151]:
+                    - 'link "Read More About Bullying in the workplace: What it looks like and the role you play in stopping it" [ref=f16e152] [cursor=pointer]':
+                      - /url: /en/insights/directory/bullying-in-the-workplace-what-it-looks-like-and-the-role-you-play-in-stopping-it
+                      - text: Read more
+            - listitem [ref=f16e153]:
+              - generic [ref=f16e154]:
+                - generic [ref=f16e155]: Confidence
+                - generic [ref=f16e156]:
+                  - generic [ref=f16e157]:
+                    - generic [ref=f16e158]: March 13, 2026
+                    - heading [level=3] [ref=f16e159]:
+                      - link [ref=f16e160] [cursor=pointer]:
+                        - /url: /en/insights/directory/how-will-bill-c-12-impact-aml-compliance-canada
+                        - text: How will Bill C-12 impact anti-money laundering compliance in Canada?
+                    - paragraph [ref=f16e162]: Bill C-12 introduces strict new requirements for AML programs and significant fines for violations. How can your business meet the new requirements?
+                  - paragraph [ref=f16e165]:
+                    - link "Read More About How will Bill C-12 impact anti-money laundering compliance in Canada?" [ref=f16e166] [cursor=pointer]:
+                      - /url: /en/insights/directory/how-will-bill-c-12-impact-aml-compliance-canada
+                      - text: Read more
+            - listitem [ref=f16e167]:
+              - generic [ref=f16e168]:
+                - generic [ref=f16e169]: Confidence
+                - generic [ref=f16e170]:
+                  - generic [ref=f16e171]:
+                    - generic [ref=f16e172]: May 08, 2025
+                    - heading [level=3] [ref=f16e173]:
+                      - link [ref=f16e174] [cursor=pointer]:
+                        - /url: /en/insights/directory/cheque-cashers-are-now-money-services-businesses
+                        - text: "Cheque cashers are now money services businesses: What you need to know"
+                    - paragraph [ref=f16e176]: Earlier this year, FINTRAC added cheque cashers to the Money Services Businesses designation under the Proceeds of Crime (Money Laundering) and Terrorist Financing Act. These businesses must now meet all regulatory requirements or face fines.
+                  - paragraph [ref=f16e179]:
+                    - 'link "Read More About Cheque cashers are now money services businesses: What you need to know" [ref=f16e180] [cursor=pointer]':
+                      - /url: /en/insights/directory/cheque-cashers-are-now-money-services-businesses
+                      - text: Read more
+      - generic [ref=f16e183]:
+        - heading "Insights" [level=2] [ref=f16e185]
+        - generic [ref=f16e186]:
+          - link "View all" [ref=f16e188] [cursor=pointer]:
+            - /url: /en/insights/directory
+          - list [ref=f16e189]:
+            - listitem [ref=f16e190]:
+              - generic [ref=f16e191]:
+                - generic [ref=f16e192]: Performance
+                - link [ref=f16e194] [cursor=pointer]:
+                  - /url: /en/insights/directory/how-stabilize-your-credit-30-days-playbook-businesses-lenders
+                - generic [ref=f16e196]:
+                  - generic [ref=f16e197]:
+                    - paragraph [ref=f16e198]: July 03, 2026
+                    - heading [level=3] [ref=f16e199]:
+                      - link [ref=f16e200] [cursor=pointer]:
+                        - /url: /en/insights/directory/how-stabilize-your-credit-30-days-playbook-businesses-lenders
+                        - text: "How to stabilize your credit in 30 days: A playbook for businesses and lenders"
+                    - paragraph [ref=f16e202]: The most valuable window in a deteriorating credit situation is also the shortest. This practical 30-day sprint can help you stabilize business performance.
+                  - paragraph [ref=f16e205]:
+                    - 'link "Read More About How to stabilize your credit in 30 days: A playbook for businesses and lenders" [ref=f16e206] [cursor=pointer]':
+                      - /url: /en/insights/directory/how-stabilize-your-credit-30-days-playbook-businesses-lenders
+                      - text: Read more
+            - listitem [ref=f16e207]:
+              - generic [ref=f16e208]:
+                - generic [ref=f16e209]: Confidence
+                - link [ref=f16e211] [cursor=pointer]:
+                  - /url: /en/insights/directory/igaming-canada-key-compliance-regulatory-assurance-issues-operators
+                - generic [ref=f16e213]:
+                  - generic [ref=f16e214]:
+                    - paragraph [ref=f16e215]: July 01, 2026
+                    - heading [level=3] [ref=f16e216]:
+                      - link [ref=f16e217] [cursor=pointer]:
+                        - /url: /en/insights/directory/igaming-canada-key-compliance-regulatory-assurance-issues-operators
+                        - text: "iGaming in Canada: Key compliance, regulatory, and assurance issues operators need to watch for"
+                    - paragraph [ref=f16e219]: As Canada’s iGaming landscape continues to evolve, operators are facing increasing pressure to align regulatory obligations across multiple jurisdictions.
+                  - paragraph [ref=f16e222]:
+                    - 'link "Read More About iGaming in Canada: Key compliance, regulatory, and assurance issues operators need to watch for" [ref=f16e223] [cursor=pointer]':
+                      - /url: /en/insights/directory/igaming-canada-key-compliance-regulatory-assurance-issues-operators
+                      - text: Read more
+            - listitem [ref=f16e224]:
+              - generic [ref=f16e225]:
+                - generic [ref=f16e226]: Performance
+                - link [ref=f16e228] [cursor=pointer]:
+                  - /url: /en/insights/directory/quebec-introduces-a-new-refundable-tax-credit-for-access-to-homeownership
+                - generic [ref=f16e230]:
+                  - generic [ref=f16e231]:
+                    - paragraph [ref=f16e232]: June 29, 2026
+                    - heading [level=3] [ref=f16e233]:
+                      - link [ref=f16e234] [cursor=pointer]:
+                        - /url: /en/insights/directory/quebec-introduces-a-new-refundable-tax-credit-for-access-to-homeownership
+                        - text: Quebec introduces a new refundable tax credit for access to homeownership
+                    - paragraph [ref=f16e236]: Quebec has introduced a refundable tax credit for access to homeownership. Discover when the new measure applies and the eligibility requirements.
+                  - paragraph [ref=f16e239]:
+                    - link "Read More About Quebec introduces a new refundable tax credit for access to homeownership" [ref=f16e240] [cursor=pointer]:
+                      - /url: /en/insights/directory/quebec-introduces-a-new-refundable-tax-credit-for-access-to-homeownership
+                      - text: Read more
+    - contentinfo [ref=f16e242]:
+      - generic [ref=f16e245]:
+        - region "Navigation links" [ref=f16e246]:
+          - list [ref=f16e247]:
+            - listitem [ref=f16e248]:
+              - link "Payment" [ref=f16e249] [cursor=pointer]:
+                - /url: https://securepayment.mnp.ca/
+            - listitem [ref=f16e250]:
+              - link "MNP Portal" [ref=f16e251] [cursor=pointer]:
+                - /url: https://portal.mnp.ca
+            - listitem [ref=f16e252]:
+              - link "About" [ref=f16e253] [cursor=pointer]:
+                - /url: /en/about
+        - region "Navigation links" [ref=f16e254]:
+          - list [ref=f16e257]:
+            - listitem [ref=f16e258]:
+              - link "Personnel" [ref=f16e259] [cursor=pointer]:
+                - /url: /en/personnel
+            - listitem [ref=f16e260]:
+              - link "Offices" [ref=f16e261] [cursor=pointer]:
+                - /url: /en/offices
+        - region "Navigation links" [ref=f16e262]:
+          - list [ref=f16e263]:
+            - listitem [ref=f16e264]:
+              - link "Accessibility Standards" [ref=f16e265] [cursor=pointer]:
+                - /url: /en/about/accessibility-standards
+            - listitem [ref=f16e266]:
+              - link "Privacy Policy" [ref=f16e267] [cursor=pointer]:
+                - /url: /en/privacy-policy
+            - listitem [ref=f16e268]:
+              - link "Editorial Disclaimer" [ref=f16e269] [cursor=pointer]:
+                - /url: /en/privacy-policy/editorial-disclaimer
+          - generic [ref=f16e270]:
+            - text: Social Media
+            - list [ref=f16e271]:
+              - listitem [ref=f16e272]:
+                - link "MNP Glassdoor page" [ref=f16e273] [cursor=pointer]:
+                  - /url: https://www.glassdoor.ca/Overview/Working-at-MNP-LLP-EI_IE112544.11,18.htm
+              - listitem [ref=f16e278]:
+                - link "MNP LinkedIn page" [ref=f16e279] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/company/mnp
+              - listitem [ref=f16e285]:
+                - link "MNP Instagram page" [ref=f16e286] [cursor=pointer]:
+                  - /url: https://www.instagram.com/mnpllp/
+              - listitem [ref=f16e292]:
+                - link "MNP Facebook page" [ref=f16e293] [cursor=pointer]:
+                  - /url: https://www.facebook.com/MNPLLP/
+        - region "Sponsor links" [ref=f16e297]:
+          - text: Global Alliance
+          - list [ref=f16e298]:
+            - listitem [ref=f16e299]:
+              - link "Praxity Logo" [ref=f16e300] [cursor=pointer]:
+                - /url: /en/about#praxity
+                - img "Praxity Logo" [ref=f16e301]
+          - text: Proud to Support
+          - list [ref=f16e355]:
+            - listitem [ref=f16e356]:
+              - link "Learn more about our partnership with Special Olympics Canada" [ref=f16e357] [cursor=pointer]:
+                - /url: /en/diversity-equity-and-inclusion/special-olympics-committee
+                - img "Learn more about our partnership with Special Olympics Canada" [ref=f16e358]
+            - listitem [ref=f16e359]:
+              - img "Canada's Great Kitchen Party presented by MNP" [ref=f16e360]
+            - listitem [ref=f16e361]:
+              - img "MacKayForums" [ref=f16e362]
+        - region "Award links" [ref=f16e363]:
+          - text: Business insights that make an impact
+          - paragraph [ref=f16e364]: Sign up to receive the monthly MNP Business Insights Newsletter.
+          - generic [ref=f16e365]:
+            - textbox "Email address" [ref=f16e366]
+            - button "Subscribe to MNP Business insights newsletter, opens the subscription form in a modal" [ref=f16e367] [cursor=pointer]: Sign Me Up
+      - paragraph [ref=f16e373]: Copyright 2026 MNP LLP – All Rights Reserved
+      - img "MNP black coffee mug" [ref=f16e376]
+  - dialog "Cookie notice banner" [ref=f16e383]:
+    - generic [ref=f16e384]: About Cookies On This Site
+    - generic [ref=f16e385]: Our site uses cookies and other technologies to tailor your experience and understand how you and other visitors use our site.
+    - button "I Understand" [ref=f16e386] [cursor=pointer]
+    - button "Options, Opens the preference dialog." [ref=f16e387] [cursor=pointer]: Options
+    - button "banner close button" [ref=f16e388] [cursor=pointer]:
+      - img "banner close icon" [ref=f16e389]
+  - iframe [ref=f16e397]:
+    - generic [ref=f23e6]:
+      - text: protected by
+      - strong [ref=f23e7]: reCAPTCHA

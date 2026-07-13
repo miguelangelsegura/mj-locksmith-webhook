@@ -9,6 +9,7 @@ const BILLING_URL =
 
 const TRADES = ["Locksmith", "Plumber", "HVAC", "Electrician", "Contractor", "Garage Doors", "Roofer", "Other"];
 const VOICES = ["No preference", "Elliot", "Ava", "Cole", "Harper"];
+const LINE_TYPES = ["Mobile", "Landline", "VoIP / internet phone", "Not sure"];
 
 function Logo() {
   return (
@@ -29,7 +30,7 @@ const label = "block text-sm font-semibold text-ink";
 const field = "mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink outline-none focus:border-brand";
 
 export default function GetStarted() {
-  const [form, setForm] = useState({ business_name: "", contact_email: "", phone: "", trade: TRADES[0], voice: VOICES[0], company_url: "" });
+  const [form, setForm] = useState({ business_name: "", contact_email: "", phone: "", trade: TRADES[0], voice: VOICES[0], phone_type: LINE_TYPES[0], company_url: "" });
   const [status, setStatus] = useState("idle"); // idle | submitting | error
   const [error, setError] = useState("");
 
@@ -82,9 +83,9 @@ export default function GetStarted() {
             <input id="contact_email" type="email" className={field} value={form.contact_email} onChange={set("contact_email")} required placeholder="you@yourshop.ca" />
           </div>
           <div>
-            <label className={label} htmlFor="phone">Phone number for leads</label>
+            <label className={label} htmlFor="phone">Cell number for your job leads</label>
             <input id="phone" type="tel" className={field} value={form.phone} onChange={set("phone")} required placeholder="(647) 555-0198" />
-            <p className="mt-1 text-xs text-muted">Where we&apos;ll text your captured jobs. Canadian/US numbers.</p>
+            <p className="mt-1 text-xs text-muted">Where we text every captured job. This isn&apos;t a forwarding number — we&apos;ll give you your Dispango number after checkout. Canadian/US numbers.</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
@@ -99,6 +100,13 @@ export default function GetStarted() {
                 {VOICES.map((v) => <option key={v}>{v}</option>)}
               </select>
             </div>
+          </div>
+          <div>
+            <label className={label} htmlFor="phone_type">The business line you&apos;ll forward to us</label>
+            <select id="phone_type" className={field} value={form.phone_type} onChange={set("phone_type")}>
+              {LINE_TYPES.map((t) => <option key={t}>{t}</option>)}
+            </select>
+            <p className="mt-1 text-xs text-muted">So we can hand you the exact forwarding steps for your setup.</p>
           </div>
 
           {/* Honeypot — hidden from humans, catches bots. Do not remove. */}
@@ -116,7 +124,14 @@ export default function GetStarted() {
           >
             {status === "submitting" ? "Setting up…" : "Continue to sign & start trial"}
           </button>
-          <p className="text-center text-xs text-muted">14-day free trial · cancel anytime · keep your number</p>
+          <p className="text-center text-xs text-muted">
+            Next: sign your agreement, then enter payment. 14-day free trial · cancel anytime.
+          </p>
+          <p className="text-center text-xs text-muted">
+            By continuing you agree to our{" "}
+            <a href="/terms" className="text-brand hover:underline">Terms</a> and{" "}
+            <a href="/privacy" className="text-brand hover:underline">Privacy Policy</a>.
+          </p>
         </form>
       </section>
     </main>

@@ -484,6 +484,7 @@ export default function Page() {
             <a href="#pricing" className="hover:text-brand">Pricing</a>
             <a href="#faq" className="hover:text-brand">FAQ</a>
             <a href="#contact" className="hover:text-brand">Contact</a>
+            <a href="/terms" className="hover:text-brand">Terms</a>
             <a href="/privacy" className="hover:text-brand">Privacy</a>
             <a href={`mailto:${CONFIG.email}`} className="hover:text-brand">{CONFIG.email}</a>
           </div>

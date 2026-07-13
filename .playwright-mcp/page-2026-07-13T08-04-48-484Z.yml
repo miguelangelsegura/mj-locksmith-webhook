@@ -1,0 +1,392 @@
+- generic [active] [ref=f22e1]:
+  - link "Skip to main content" [ref=f22e2] [cursor=pointer]:
+    - /url: "#ajax-content-wrap"
+  - generic [ref=f22e3]:
+    - generic [ref=f22e4]:
+      - generic [ref=f22e6]:
+        - generic [ref=f22e9]:
+          - search [ref=f22e11]:
+            - textbox "Search" [ref=f22e12]
+          - link "Close Search" [ref=f22e13] [cursor=pointer]:
+            - /url: "#"
+        - banner [ref=f22e18]:
+          - generic [ref=f22e19]:
+            - generic [ref=f22e20]:
+              - link "Navigating to Cooley GO home" [ref=f22e22] [cursor=pointer]:
+                - /url: https://www.cooleygo.com
+                - img "Cooley GO" [ref=f22e23]
+              - generic [ref=f22e24]:
+                - text: 
+                - navigation [ref=f22e25]:
+                  - list [ref=f22e26]:
+                    - listitem [ref=f22e27]:
+                      - link " Guidance" [ref=f22e28] [cursor=pointer]:
+                        - /url: https://www.cooleygo.com/guidance/
+                        - text: 
+                        - generic [ref=f22e29]: Guidance
+                      - list:
+                        - listitem:
+                          - link "1. Start":
+                            - /url: https://www.cooleygo.com/topic/start/
+                        - listitem:
+                          - link "2. Create and protect":
+                            - /url: https://www.cooleygo.com/topic/create-and-protect/
+                        - listitem:
+                          - link "3. Build your team":
+                            - /url: https://www.cooleygo.com/topic/build-a-team/
+                        - listitem:
+                          - link "4. Raise funds":
+                            - /url: https://www.cooleygo.com/topic/raise/
+                        - listitem:
+                          - link "5. Board and advisors":
+                            - /url: https://www.cooleygo.com/topic/board-and-advisors/
+                        - listitem:
+                          - link "6. Sell":
+                            - /url: https://www.cooleygo.com/topic/sell/
+                    - listitem [ref=f22e30]:
+                      - link "Docs" [ref=f22e31] [cursor=pointer]:
+                        - /url: https://www.cooleygo.com/documents/
+                    - listitem [ref=f22e32]:
+                      - link "Collections" [ref=f22e33] [cursor=pointer]:
+                        - /url: https://www.cooleygo.com/collections/
+                    - listitem [ref=f22e34]:
+                      - link "Data" [ref=f22e35] [cursor=pointer]:
+                        - /url: https://www.cooleygo.com/data/
+                    - listitem [ref=f22e36]:
+                      - link "Glossary" [ref=f22e37] [cursor=pointer]:
+                        - /url: https://www.cooleygo.com/glossary/
+                    - listitem [ref=f22e38]:
+                      - link " About" [ref=f22e39] [cursor=pointer]:
+                        - /url: https://www.cooleygo.com/about/
+                        - text: 
+                        - generic [ref=f22e40]: About
+                      - list:
+                        - listitem:
+                          - link "Team":
+                            - /url: /about/#aboutteam
+                        - listitem:
+                          - link "Cooley LLP":
+                            - /url: /about#aboutcooley
+                  - list [ref=f22e41]:
+                    - listitem: 
+                    - listitem [ref=f22e42]:
+                      - link "search" [ref=f22e44] [cursor=pointer]:
+                        - /url: "#searchbox"
+                        - generic [ref=f22e45]: 
+            - text:    
+      - generic [ref=f22e47]:
+        - generic [ref=f22e49]:
+          - generic [ref=f22e51]:
+            - generic [ref=f22e52]:
+              - generic [ref=f22e55]: 10 min read
+              - list [ref=f22e56]:
+                - listitem [ref=f22e57]:
+                  - link "Share on X" [ref=f22e58] [cursor=pointer]:
+                    - /url: https://twitter.com/intent/tweet?text=Founder+Basics%3A%3Cbr%3EFounder%26%238217%3Bs+Stock%2C+Vesting+and+Founder+Departures&url=https://www.cooleygo.com/founder-basics-founders-stock/
+                    - generic [ref=f22e61]: (opens in a new tab)
+                - listitem [ref=f22e62]:
+                  - link "Share on LinkedIn" [ref=f22e63] [cursor=pointer]:
+                    - /url: https://www.linkedin.com/shareArticle?mini=true&url=https://www.cooleygo.com/founder-basics-founders-stock/&title=Founder+Basics%3A%3Cbr%3EFounder%26%238217%3Bs+Stock%2C+Vesting+and+Founder+Departures
+                    - generic [ref=f22e67]: (opens in a new tab)
+                - listitem [ref=f22e68]:
+                  - link "Share on Facebook" [ref=f22e69] [cursor=pointer]:
+                    - /url: https://www.facebook.com/sharer/sharer.php?u=https://www.cooleygo.com/founder-basics-founders-stock/
+                    - generic [ref=f22e72]: (opens in a new tab)
+                - listitem [ref=f22e73]:
+                  - link "Share via email" [ref=f22e74] [cursor=pointer]:
+                    - /url: mailto:?Subject=Founder+Basics%3A%3Cbr%3EFounder%26%238217%3Bs+Stock%2C+Vesting+and+Founder+Departures&Body=https://www.cooleygo.com/founder-basics-founders-stock/
+                    - generic [ref=f22e77]: (opens in a new tab)
+                - listitem [ref=f22e78]:
+                  - link "Print this page" [ref=f22e80] [cursor=pointer]:
+                    - /url: "#"
+                - listitem [ref=f22e86]:
+                  - link "Copy page URL" [ref=f22e88] [cursor=pointer]:
+                    - /url: "#"
+            - 'heading "Founder Basics: Founder’s Stock, Vesting and Founder Departures" [level=1] [ref=f22e93]': Founder Basics:Founder’s Stock, Vesting and Founder Departures
+          - generic [ref=f22e94]:
+            - img "related_content_tab" [ref=f22e109] [cursor=pointer]
+            - main [ref=f22e110]:
+              - article [ref=f22e111]:
+                - generic [ref=f22e114]:
+                  - complementary [ref=f22e116]:
+                    - generic [ref=f22e117]:
+                      - link "Link to Cooley GO Team Profile" [ref=f22e119] [cursor=pointer]:
+                        - /url: https://www.cooleygo.com/people/cooley-go/
+                        - img "Photo of Author" [ref=f22e120]
+                      - contentinfo [ref=f22e121]:
+                        - link "Link to Cooley GO Team Profile" [ref=f22e122] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/people/cooley-go/
+                          - text: Cooley GO Team
+                  - generic [ref=f22e123]:
+                    - generic [ref=f22e124]:
+                      - heading [level=3] [ref=f22e125]:
+                        - strong [ref=f22e126]: What Is Founder’s Stock?
+                      - paragraph [ref=f22e127]:
+                        - text: In US startups, “Founder’s Stock” refers to the
+                        - link "equity" [ref=f22e128] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/glossary/equity/
+                        - text: interest that is issued to Founders (and perhaps others – also check out my article
+                        - link "Who is a “Founder”? (opens in a new tab)" [ref=f22e129] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/who-is-a-founder
+                          - text: Who is a “Founder”?
+                          - generic [ref=f22e130]: (opens in a new tab)
+                        - text: ) at or near the time the company is formed. It is often issued for a nominal cash payment (such as $0.0001 per share, which is the default value in the Cooley GO Docs
+                        - link "Incorporation Package (opens in a new tab)" [ref=f22e131] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/documents/incorporation-package
+                          - text: Incorporation Package
+                          - generic [ref=f22e132]: (opens in a new tab)
+                        - text: ) and/or
+                        - link "assignment of intellectual property" [ref=f22e133] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/glossary/assignment-of-ip/
+                        - text: . Often but not always the “Founder’s Stock” is subject to a vesting schedule which gives the company the right to buy back unvested shares if a Founder leaves the company before the shares are fully vested.
+                      - paragraph [ref=f22e134]: "Whether “Founder’s Stock” has any rights different from other equity interests in a company depends on the agreements entered into between the Founder and the company, either at the time the stock is issued or later. These rights may include:"
+                      - list [ref=f22e135]:
+                        - listitem [ref=f22e136]: Vesting provisions
+                        - listitem [ref=f22e137]:
+                          - text: Accelerated vesting upon sale of the company and/or a termination without cause or resignation for
+                          - link "good reason" [ref=f22e138] [cursor=pointer]:
+                            - /url: https://www.cooleygo.com/glossary/good-reason/
+                        - listitem [ref=f22e139]: Right of first refusal
+                        - listitem [ref=f22e140]: Co-sale provision
+                        - listitem [ref=f22e141]: Lock-up agreement
+                        - listitem [ref=f22e142]: Super-voting rights
+                      - paragraph [ref=f22e143]: Each of these is discussed separately below.
+                      - paragraph [ref=f22e144]: Because of the dynamic nature of start-ups, with people coming and going, and roles and responsibilities constantly evolving, it is best to think about these provisions at the very beginning of the company.
+                      - paragraph [ref=f22e145]:
+                        - text: "Check out another Cooley GO article on the topic:"
+                        - link "There is No Such Thing as Founder Stock (legally speaking) (opens in a new tab)" [ref=f22e146] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/startup-basics/thing-founder-stock-legally-speaking
+                          - text: There is No Such Thing as Founder Stock (legally speaking)
+                          - generic [ref=f22e147]: (opens in a new tab)
+                      - heading [level=3] [ref=f22e148]:
+                        - strong [ref=f22e149]: Why Would I Want to Consider a Vesting Schedule for my Founder’s Stock?
+                        - strong [ref=f22e150]
+                      - paragraph [ref=f22e151]: Founder’s Stock is often subject to a vesting schedule. Under a typical vesting schedule, the stock vests in monthly or quarterly increments over four years; if the Founder leaves the company before the stock is fully vested, the company has the right to buy back the unvested shares at the lower of cost or the then fair market value.
+                      - paragraph [ref=f22e152]: The vesting schedule may be agreed to at the time of the Founders Stock is first issued, or may be imposed later as a condition of investment by outside investors.
+                      - paragraph [ref=f22e153]: "Why would a Founder agree to subject his or her shares to a vesting schedule at the outset of the company? Two possible reasons:"
+                      - paragraph [ref=f22e154]:
+                        - strong [ref=f22e155]: First
+                        - text: ", this may be part of the bargain among multiple founders. If a founder decides to leave, or is asked to leave, early in the company’s existence, the vesting restriction protects the other founders from the “free rider” problem that would otherwise exist. While some founding teams stay together from beginning to end, it is fairly common for one or more Founders to leave the company in its early years. Absent a vesting restriction, the departed Founder gets a “free ride” on the efforts of those who remain to build the company."
+                      - paragraph [ref=f22e156]:
+                        - strong [ref=f22e157]: Second
+                        - text: ", the restriction may be adopted in anticipation of future investment, as"
+                        - link "venture capital" [ref=f22e158] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/glossary/venture-capital/
+                        - text: and
+                        - link "angel investors" [ref=f22e159] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/glossary/angel-investors/
+                        - text: generally seek some kind of vesting restrictions. Of course, one could wait until the time of investment to address the issue. However, if the Founders play “wait and see” they run the risk that the investors will propose something more onerous than the Founders might have come up with on their own. Conversely, if the Founders impose a reasonable vesting scheme, most investors will leave well enough alone, even if that scheme is not exactly what the investors might have preferred.
+                      - heading [level=3] [ref=f22e160]:
+                        - strong [ref=f22e161]: What is a “Cliff”?
+                      - paragraph [ref=f22e162]: There is often a one year “cliff”, meaning that the individual must be with the company for a year to vest the first increment. Often Founders are given some retroactive vesting credit for work done before the company was incorporated. While one year is common, you could use any time period.
+                      - paragraph [ref=f22e163]:
+                        - strong [ref=f22e164]: Example
+                        - text: ": A company has three founders, one of whom has been working on the concept for a year and the others for three and six months, before the company is incorporated. The Founders might decide to subject their shares of Founders’ Stock to a four year vesting schedule, but give each of the Founders some retroactive credit reflecting their respective periods of work before incorporation."
+                      - paragraph [ref=f22e165]: However, vesting provisions often do include some protections for termination without cause following the sale of the company, as discussed below.
+                      - paragraph [ref=f22e166]:
+                        - text: When Founders agree to vesting restrictions, it is usually to their benefit to file a special tax election known as a
+                        - emphasis [ref=f22e167]:
+                          - link "Section 83(b) election" [ref=f22e168] [cursor=pointer]:
+                            - /url: https://www.cooleygo.com/glossary/section-83b-election/
+                        - text: . This is discussed in our post
+                        - link "What is a “Section 83(b) election” and Why Should I File One? (opens in a new tab)" [ref=f22e169] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/what-is-a-section-83b-election/
+                          - text: What is a “Section 83(b) election” and Why Should I File One?
+                          - generic [ref=f22e170]: (opens in a new tab)
+                      - heading [level=3] [ref=f22e171]:
+                        - strong [ref=f22e172]: What Happens to My Unvested Stock if the Company is Sold or I’m Fired?
+                      - paragraph [ref=f22e173]:
+                        - text: Vesting provisions on Founder’s Stock may provide for
+                        - link "acceleration" [ref=f22e174] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/glossary/acceleration/
+                        - text: "of vesting following the occurrence of one or more events. There are two main variations:"
+                      - list [ref=f22e175]:
+                        - listitem [ref=f22e176]:
+                          - text: A
+                          - strong [ref=f22e177]:
+                            - text: “
+                            - emphasis [ref=f22e178]: single trigger
+                            - text: ”
+                          - text: provision accelerates the vesting of any unvested shares as of the time of the sale.
+                        - listitem [ref=f22e179]:
+                          - text: A
+                          - strong [ref=f22e180]:
+                            - text: “
+                            - emphasis [ref=f22e181]: double trigger
+                            - text: ”
+                          - text: provision accelerates the vesting of any unvested shares if the company is sold
+                          - emphasis [ref=f22e182]: and
+                          - text: the employee is terminated without cause within some time period following the closing of the sale.
+                      - paragraph [ref=f22e183]:
+                        - text: For more information on single-trigger and double-trigger acceleration, please see
+                        - link "this article (opens in a new tab)" [ref=f22e184] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/what-are-single-and-double-trigger-acceleration-and-how-do-they-work/
+                          - text: this article
+                          - generic [ref=f22e185]: (opens in a new tab)
+                        - text: .
+                      - paragraph [ref=f22e186]: Under the main variations of both single-trigger and double-trigger acceleration, at least one of the “triggers” is an acquisition of the company. Founders often inquire about acceleration of vesting if the Founder is terminated without cause, and not in connection with an acquisition of the Company. While this is not an unreasonable concern, be very careful about agreeing to vesting acceleration for a termination without cause. Vesting restrictions typically do not distinguish among the many reasons why a company and a Founder may part ways, although it is possible to provide that it applies only in the case of a termination without cause or voluntary termination. Most legal definitions of “cause” focus on bad behavior such as dishonesty, theft, or conviction of a felony. They typically don’t reach more subjective assessments of effectiveness such as weak leadership or poor management skills. In an early stage company, an ineffective team member can jeopardize the entire enterprise. If that person is terminated and did not satisfy the cause definition, he or she may walk away with a significant portion of their stock in an unintended result.
+                      - heading [level=3] [ref=f22e187]:
+                        - strong [ref=f22e188]: How Can We Control Transfers of Founder’s Stock?
+                      - paragraph [ref=f22e189]:
+                        - text: Founder’s Stock is often subject to a
+                        - strong [ref=f22e190]:
+                          - text: “
+                          - emphasis [ref=f22e191]: right of first refusal,
+                          - text: ”
+                        - text: which gives the company and/or the other Founders the opportunity to purchase shares that a Founder proposes to sell to a third party. Investors will often ask for this right.
+                      - paragraph [ref=f22e192]:
+                        - text: The right of first refusal is often contained in the Company’s
+                        - link "Bylaws" [ref=f22e193] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/glossary/bylaws/
+                        - text: and automatically applies to all shares issued after the Bylaws are adopted.
+                      - paragraph [ref=f22e194]: Often the company has the first bite at the apple, then the founders and/or investors. The priority is a matter of negotiation.
+                      - paragraph [ref=f22e195]: A right of first refusal is a useful device for controlling ownership of stock only to the extent that the person(s) with the right have, and are willing to spend, the necessary funds to finance the purchase. Otherwise, the share can be sold to the buyer.
+                      - paragraph [ref=f22e196]: It has become increasingly common for bylaws to include the requirement of Board approval for a stockholder to transfer stock. Companies have become more concerned about controlling their stockholder base and the flow of confidential information. This became especially acute with the rise of “secondary markets” for the sale of private company stock.
+                      - heading [level=3] [ref=f22e197]:
+                        - strong [ref=f22e198]: What is a Co-Sale Right?
+                      - paragraph [ref=f22e199]:
+                        - text: While a “right of first refusal” gives one the right to be a
+                        - emphasis [ref=f22e200]: buyer
+                        - text: ", a “"
+                        - emphasis [ref=f22e201]: co-sale
+                        - text: ” right gives one the right to be a
+                        - emphasis [ref=f22e202]: seller
+                        - text: ", by providing the opportunity to participate in a sale by a third party. The theory is that if one Founder finds a buyer for part of his or her shares, that opportunity should be made available to other Founders and/or investors."
+                      - paragraph [ref=f22e203]: The co-sale right is less common than the right of first refusal in agreements among Founders, but is usually requested by investors.
+                      - paragraph [ref=f22e204]:
+                        - strong [ref=f22e205]: "Example:"
+                        - text: A company has two founders, each with 40% ownership, and one investor with 20% ownership, and that all are a party to the co-sale agreement. If one founder finds a buyer for 10,000 shares, the co-sale right would allow the other founder to sell 4,000 shares and the investor to sell 2,000 shares, so the first founder could sell only 4,000 shares.
+                      - paragraph [ref=f22e206]: In the more common situation where the co-sale agreement operates only in favor of the investor, the selling founder could sell 6,667 shares and the investor 3,333 shares.
+                      - heading [level=3] [ref=f22e207]:
+                        - strong [ref=f22e208]: What is a Lock-Up Agreement?
+                        - strong [ref=f22e209]
+                      - paragraph [ref=f22e210]:
+                        - text: A “
+                        - emphasis [ref=f22e211]: lock-up agreement
+                        - text: ” prevents the sale of stock for a period of time following an IPO. The restriction typically lasts for 180 days, although it may be extended in certain circumstances.
+                      - paragraph [ref=f22e212]:
+                        - text: When a company undertakes an
+                        - link "initial public offering" [ref=f22e213] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/glossary/ipo/
+                        - text: (IPO), the underwriters will ask the company’s existing stockholders to enter into lock-up agreements to prevent sales of large amounts of stock into the market following the IPO. The concern is that such sales could depress the stock price and that the prospect of insider selling immediately following the IPO will make the IPO less attractive to potential buyers.
+                      - paragraph [ref=f22e214]: Lock-up restrictions are commonly included in founder stock purchase agreements. Why not wait until the IPO? Because the lock-up restrictions cannot be imposed unilaterally. A founder may have moved on, or might otherwise be unwilling to sign later. Hence the desirability of getting everyone to agree to the lock-up restriction up front.
+                      - heading [level=3] [ref=f22e215]:
+                        - strong [ref=f22e216]: Can We Use Super Voting Stock to Protect Control?
+                      - paragraph [ref=f22e217]: It is theoretically possible to give special voting rights to Founders’ Stock. Some high profile examples include Google, Facebook and Zoom.
+                      - paragraph [ref=f22e218]: Supervoting stock is a separate class of stock that may have 10 or more votes per share. Normally the shares convert to regular voting stock if transferred to persons other than the Founders and their families.
+                      - paragraph [ref=f22e219]:
+                        - text: Despite the high profile examples,
+                        - strong [ref=f22e220]: supervoting stock is actually relatively rare
+                        - text: . Most investors will object to it. It generally requires a truly compelling idea, and a compelling founding team, to convince investors to go along. For more information on super voting stock, please see this
+                        - link "article" [ref=f22e221] [cursor=pointer]:
+                          - /url: https://www.cooleygo.com/super-voting-stock-what-is-it-and-how-can-i-get-it/
+                        - text: .
+                    - generic [ref=f22e222]: "Last reviewed: April 1, 2022"
+                    - link "US" [ref=f22e225] [cursor=pointer]:
+                      - /url: https://www.cooleygo.com/topic/us/
+                    - generic [ref=f22e226]:
+                      - paragraph [ref=f22e227]:
+                        - generic [ref=f22e229]: "Topics:"
+                      - link "vesting" [ref=f22e230] [cursor=pointer]:
+                        - /url: https://www.cooleygo.com/tag/vesting/
+                      - link "founder issues" [ref=f22e231] [cursor=pointer]:
+                        - /url: https://www.cooleygo.com/tag/founder-issues/
+                      - link "founder equity" [ref=f22e232] [cursor=pointer]:
+                        - /url: https://www.cooleygo.com/tag/founder-equity/
+        - group [ref=f22e234]:
+          - article [ref=f22e235]:
+            - generic [ref=f22e236]:
+              - generic [ref=f22e237]:
+                - generic [ref=f22e238]: 
+                - generic [ref=f22e240]: Related articles
+              - generic [ref=f22e244]:
+                - 'link "Article Delaware Versus Nevada Versus Texas: A Comparison of Corporate Laws" [ref=f22e245] [cursor=pointer]':
+                  - /url: https://www.cooleygo.com/delaware-versus-nevada-versus-texas-a-comparison-of-corporate-laws/
+                  - generic [ref=f22e246]: Article
+                  - generic [ref=f22e251]: "Delaware Versus Nevada Versus Texas: A Comparison of Corporate Laws"
+                - 'link "Article The Cayman Sandwich: A Potential Corporate Structure Solution for LatAm Startups?" [ref=f22e253] [cursor=pointer]':
+                  - /url: https://www.cooleygo.com/the-cayman-sandwich-a-potential-corporate-structure-solution-for-latam-startups/
+                  - generic [ref=f22e254]: Article
+                  - generic [ref=f22e259]: "The Cayman Sandwich: A Potential Corporate Structure Solution for LatAm Startups?"
+                - link "Article How to Form a Corporation in Delaware" [ref=f22e261] [cursor=pointer]:
+                  - /url: https://www.cooleygo.com/how-to-form-a-corporation-in-delaware/
+                  - generic [ref=f22e262]: Article
+                  - generic [ref=f22e267]: How to Form a Corporation in Delaware
+      - generic [ref=f22e275]:
+        - paragraph [ref=f22e281]: Want to receive the latest info from Cooley GO?
+        - paragraph [ref=f22e286]:
+          - button "Sign up now " [ref=f22e288] [cursor=pointer]:
+            - text: Sign up now
+            - generic: 
+      - generic [ref=f22e289]:
+        - generic [ref=f22e292]:
+          - link [ref=f22e295] [cursor=pointer]:
+            - /url: /
+            - img "Cooley GO Logo in White" [ref=f22e296]
+          - navigation "Footer Menu" [ref=f22e300]:
+            - list [ref=f22e301]:
+              - listitem [ref=f22e302]:
+                - link "1. Start" [ref=f22e303] [cursor=pointer]:
+                  - /url: /topic/start/
+              - listitem [ref=f22e305]:
+                - link "2. Create and protect" [ref=f22e306] [cursor=pointer]:
+                  - /url: /topic/create-and-protect/
+              - listitem [ref=f22e308]:
+                - link "3. Build your team" [ref=f22e309] [cursor=pointer]:
+                  - /url: /topic/build-a-team/
+              - listitem [ref=f22e311]:
+                - link "4. Raise funds" [ref=f22e312] [cursor=pointer]:
+                  - /url: /topic/raise/
+              - listitem [ref=f22e314]:
+                - link "5. Board and advisors" [ref=f22e315] [cursor=pointer]:
+                  - /url: /topic/board-and-advisors/
+              - listitem [ref=f22e317]:
+                - link "6. Sell" [ref=f22e318] [cursor=pointer]:
+                  - /url: /topic/sell/
+          - generic [ref=f22e322]:
+            - paragraph [ref=f22e323]:
+              - link "Guidance" [ref=f22e324] [cursor=pointer]:
+                - /url: /guidance/
+            - paragraph [ref=f22e325]:
+              - link "Docs" [ref=f22e326] [cursor=pointer]:
+                - /url: /documents/
+            - paragraph [ref=f22e327]:
+              - link "Data" [ref=f22e328] [cursor=pointer]:
+                - /url: /data/
+            - paragraph [ref=f22e329]:
+              - link "Glossary" [ref=f22e330] [cursor=pointer]:
+                - /url: /glossary/
+            - paragraph [ref=f22e331]
+            - paragraph [ref=f22e332]:
+              - link "Navigate to Give us feedback page" [ref=f22e333] [cursor=pointer]:
+                - /url: /feedback/
+                - text: Give us feedback
+          - generic [ref=f22e336]:
+            - paragraph [ref=f22e337]:
+              - link "About" [ref=f22e338] [cursor=pointer]:
+                - /url: /about/
+            - paragraph [ref=f22e339]:
+              - link "Navigate to terms and conditions page" [ref=f22e340] [cursor=pointer]:
+                - /url: /legal-notices/
+                - text: Terms
+            - paragraph [ref=f22e341]:
+              - link "Cookies Policy" [ref=f22e342] [cursor=pointer]:
+                - /url: /cookies-policy/
+            - paragraph [ref=f22e343]:
+              - link "Visit Cooley (opens in a new tab)" [ref=f22e344] [cursor=pointer]:
+                - /url: https://www.cooley.com
+                - text: Visit Cooley
+                - generic [ref=f22e345]: (opens in a new tab)
+        - generic [ref=f22e348]:
+          - paragraph [ref=f22e349]:
+            - text: © 2026 Cooley GO.
+            - contentinfo "Legal Information"
+          - paragraph [ref=f22e350]: Cooley LLP, Cooley (UK) LLP, and Cooley SG LLP. All rights reserved.
+          - paragraph [ref=f22e351]: COOLEY® and the COOLEY LLP® logo are registered U.S. service marks of Cooley LLP.
+          - paragraph [ref=f22e352]: COOLEY GO is a trademark of Cooley LLP.
+    - link "Back to Top" [ref=f22e354] [cursor=pointer]:
+      - /url: "#"
+      - generic [ref=f22e355]: 
+      - generic [ref=f22e356]: 
+  - button "Open Cooley GObot" [ref=f22e357] [cursor=pointer]
+  - text:  ■ ■ ■

@@ -58,8 +58,10 @@ const PUBLIC_SITE_URL = (Deno.env.get("PUBLIC_SITE_URL") || "").replace(/\/$/, "
 const CONTRACTS_BUCKET = "contracts";
 
 function donePageUrl(token: string): string {
+  // Prefer the branded success page on our own site; fall back to the plain
+  // in-function /done route when PUBLIC_SITE_URL isn't set.
   return PUBLIC_SITE_URL
-    ? `${PUBLIC_SITE_URL}/done.html`
+    ? `${PUBLIC_SITE_URL}/welcome`
     : `${PUBLIC_BASE_URL}/billing/onboarding/${token}/done`;
 }
 
@@ -435,6 +437,7 @@ async function handleSignup(req: Request, body: Record<string, unknown>): Promis
   const contactEmail = String(body.contact_email ?? "").trim().slice(0, 200).toLowerCase();
   const phone = normalizePhone(String(body.phone ?? ""));
   const trade = String(body.trade ?? "").trim().slice(0, 80);
+  const phoneType = String(body.phone_type ?? "").trim().slice(0, 40);
   const voiceRaw = String(body.voice ?? "").trim().slice(0, 40);
   const voice = VOICE_ALLOWED.has(voiceRaw.toLowerCase()) ? voiceRaw : "";
 
@@ -503,8 +506,9 @@ async function handleSignup(req: Request, body: Record<string, unknown>): Promis
   // (voice/trade aren't stored — no column yet — so they ride the notification).
   notifyOps(
     "New self-serve signup",
-    `${businessName} started signup.\nEmail: ${contactEmail}\nPhone: ${phone}\n` +
-      `Trade: ${trade || "n/a"}\nVoice: ${voice || "no preference"}\nClient: ${clientId}`,
+    `${businessName} started signup.\nEmail: ${contactEmail}\nLead phone: ${phone}\n` +
+      `Line type: ${phoneType || "n/a"}\nTrade: ${trade || "n/a"}\n` +
+      `Voice: ${voice || "no preference"}\nClient: ${clientId}`,
   ).catch(() => {});
 
   // Reuse the exact admin onboarding path (SignWell doc + stored token) and hand
