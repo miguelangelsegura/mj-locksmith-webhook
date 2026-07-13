@@ -8,16 +8,17 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata = {
-  title: "Dispango — AI receptionist for home & trade services",
+  title: "Dispango — AI Receptionist for the Canadian Trades Industry",
   description:
-    "Dispango answers every call, captures the job, and texts you the lead in seconds — 24/7, even when you're on the tools. Flat $199/mo. Keep your number.",
+    "Dispango answers every call, captures the job, and texts you the lead in seconds — 24/7, even when you're on the tools. Flat $199/mo. Keep your number. Built in Canada.",
   metadataBase: new URL("https://dispango.com"),
   openGraph: {
-    title: "Dispango — AI receptionist for trades",
+    title: "Dispango — AI Receptionist for the Canadian Trades Industry",
     description:
-      "Answers every call, captures the job, texts you the lead in seconds — 24/7.",
+      "Answers every call, captures the job, and texts you the lead in seconds — 24/7. Flat $199/mo. Built in Canada.",
     url: "https://dispango.com",
     siteName: "Dispango",
+    locale: "en_CA",
     type: "website",
   },
 };

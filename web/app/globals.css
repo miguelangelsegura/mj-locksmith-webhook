@@ -85,9 +85,37 @@ body {
 @keyframes slideUpFade { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
 .animate-slideup { animation: slideUpFade .5s ease both; }
 
+/* Attention pulse — gently breathes a card's ring/shadow to draw the eye to a USP */
+@keyframes glowPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(91,91,245,0); }
+  50% { box-shadow: 0 0 0 6px rgba(91,91,245,.12); }
+}
+.animate-glow { animation: glowPulse 3.2s ease-in-out infinite; }
+
+/* Animated gradient sweep across a highlighted headline word */
+@keyframes textShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+.text-shimmer {
+  background: linear-gradient(90deg, var(--color-brand), var(--color-warm), var(--color-brand));
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: textShimmer 4s linear infinite;
+}
+
+/* Integrations marquee — a slow horizontal scroll of the "integrates with" strip */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.animate-marquee { animation: marquee 26s linear infinite; }
+.marquee-mask { -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+
+/* Numbered step badge + connector line for "How It Works" */
+@keyframes popIn { from { opacity:0; transform: scale(.8); } to { opacity:1; transform:none; } }
+.animate-pop { animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
   .animate-floaty, .animate-aura, .animate-ringpulse, .animate-dot,
-  .caret::after, .voicebars span, .animate-pointer, .animate-slideup { animation: none; }
+  .caret::after, .voicebars span, .animate-pointer, .animate-slideup,
+  .animate-glow, .text-shimmer, .animate-marquee, .animate-pop { animation: none; }
+  .text-shimmer { -webkit-text-fill-color: var(--color-brand); color: var(--color-brand); }
 }
