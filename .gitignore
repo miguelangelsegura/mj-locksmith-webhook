@@ -21,3 +21,9 @@ supabase/.branches/
 outreach/contacted.csv
 .gstack/
 node_modules/
+
+# Playwright MCP scratch (screenshots/snapshots)
+.playwright-mcp/
+
+# Deno type-check scratch (no deno.json in this repo)
+deno.lock
