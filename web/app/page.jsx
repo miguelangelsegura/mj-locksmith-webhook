@@ -7,7 +7,7 @@ const CONFIG = {
   calendly: "https://calendly.com/REPLACE-WITH-YOUR-LINK/demo",
   email: "hello@dispango.com",
   phone: "(000) 000-0000",
-  legalName: "REPLACE — legal corporation name",
+  legalName: "Jam Works Inc.",
   address: "REPLACE — registered mailing address, City, ON, Canada",
 };
 

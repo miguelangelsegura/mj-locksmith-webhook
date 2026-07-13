@@ -1,6 +1,6 @@
 const CONFIG = {
   email: "hello@dispango.com",
-  legalName: "REPLACE — legal corporation name",
+  legalName: "Jam Works Inc.",
   address: "REPLACE — registered mailing address, City, ON, Canada",
 };
 
