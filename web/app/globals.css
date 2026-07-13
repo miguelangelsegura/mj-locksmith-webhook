@@ -1,77 +1,93 @@
 @import "tailwindcss";
 
+/*
+  Palette: bright, mood-lifting. Vibrant indigo primary + warm coral/amber accent
+  on a white base, lifted by layered radial-gradient "glows" (the technique that
+  makes a white page feel alive rather than flat). Higher luminance + saturation
+  than a flat blue reads friendlier/more energetic.
+*/
 @theme {
-  --color-brand: #2f6bed;
-  --color-brand-700: #1f51c4;
-  --color-brand-50: #eef3fe;
-  --color-brand-100: #dce7fd;
-  --color-ink: #0c1726;
-  --color-body: #4a5568;
-  --color-muted: #8a97a8;
-  --color-soft: #f4f8fd;
-  --color-line: #e7edf6;
-  --color-emerald: #0fae7a;
-  --color-emerald-50: #e6f7f0;
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto,
-    Helvetica, Arial, sans-serif;
+  --color-indigo-50: #eef0ff;
+  --color-indigo-100: #e0e3ff;
+  --color-indigo-200: #c6cbff;
+  --color-brand: #5b5bf5;
+  --color-brand-600: #4a45ec;
+  --color-brand-700: #3a34c9;
+  --color-warm: #ff7a4d;
+  --color-warm-amber: #ffb020;
+  --color-warm-50: #fff1ea;
+  --color-ink: #0d1220;
+  --color-body: #4b5468;
+  --color-muted: #8a93a6;
+  --color-soft: #f6f7ff;
+  --color-line: #e8eaf6;
+  --color-emerald: #10b981;
+  --color-emerald-50: #e7f8f1;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
   background: #fff;
   color: var(--color-body);
-  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* scroll reveal */
-.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+/* --- Glow helpers: bright radial washes behind sections --- */
+.glow-hero {
+  background:
+    radial-gradient(680px 460px at 12% 8%, rgba(91, 91, 245, 0.16), transparent 60%),
+    radial-gradient(620px 420px at 92% 22%, rgba(255, 122, 77, 0.14), transparent 62%),
+    radial-gradient(760px 520px at 60% 100%, rgba(91, 91, 245, 0.10), transparent 66%),
+    #ffffff;
 }
-.reveal.in {
-  opacity: 1;
-  transform: none;
+.glow-soft {
+  background:
+    radial-gradient(560px 360px at 85% 10%, rgba(91, 91, 245, 0.10), transparent 64%),
+    radial-gradient(480px 320px at 8% 90%, rgba(255, 176, 32, 0.10), transparent 66%),
+    var(--color-soft);
+}
+.glow-dark {
+  background:
+    radial-gradient(600px 380px at 50% 0%, rgba(91, 91, 245, 0.45), transparent 62%),
+    radial-gradient(420px 300px at 88% 30%, rgba(255, 122, 77, 0.28), transparent 66%),
+    var(--color-ink);
 }
 
-@keyframes floaty {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-.animate-floaty { animation: floaty 4s ease-in-out infinite; }
+/* --- scroll reveal --- */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.in { opacity: 1; transform: none; }
 
-@keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(47, 107, 237, 0.35); }
-  70% { box-shadow: 0 0 0 14px rgba(47, 107, 237, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(47, 107, 237, 0); }
-}
-.animate-ring { animation: pulse-ring 2s infinite; }
+/* --- keyframes (all our own) --- */
+@keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.animate-floaty { animation: floaty 5s ease-in-out infinite; }
 
-@keyframes bar {
-  0%, 100% { transform: scaleY(0.35); }
-  50% { transform: scaleY(1); }
-}
-.eq span {
-  display: inline-block;
-  width: 3px;
-  height: 18px;
-  margin: 0 1px;
-  background: currentColor;
-  border-radius: 2px;
-  transform-origin: bottom;
-  animation: bar 1s ease-in-out infinite;
-}
-.eq span:nth-child(2) { animation-delay: 0.15s; }
-.eq span:nth-child(3) { animation-delay: 0.3s; }
-.eq span:nth-child(4) { animation-delay: 0.45s; }
-.eq span:nth-child(5) { animation-delay: 0.6s; }
+@keyframes auraBreathe { 0%,100% { opacity: .55; transform: scale(1); } 50% { opacity: .9; transform: scale(1.06); } }
+.animate-aura { animation: auraBreathe 6s ease-in-out infinite; }
+
+@keyframes ringPulse { 0% { transform: scale(.7); opacity: .5; } 100% { transform: scale(1.5); opacity: 0; } }
+.animate-ringpulse { animation: ringPulse 3s ease-out infinite; }
+
+@keyframes pulseDot { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16,185,129,.6); } 50% { opacity: .6; box-shadow: 0 0 0 6px rgba(16,185,129,0); } }
+.animate-dot { animation: pulseDot 1.6s ease-in-out infinite; }
+
+@keyframes caretBlink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+.caret::after { content: "▋"; margin-left: 1px; color: var(--color-brand); animation: caretBlink 1s step-end infinite; }
+
+@keyframes voiceBar { 0%,100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+.voicebars span { display:inline-block; width:3px; height:16px; margin:0 1px; border-radius:2px; background:currentColor; transform-origin:bottom; animation: voiceBar .9s ease-in-out infinite; }
+.voicebars span:nth-child(2){ animation-delay:.12s } .voicebars span:nth-child(3){ animation-delay:.24s }
+.voicebars span:nth-child(4){ animation-delay:.36s } .voicebars span:nth-child(5){ animation-delay:.48s }
+
+@keyframes pointerCue { 0% { transform: translate(0,0); opacity:0; } 15% { opacity:1; } 60% { transform: translate(-46px,-26px); opacity:1; } 75%,100% { opacity:0; } }
+.animate-pointer { animation: pointerCue 4.5s ease-in-out infinite; }
+
+@keyframes slideUpFade { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
+.animate-slideup { animation: slideUpFade .5s ease both; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  .animate-floaty, .animate-ring, .eq span { animation: none; }
+  .animate-floaty, .animate-aura, .animate-ringpulse, .animate-dot,
+  .caret::after, .voicebars span, .animate-pointer, .animate-slideup { animation: none; }
 }

@@ -1,12 +1,19 @@
 import "./globals.css";
+import { Plus_Jakarta_Sans } from "next/font/google";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
 
 export const metadata = {
-  title: "Dispango — AI receptionist & dispatch for locksmiths",
+  title: "Dispango — AI receptionist for home & trade services",
   description:
-    "Dispango answers every call, captures the job, and texts the lead straight to your phone — 24/7, even when you're on a job. A flat $199/mo. Keep your own number.",
+    "Dispango answers every call, captures the job, and texts you the lead in seconds — 24/7, even when you're on the tools. Flat $199/mo. Keep your number.",
   metadataBase: new URL("https://dispango.com"),
   openGraph: {
-    title: "Dispango — AI receptionist for locksmiths",
+    title: "Dispango — AI receptionist for trades",
     description:
       "Answers every call, captures the job, texts you the lead in seconds — 24/7.",
     url: "https://dispango.com",
@@ -16,12 +23,12 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#2f6bed",
+  themeColor: "#5b5bf5",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={jakarta.className}>
       <body>{children}</body>
     </html>
   );
