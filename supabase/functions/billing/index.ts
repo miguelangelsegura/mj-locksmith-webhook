@@ -379,6 +379,14 @@ const signupHits = new Map<string, number[]>();
 function rateLimited(ip: string): boolean {
   const now = Date.now();
   const windowMs = 60 * 60 * 1000;
+  // Bound the map so stale keys can't grow it without limit over the isolate's life.
+  if (signupHits.size > 2000) {
+    for (const [k, v] of signupHits) {
+      const recent = v.filter((t) => now - t < windowMs);
+      if (recent.length === 0) signupHits.delete(k);
+      else signupHits.set(k, recent);
+    }
+  }
   const hits = (signupHits.get(ip) ?? []).filter((t) => now - t < windowMs);
   hits.push(now);
   signupHits.set(ip, hits);
@@ -434,13 +442,25 @@ async function handleSignup(req: Request, body: Record<string, unknown>): Promis
   if (!EMAIL_RE.test(contactEmail)) return json({ error: "a valid email is required" }, 400);
   if (!phone) return json({ error: "a valid phone number is required" }, 400);
 
-  // Dedupe by email so a resubmit / double-click never makes a second row.
+  // Dedupe by email so a resubmit / double-click never makes a second row — and,
+  // critically, never regenerates onboarding for an email that has ALREADY signed
+  // (re-running createOnboarding would mint a fresh unsigned doc and regress the
+  // completed signature back to "sent" — an unauthenticated griefing vector).
   const { data: existing } = await supabase
-    .from("clients").select("id, active").eq("contact_email", contactEmail).limit(1);
-  let clientId = existing?.[0]?.id as string | undefined;
-  if (existing?.[0]?.active) {
+    .from("clients").select("id, active, contract_status, onboarding_token")
+    .eq("contact_email", contactEmail).limit(1);
+  const row = existing?.[0];
+
+  if (row?.active) {
     return json({ error: "This email is already set up. Contact us if you need help." }, 409);
   }
+  // Signed but not yet paid → send them straight to payment; do NOT re-create the
+  // contract. (/pay gates on signed, so this only ever advances a real signer.)
+  if (row && row.contract_status === "signed" && row.onboarding_token) {
+    return json({ ok: true, onboarding_url: `${PUBLIC_BASE_URL}/billing/onboarding/${row.onboarding_token}/pay` });
+  }
+
+  let clientId = row?.id as string | undefined;
 
   if (!clientId) {
     // Force the safe defaults: active=false, no assistant/inbound number (a human
@@ -453,11 +473,30 @@ async function handleSignup(req: Request, body: Record<string, unknown>): Promis
       owner_phone: phone,
       active: false,
     }).select("id").limit(1);
-    if (insErr || !ins?.[0]) {
-      console.log(`[signup] insert failed: ${insErr?.message}`);
-      return json({ error: "could not create your account" }, 400);
+    if (insErr) {
+      // Unique-violation (needs the clients_contact_email_unique index): a
+      // concurrent request just created the row — re-select and continue.
+      if ((insErr as { code?: string }).code === "23505") {
+        const { data: again } = await supabase
+          .from("clients").select("id").eq("contact_email", contactEmail).limit(1);
+        clientId = again?.[0]?.id;
+      }
+      if (!clientId) {
+        console.log(`[signup] insert failed: ${insErr.message}`);
+        return json({ error: "could not create your account" }, 400);
+      }
+    } else {
+      clientId = ins?.[0]?.id;
     }
-    clientId = ins[0].id;
+    if (!clientId) return json({ error: "could not create your account" }, 400);
+  } else {
+    // Existing in-progress row (contract not yet signed): save the latest details
+    // the prospect entered so a correction on resubmit isn't silently dropped.
+    await supabase.from("clients").update({
+      business_name: businessName,
+      dispatch_phone: phone,
+      owner_phone: phone,
+    }).eq("id", clientId);
   }
 
   // Fire-and-forget lead alert with the details a human needs to provision later
