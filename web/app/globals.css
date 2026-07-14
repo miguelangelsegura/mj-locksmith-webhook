@@ -27,10 +27,57 @@
 
 html { scroll-behavior: smooth; }
 
+/* The site commits to one bright, light design. Pinning color-scheme keeps
+   native controls (range slider, <select>, disclosure markers, autofill,
+   scrollbars) consistent whether the visitor's OS is in light OR dark mode —
+   this is the "dark/light parity" guarantee for a single-theme site. */
+:root { color-scheme: light; }
+
 body {
   background: #fff;
   color: var(--color-body);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Consistent, visible keyboard focus everywhere (premium + accessible). The
+   outline follows each element's own border-radius, so we don't set one here
+   (doing so would override Tailwind's rounded-full/2xl on focus). */
+:where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+/* Shared "card lift" — one easing curve for every hover across the page so
+   motion feels authored, not per-component. Lift + soft shadow + brand edge. */
+.lift {
+  transition:
+    transform .35s cubic-bezier(.22, 1, .36, 1),
+    box-shadow .35s cubic-bezier(.22, 1, .36, 1),
+    border-color .35s ease;
+}
+.lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 48px -26px rgba(13, 18, 32, .30);
+  border-color: rgba(91, 91, 245, .45);
+}
+
+/* Nav link with an underline that grows from the left on hover/focus. */
+.navlink { position: relative; }
+.navlink::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: -5px; height: 2px;
+  background: var(--color-brand); border-radius: 2px;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .3s cubic-bezier(.22, 1, .36, 1);
+}
+.navlink:hover::after, .navlink:focus-visible::after { transform: scaleX(1); }
+
+/* Sticky header gains depth once the page is scrolled. */
+.nav-bar { transition: box-shadow .3s ease, background-color .3s ease; }
+.nav-scrolled {
+  background-color: rgba(255, 255, 255, .9);
+  box-shadow: 0 10px 30px -18px rgba(13, 18, 32, .25);
 }
 
 /* --- Glow helpers: bright radial washes behind sections --- */
@@ -57,6 +104,18 @@ body {
 /* --- scroll reveal --- */
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
 .reveal.in { opacity: 1; transform: none; }
+
+/* A card that both reveals AND lifts needs ONE transition covering every
+   animated property (an element has a single `transition` value). Placed after
+   both .reveal and .lift so it wins the cascade; the hover shadow/border fade
+   would otherwise snap. */
+.reveal.lift {
+  transition:
+    opacity .6s ease,
+    transform .4s cubic-bezier(.22, 1, .36, 1),
+    box-shadow .35s cubic-bezier(.22, 1, .36, 1),
+    border-color .35s ease;
+}
 
 /* --- keyframes (all our own) --- */
 @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -113,7 +172,10 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .reveal { opacity: 1; transform: none; transition: none; }
+  .reveal, .reveal.lift { opacity: 1; transform: none; transition: none; }
+  .lift { transition: none; }
+  .lift:hover { transform: none; }
+  .navlink::after { transition: none; }
   .animate-floaty, .animate-aura, .animate-ringpulse, .animate-dot,
   .caret::after, .voicebars span, .animate-pointer, .animate-slideup,
   .animate-glow, .text-shimmer, .animate-marquee, .animate-pop { animation: none; }

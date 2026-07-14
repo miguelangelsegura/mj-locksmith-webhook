@@ -1,7 +1,7 @@
 const CONFIG = {
   email: "hello@dispango.com",
   legalName: "Jam Works Inc.",
-  address: "REPLACE — registered mailing address, City, ON, Canada",
+  address: "", // TODO(Phase 7): registered mailing address — omitted until set
   price: "199",
 };
 
@@ -103,7 +103,7 @@ export default function Terms() {
         <p>
           These terms are governed by the laws of Ontario and Canada. Questions:{" "}
           <a className="text-brand hover:underline" href={`mailto:${CONFIG.email}`}>{CONFIG.email}</a>
-          <br />{CONFIG.legalName}<br />{CONFIG.address}
+          <br />{CONFIG.legalName}{CONFIG.address && <><br />{CONFIG.address}</>}
         </p>
       </Section>
     </main>

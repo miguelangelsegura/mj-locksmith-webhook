@@ -1,7 +1,7 @@
 const CONFIG = {
   email: "hello@dispango.com",
   legalName: "Jam Works Inc.",
-  address: "REPLACE — registered mailing address, City, ON, Canada",
+  address: "", // TODO(Phase 7): registered mailing address — omitted until set
 };
 
 export const metadata = {
@@ -43,12 +43,12 @@ export default function Privacy() {
       </Section>
 
       <Section h="Why we collect it">
-        <p>Solely to deliver your request to the locksmith business you called, so they can call
+        <p>Solely to deliver your request to the business you called, so they can call
           you back and help. We do not sell personal information.</p>
       </Section>
 
       <Section h="How it's stored and shared">
-        <p>Call information is shared only with the specific locksmith business that received your
+        <p>Call information is shared only with the specific business that received your
           call. It is stored securely and retained only as long as needed to provide the service.</p>
       </Section>
 
@@ -58,7 +58,7 @@ export default function Privacy() {
       </Section>
 
       <Section h="Contact">
-        <p>{CONFIG.legalName}<br />{CONFIG.address}<br />
+        <p>{CONFIG.legalName}<br />{CONFIG.address && <>{CONFIG.address}<br /></>}
           <a className="text-brand hover:underline" href={`mailto:${CONFIG.email}`}>{CONFIG.email}</a></p>
       </Section>
     </main>
