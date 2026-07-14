@@ -31,30 +31,30 @@ function Logo() {
 // the real variable is mobile vs landline vs VoIP — hence tabs, not per-carrier.
 const GUIDES = {
   Mobile: {
-    intro: "On your phone's dialer, enter one of these codes with your Dispango number (the one we're texting you), then press call. We recommend “when unanswered” so you can still pick up first — Dispango only catches what you miss.",
+    intro: "Dial one code, press call. We recommend “when unanswered” so you still pick up first.",
     steps: [
-      ["Forward calls you don't answer (recommended)", "**61*YOUR-DISPANGO-NUMBER#"],
-      ["Forward when your line is busy", "**67*YOUR-DISPANGO-NUMBER#"],
-      ["Forward every call straight to Dispango", "**21*YOUR-DISPANGO-NUMBER#"],
-      ["Turn all forwarding back off", "##002#"],
+      ["When unanswered (recommended)", "**61*NUM#"],
+      ["When your line is busy", "**67*NUM#"],
+      ["Every call", "**21*NUM#"],
+      ["Turn forwarding off", "##002#"],
     ],
-    note: "Works on virtually all Canadian mobile carriers (Rogers, Bell, Telus, Fido, Koodo, Virgin, Freedom).",
+    note: "Works on Rogers, Bell, Telus, Fido, Koodo, Virgin & Freedom.",
   },
   Landline: {
-    intro: "Landlines set forwarding through your phone provider — usually a star code on the handset or a toggle in your provider's online account.",
+    intro: "Enter a star code on the handset (or toggle it in your provider account).",
     steps: [
-      ["Forward when unanswered (common code)", "*92 then YOUR-DISPANGO-NUMBER"],
-      ["Forward all calls (common code)", "*72 then YOUR-DISPANGO-NUMBER"],
-      ["Turn forwarding off (common code)", "*73"],
+      ["When unanswered", "*92 → NUM"],
+      ["All calls", "*72 → NUM"],
+      ["Turn off", "*73"],
     ],
-    note: "Exact codes vary by provider — if these don't work, your provider's website will list them, or we'll set it up with you.",
+    note: "Codes vary by provider — if these don’t work we’ll set it up with you.",
   },
-  "VoIP / internet phone": {
-    intro: "In your VoIP admin panel (RingCentral, Ooma, 8x8, GoTo, etc.), open your number's call-handling or call-forwarding rules.",
+  "VoIP": {
+    intro: "In your VoIP panel (RingCentral, Ooma, 8x8…), add a call-forwarding rule.",
     steps: [
-      ["Add a forwarding rule", "Send unanswered / all calls to YOUR-DISPANGO-NUMBER"],
+      ["Forward rule", "unanswered / all → NUM"],
     ],
-    note: "Every VoIP dashboard is a little different — we're happy to hop on a quick call and do it with you.",
+    note: "Every dashboard differs — happy to hop on and do it together.",
   },
 };
 const TABS = Object.keys(GUIDES);
@@ -66,7 +66,7 @@ export default function Welcome() {
 
   // The Stripe success redirect can land here before the payment webhook has
   // finished provisioning, so poll the tokenized read endpoint until the assigned
-  // number shows up (or we give up and keep the graceful "watch for a text" copy).
+  // number shows up (or we give up and keep the graceful "setting up" state).
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token");
     if (!token) return;
@@ -80,10 +80,10 @@ export default function Welcome() {
         const data = await res.json().catch(() => ({}));
         if (!cancelled && res.ok && data.inbound_number) {
           setNumber(data.inbound_number);
-          return; // done
+          return;
         }
       } catch {
-        // network hiccup — just keep polling
+        // network hiccup — keep polling
       }
       if (!cancelled && tries < 12) timer = setTimeout(poll, 4000);
     }
@@ -92,7 +92,7 @@ export default function Welcome() {
   }, []);
 
   // Drop the real number into the forwarding codes once we have it.
-  const withNumber = (code) => (number ? code.replace("YOUR-DISPANGO-NUMBER", number) : code);
+  const withNumber = (code) => code.replace("NUM", number || "your Dispango number");
 
   return (
     <main className="glow-hero min-h-screen">
@@ -101,72 +101,78 @@ export default function Welcome() {
         <a href="/" className="text-sm font-medium text-body hover:text-brand">← Home</a>
       </header>
 
-      <section className="mx-auto max-w-2xl px-5 pb-20 pt-6">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald">
-          <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <section className="mx-auto max-w-lg px-5 pb-24 pt-8 text-center">
+        <div className="animate-pop mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald">
+          <svg viewBox="0 0 24 24" className="h-9 w-9" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </div>
-        <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-ink md:text-4xl">You&apos;re All Set! 🎉</h1>
-        <p className="mt-3 text-body">
-          Your contract is signed and your subscription is active. Here&apos;s exactly what happens next —
-          you&apos;ll be taking AI-answered calls today.
+        <h1 className="animate-slideup mt-5 text-3xl font-extrabold tracking-tight text-ink md:text-4xl" style={{ animationDelay: ".05s" }}>
+          You&apos;re all set 🎉
+        </h1>
+        <p className="animate-slideup mt-2 text-body" style={{ animationDelay: ".1s" }}>
+          Here&apos;s your number — forward your line to it and you&apos;re live.
         </p>
 
-        {/* Assigned number */}
-        {number && (
-          <div className="mt-8 rounded-3xl border border-brand/30 bg-brand/5 p-7 text-center">
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand">Your Dispango number</p>
-            <p className="mt-2 font-mono text-3xl font-extrabold tracking-tight text-ink">{formatPhone(number)}</p>
-            <p className="mt-2 text-sm text-body">Forward your business line to this number using the steps below — we&apos;ll flip it live and text you the moment it&apos;s ready.</p>
-          </div>
-        )}
+        {/* Number — the hero */}
+        <div className="animate-slideup animate-glow relative mt-8 overflow-hidden rounded-3xl border border-brand/25 bg-white p-8 shadow-xl shadow-brand/5" style={{ animationDelay: ".15s" }}>
+          <span className="eyebrow">Your Dispango number</span>
+          {number ? (
+            <>
+              <p className="mt-3 font-mono text-[2rem] font-extrabold tracking-tight text-ink md:text-4xl">{formatPhone(number)}</p>
+              <p className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-emerald">
+                <span className="animate-dot inline-block h-2 w-2 rounded-full bg-emerald" />
+                Going live — we&apos;ll text you the moment it&apos;s ready
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-shimmer mt-3 font-mono text-[2rem] font-extrabold tracking-tight md:text-4xl">+1 (•••) •••-••••</p>
+              <p className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-brand">
+                <span className="animate-dot inline-block h-2 w-2 rounded-full bg-brand" />
+                Assigning your number…
+              </p>
+            </>
+          )}
+        </div>
 
-        {/* Next steps */}
-        <ol className="mt-8 space-y-4">
-          {[
-            number
-              ? ["Your Dispango number is ready", "It's shown above — we're doing a final check and will text + email you the moment it's live."]
-              : ["We're setting up your Dispango number", "Watch for a text and email shortly with your dedicated number — usually within a few hours."],
-            ["Forward your business line to it", "Use the steps below — takes about a minute. Pick your line type."],
-            ["Dispango starts answering", "Every call captured, every job texted straight to your phone."],
-          ].map(([h, p], i) => (
-            <li key={h} className="flex gap-4">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-extrabold text-white">{i + 1}</span>
-              <div><p className="font-bold text-ink">{h}</p><p className="mt-0.5 text-sm text-body">{p}</p></div>
-            </li>
+        {/* Three tiny steps */}
+        <div className="animate-slideup mt-5 flex items-center justify-center gap-2 text-xs font-semibold text-body" style={{ animationDelay: ".2s" }}>
+          {["Forward your line", "We flip it live", "Jobs text you"].map((s, i) => (
+            <span key={s} className="flex items-center gap-2">
+              {i > 0 && <span className="text-line">→</span>}
+              <span className="rounded-full bg-soft px-3 py-1.5">{s}</span>
+            </span>
           ))}
-        </ol>
+        </div>
 
-        {/* Forwarding guide */}
-        <div className="mt-10 rounded-3xl border border-line bg-white p-7 shadow-xl shadow-ink/5">
-          <h2 className="font-bold text-ink">Set Up Call Forwarding</h2>
-          <div className="mt-4 flex flex-wrap gap-2">
+        {/* Forwarding guide — compact */}
+        <div className="animate-slideup mt-8 rounded-3xl border border-line bg-white p-6 text-left shadow-xl shadow-ink/5" style={{ animationDelay: ".25s" }}>
+          <div className="flex flex-wrap gap-2">
             {TABS.map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setTab(t)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${tab === t ? "bg-brand text-white" : "border border-line text-ink hover:border-brand"}`}
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${tab === t ? "bg-brand text-white" : "border border-line text-ink hover:border-brand"}`}
               >
                 {t}
               </button>
             ))}
           </div>
           <p className="mt-4 text-sm text-body">{guide.intro}</p>
-          <div className="mt-4 space-y-2">
+          <div key={tab} className="animate-slideup mt-3 space-y-2">
             {guide.steps.map(([label, code]) => (
-              <div key={label} className="rounded-xl bg-soft p-4">
-                <p className="text-sm font-semibold text-ink">{label}</p>
-                <p className="mt-1 font-mono text-sm text-brand">{withNumber(code)}</p>
+              <div key={label} className="flex items-center justify-between gap-3 rounded-xl bg-soft px-4 py-2.5">
+                <span className="text-sm font-medium text-ink">{label}</span>
+                <span className="font-mono text-sm font-semibold text-brand">{withNumber(code)}</span>
               </div>
             ))}
           </div>
           <p className="mt-4 text-xs text-muted">{guide.note}</p>
         </div>
 
-        <div className="mt-8 rounded-2xl bg-indigo-50 p-5 text-center">
-          <p className="text-sm font-semibold text-ink">Rather we set it up with you?</p>
-          <p className="mt-1 text-sm text-body">Same-day help — reply to your welcome email or reach us at hello@dispango.com and we&apos;ll forward your line together in 5 minutes.</p>
-        </div>
+        <p className="animate-slideup mt-6 text-sm text-body" style={{ animationDelay: ".3s" }}>
+          Want us to set it up with you? <a className="font-semibold text-brand hover:underline" href="mailto:hello@dispango.com">hello@dispango.com</a> — done in 5 minutes.
+        </p>
       </section>
     </main>
   );
