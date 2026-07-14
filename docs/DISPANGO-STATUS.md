@@ -60,9 +60,11 @@ the form before driving paid ad traffic.
 
 ## Roadmap (remaining sprints, in recommended order)
 
-1. **Per-caller rate limit** (small, high value): cap calls/hour per phone in `handleAssistantRequest`
-   (vapi-webhook) so one number can't drain the prepaid Vapi balance. KNOWN GAP. Also unblocks a public
-   demo call-in number.
+1. **Per-caller abuse rails** (small, high value) — **DONE (branch `feat/abuse-rails`, not yet deployed).**
+   The per-caller rate limit already existed (10/day); tightened it to add a **5/hour** cap, and — the
+   real open gap — the `banned_callers` list was never enforced in the webhook, so **ban enforcement was
+   added** to `handleAssistantRequest`. Both decline before any AI minutes are spent. Deferred: counting
+   in-flight/simultaneous calls (only completed calls are counted today). Unblocks the public demo number.
 2. **🌟 Auto-provisioning robot** (the big one, "minimize my input"): on payment, auto-buy a Twilio
    number → attach the shared Vapi assistant → set server URL + secret + fallback → write the row. Makes
    onboarding fully hands-off (number is instant on `/welcome`). Touches the live call path (broke it

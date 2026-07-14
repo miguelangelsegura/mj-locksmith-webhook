@@ -27,39 +27,41 @@ human-gated (`supabase functions deploy` / `db push` / Vercel). Backend sprints 
 
 ---
 
-## Sprint 1 — Per-caller rate limit (safety rail)
+## Sprint 1 — Per-caller abuse rails (safety rail) — DONE (branch `feat/abuse-rails`, not deployed)
 
-**Why:** Vapi is prepaid and AI minutes are ~90% of per-call cost. Today there is **no cap on how many
-times one number can call**, so a robocaller or prankster can spin up the assistant repeatedly and burn
-your loaded balance. This is a documented KNOWN GAP. Small change, protects real money, and is a
+**Why:** Vapi is prepaid and AI minutes are ~90% of per-call cost. A robocaller or prankster spinning up
+the assistant repeatedly can burn your loaded balance. Small change, protects real money, and is a
 prerequisite for the public demo number (Sprint 3).
 
-**Current state / gap:** `handleAssistantRequest` in `supabase/functions/vapi-webhook/index.ts` resolves
-the client and returns the assistant + per-call variable overrides — with no throttling. The `calls`
-table already stores `caller_phone` and `created_at` per call, so we can count recent calls cheaply.
+**Correction (what code review actually found):** the per-caller rate limit the "KNOWN GAP" described
+**already existed** — `RATE_LIMIT_PER_DAY = 10` + `countRecentCalls` in `handleAssistantRequest`, which
+declined over-limit callers via `Response.json({ error })` before spending AI minutes. The genuinely open
+gap was the **`banned_callers` list, which the webhook never checked** — admin `/banned` routes + UI
+wrote to it, but banning a number did nothing. Also: `banned_callers`/`calls`/`clients` existed only in
+the live DB, not captured in any migration.
 
-**Plan:**
-1. In `handleAssistantRequest`, before returning the assistant, query `calls` for the count of rows with
-   this `caller_phone` in the last hour (and/or last 10 min).
-2. If over a threshold (e.g. **>5/hour** or **>3/10min** — make it a tunable constant), refuse to spin up
-   the assistant: return a minimal response that plays a short "please try again later" message or a
-   polite decline, so no AI minutes (STT/LLM/TTS) are spent.
-3. Keep it multi-tenant-aware: count per `caller_phone` (optionally scoped per client) so a legit caller
-   to shop A isn't throttled by calls to shop B.
-4. Consider integrating with the existing **banned-callers** feature (there's a `banned_callers` table +
-   admin `/banned` routes) — a caller who trips the limit repeatedly could be auto-flagged for review.
+**Delivered:**
+1. **Ban enforcement** — added `isBanned(phone)` and a check at the top of `handleAssistantRequest`'s
+   `try` (before rate-limit/memory) that declines a banned caller with `Response.json({ error })`. Fails
+   open on DB error.
+2. **Hourly cap** — added `RATE_LIMIT_PER_HOUR = 5` alongside the existing `RATE_LIMIT_PER_DAY = 10`;
+   `isRateLimited` blocks a caller at ≥5 completed calls in the last hour **or** ≥10 in the last day.
+3. **Migration** — `supabase/migrations/20260714000000_banned_callers.sql` captures the table
+   (`create table if not exists`, safe no-op live). A full `calls`/`clients` baseline via `supabase db
+   pull` was attempted but blocked by a remote migration-history mismatch (repair mutates remote state →
+   human-gated); left as a follow-up.
 
-**Files:** `supabase/functions/vapi-webhook/index.ts` (add the check in `handleAssistantRequest`);
-possibly a small migration only if you add a counter column (prefer counting existing `calls` rows — no
-schema change).
+**Deferred:** counting **in-flight/simultaneous** calls (only completed calls are counted — a burst of
+concurrent calls from one number can still slip through); auto-banning repeat limit-trippers (risks
+banning a legit heavy caller — bans stay a deliberate admin action).
 
-**Invariants / risks:** Don't break the returning-caller memory path or multi-tenant resolution. Make the
-threshold generous enough not to block a genuine customer calling back a few times. Fail *open* on a DB
-error (don't block real calls if the count query fails) — log it instead.
+**Files:** `supabase/functions/vapi-webhook/index.ts`; `supabase/migrations/20260714000000_banned_callers.sql`.
 
-**Verification:** Simulate N `assistant-request` payloads from one `caller_phone` (see the smoke-test
-recipe in `CLAUDE.md`) and confirm the (N+1)th is refused; confirm a different number still connects;
-confirm a DB-error path still lets calls through.
+**Invariants kept:** returning-caller memory + multi-tenant resolution untouched; fail *open* on DB error;
+decline shape spends no AI minutes; `clients.active` still owned by billing's `recomputeActive`.
+
+**Verification:** type-check passes; ban + hourly cap + fail-open smoke-tested via local serve; run
+`/code-review` on the webhook diff before deploy.
 
 **Size / sensitivity:** Small. Touches the **live call path** → `/code-review` before deploy.
 

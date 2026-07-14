@@ -307,17 +307,38 @@ async function resolveClientContext(
   };
 }
 
+const RATE_LIMIT_PER_HOUR = 5;
 const RATE_LIMIT_PER_DAY = 10;
 
-async function countRecentCalls(phone: string | null): Promise<number> {
-  if (!phone || !supabase) return 0;
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { count } = await supabase
+async function countCallsSince(phone: string, sinceIso: string): Promise<number> {
+  const { count } = await supabase!
     .from("calls")
     .select("vapi_call_id", { count: "exact", head: true })
     .eq("caller_phone", phone)
-    .gte("ended_at", since);
+    .gte("ended_at", sinceIso);
   return count ?? 0;
+}
+
+// Block if the caller is over either window. Only completed calls count (rows
+// are written at end-of-call); simultaneous in-flight calls are a known gap.
+async function isRateLimited(phone: string | null): Promise<boolean> {
+  if (!phone || !supabase) return false;
+  const now = Date.now();
+  const hourAgo = new Date(now - 60 * 60 * 1000).toISOString();
+  const dayAgo = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+  if (await countCallsSince(phone, hourAgo) >= RATE_LIMIT_PER_HOUR) return true;
+  if (await countCallsSince(phone, dayAgo) >= RATE_LIMIT_PER_DAY) return true;
+  return false;
+}
+
+async function isBanned(phone: string | null): Promise<boolean> {
+  if (!phone || !supabase) return false;
+  const { data } = await supabase
+    .from("banned_callers")
+    .select("caller_phone")
+    .eq("caller_phone", phone)
+    .limit(1);
+  return !!(data && data.length);
 }
 
 // Spoken greeting must not read the street/house number aloud (caller ID is spoofable).
@@ -338,8 +359,12 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
   }
   try {
     const phone = extractCallerPhone(payload);
-    if (await countRecentCalls(phone) >= RATE_LIMIT_PER_DAY) {
-      console.log(`[vapi] rate-limited phone=${phone} (>=${RATE_LIMIT_PER_DAY}/day)`);
+    if (await isBanned(phone)) {
+      console.log(`[vapi] blocked banned caller phone=${phone}`);
+      return Response.json({ error: "Sorry, we can't take your call." });
+    }
+    if (await isRateLimited(phone)) {
+      console.log(`[vapi] rate-limited phone=${phone} (>${RATE_LIMIT_PER_HOUR}/hr or >=${RATE_LIMIT_PER_DAY}/day)`);
       return Response.json({
         error: "We're getting a lot of calls right now — please try again later.",
       });
