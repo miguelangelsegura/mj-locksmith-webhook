@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/*
+  Palette: bright, mood-lifting. Vibrant indigo primary + warm coral/amber accent
+  on a white base, lifted by layered radial-gradient "glows" (the technique that
+  makes a white page feel alive rather than flat). Higher luminance + saturation
+  than a flat blue reads friendlier/more energetic.
+*/
+@theme {
+  --color-indigo-50: #eef0ff;
+  --color-indigo-100: #e0e3ff;
+  --color-indigo-200: #c6cbff;
+  --color-brand: #5b5bf5;
+  --color-brand-600: #4a45ec;
+  --color-brand-700: #3a34c9;
+  --color-warm: #ff7a4d;
+  --color-warm-amber: #ffb020;
+  --color-warm-50: #fff1ea;
+  --color-ink: #0d1220;
+  --color-body: #4b5468;
+  --color-muted: #8a93a6;
+  --color-soft: #f6f7ff;
+  --color-line: #e8eaf6;
+  --color-emerald: #10b981;
+  --color-emerald-50: #e7f8f1;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: #fff;
+  color: var(--color-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Glow helpers: bright radial washes behind sections --- */
+.glow-hero {
+  background:
+    radial-gradient(680px 460px at 12% 8%, rgba(91, 91, 245, 0.16), transparent 60%),
+    radial-gradient(620px 420px at 92% 22%, rgba(255, 122, 77, 0.14), transparent 62%),
+    radial-gradient(760px 520px at 60% 100%, rgba(91, 91, 245, 0.10), transparent 66%),
+    #ffffff;
+}
+.glow-soft {
+  background:
+    radial-gradient(560px 360px at 85% 10%, rgba(91, 91, 245, 0.10), transparent 64%),
+    radial-gradient(480px 320px at 8% 90%, rgba(255, 176, 32, 0.10), transparent 66%),
+    var(--color-soft);
+}
+.glow-dark {
+  background:
+    radial-gradient(600px 380px at 50% 0%, rgba(91, 91, 245, 0.45), transparent 62%),
+    radial-gradient(420px 300px at 88% 30%, rgba(255, 122, 77, 0.28), transparent 66%),
+    var(--color-ink);
+}
+
+/* --- scroll reveal --- */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.in { opacity: 1; transform: none; }
+
+/* --- keyframes (all our own) --- */
+@keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.animate-floaty { animation: floaty 5s ease-in-out infinite; }
+
+@keyframes auraBreathe { 0%,100% { opacity: .55; transform: scale(1); } 50% { opacity: .9; transform: scale(1.06); } }
+.animate-aura { animation: auraBreathe 6s ease-in-out infinite; }
+
+@keyframes ringPulse { 0% { transform: scale(.7); opacity: .5; } 100% { transform: scale(1.5); opacity: 0; } }
+.animate-ringpulse { animation: ringPulse 3s ease-out infinite; }
+
+@keyframes pulseDot { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16,185,129,.6); } 50% { opacity: .6; box-shadow: 0 0 0 6px rgba(16,185,129,0); } }
+.animate-dot { animation: pulseDot 1.6s ease-in-out infinite; }
+
+@keyframes caretBlink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+.caret::after { content: "▋"; margin-left: 1px; color: var(--color-brand); animation: caretBlink 1s step-end infinite; }
+
+@keyframes voiceBar { 0%,100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+.voicebars span { display:inline-block; width:3px; height:16px; margin:0 1px; border-radius:2px; background:currentColor; transform-origin:bottom; animation: voiceBar .9s ease-in-out infinite; }
+.voicebars span:nth-child(2){ animation-delay:.12s } .voicebars span:nth-child(3){ animation-delay:.24s }
+.voicebars span:nth-child(4){ animation-delay:.36s } .voicebars span:nth-child(5){ animation-delay:.48s }
+
+@keyframes pointerCue { 0% { transform: translate(0,0); opacity:0; } 15% { opacity:1; } 60% { transform: translate(-46px,-26px); opacity:1; } 75%,100% { opacity:0; } }
+.animate-pointer { animation: pointerCue 4.5s ease-in-out infinite; }
+
+@keyframes slideUpFade { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
+.animate-slideup { animation: slideUpFade .5s ease both; }
+
+/* Attention pulse — gently breathes a card's ring/shadow to draw the eye to a USP */
+@keyframes glowPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(91,91,245,0); }
+  50% { box-shadow: 0 0 0 6px rgba(91,91,245,.12); }
+}
+.animate-glow { animation: glowPulse 3.2s ease-in-out infinite; }
+
+/* Animated gradient sweep across a highlighted headline word */
+@keyframes textShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+.text-shimmer {
+  background: linear-gradient(90deg, var(--color-brand), var(--color-warm), var(--color-brand));
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: textShimmer 4s linear infinite;
+}
+
+/* Integrations marquee — a slow horizontal scroll of the "integrates with" strip */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.animate-marquee { animation: marquee 26s linear infinite; }
+.marquee-mask { -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+
+/* Numbered step badge + connector line for "How It Works" */
+@keyframes popIn { from { opacity:0; transform: scale(.8); } to { opacity:1; transform:none; } }
+.animate-pop { animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .animate-floaty, .animate-aura, .animate-ringpulse, .animate-dot,
+  .caret::after, .voicebars span, .animate-pointer, .animate-slideup,
+  .animate-glow, .text-shimmer, .animate-marquee, .animate-pop { animation: none; }
+  .text-shimmer { -webkit-text-fill-color: var(--color-brand); color: var(--color-brand); }
+}

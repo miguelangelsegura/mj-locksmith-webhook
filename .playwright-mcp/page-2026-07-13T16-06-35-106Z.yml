@@ -1,0 +1,339 @@
+- main [ref=f13e2]:
+  - generic [ref=f13e4]:
+    - generic [ref=f13e5]: Dispango
+    - navigation [ref=f13e12]:
+      - link "How It Works" [ref=f13e13] [cursor=pointer]:
+        - /url: "#how"
+      - link "Industries" [ref=f13e14] [cursor=pointer]:
+        - /url: "#industries"
+      - link "Integrations" [ref=f13e15] [cursor=pointer]:
+        - /url: "#integrations"
+      - link "Pricing" [ref=f13e16] [cursor=pointer]:
+        - /url: "#pricing"
+      - link "FAQ" [ref=f13e17] [cursor=pointer]:
+        - /url: "#faq"
+    - generic [ref=f13e18]:
+      - link "Sign In" [ref=f13e19] [cursor=pointer]:
+        - /url: https://billing.stripe.com/p/login/REPLACE
+      - link "Get Started" [ref=f13e20] [cursor=pointer]:
+        - /url: /get-started
+  - generic [ref=f13e24]:
+    - generic [ref=f13e25]:
+      - generic [ref=f13e26]: AI Receptionist for the Canadian Trades Industry
+      - heading "The Call You Missed Just Became Someone Else's Job." [level=1] [ref=f13e27]
+      - paragraph [ref=f13e28]: Dispango answers every call, captures the job, and texts you the lead in seconds — around the clock, even when you're on the tools.
+      - generic [ref=f13e29]:
+        - link "Get Started" [ref=f13e30] [cursor=pointer]:
+          - /url: /get-started
+        - link "See It in Action" [ref=f13e33] [cursor=pointer]:
+          - /url: "#demo"
+      - list [ref=f13e34]:
+        - listitem [ref=f13e35]: Keeps your number
+        - listitem [ref=f13e38]: Live the same day
+        - listitem [ref=f13e41]: Flat $199/mo
+    - generic [ref=f13e49]:
+      - generic [ref=f13e51]:
+        - generic [ref=f13e52]: 9:41
+        - generic [ref=f13e53]: Dispango
+      - generic [ref=f13e54]:
+        - paragraph [ref=f13e55]: Rapid Plumbing
+        - generic [ref=f13e56]:
+          - text: Live call
+          - generic [ref=f13e58]: · 0:00
+      - generic [ref=f13e65]:
+        - paragraph [ref=f13e66]: Live transcript
+        - generic [ref=f13e67]: ▋
+  - generic [ref=f13e69]:
+    - heading "Why Shops Across Canada Switch" [level=2] [ref=f13e70]
+    - paragraph [ref=f13e71]: Eight things a voicemail — or a $3,000-a-month receptionist — simply can't do.
+    - generic [ref=f13e72]:
+      - generic [ref=f13e73]:
+        - heading "Answers Every Call at Once" [level=3] [ref=f13e77]
+        - paragraph [ref=f13e78]: Unlimited calls, all at the same time. No busy signal, nobody stuck on hold.
+      - generic [ref=f13e79]:
+        - heading "It Never Sleeps" [level=3] [ref=f13e83]
+        - paragraph [ref=f13e84]: Nights, weekends, holidays, mid-job — 24/7/365, every call gets picked up.
+      - generic [ref=f13e85]:
+        - heading "The Full Job, Texted in Seconds" [level=3] [ref=f13e89]
+        - paragraph [ref=f13e90]: Name, number, address, problem and urgency — on your phone before you're off the ladder.
+      - generic [ref=f13e91]:
+        - heading "Remembers Repeat Callers" [level=3] [ref=f13e95]
+        - paragraph [ref=f13e96]: Greets your regulars by name and recalls what they called about last time.
+      - generic [ref=f13e97]:
+        - heading "Speaks in Your Shop's Name" [level=3] [ref=f13e101]
+        - paragraph [ref=f13e102]: Trained on your business, hours and service area — never a generic script.
+      - generic [ref=f13e103]:
+        - heading "Blocks Spam & Robocalls" [level=3] [ref=f13e107]
+        - paragraph [ref=f13e108]: Wrong numbers and junk never reach you. Only real jobs land on your phone.
+      - generic [ref=f13e109]:
+        - heading "Keep Your Own Number" [level=3] [ref=f13e113]
+        - paragraph [ref=f13e114]: Forward your existing line — callers dial the exact number they always have.
+      - generic [ref=f13e115]:
+        - heading "Canadian Data, PIPEDA-Safe" [level=3] [ref=f13e119]
+        - paragraph [ref=f13e120]: Built in Canada. Your callers' details stay private and compliant.
+  - generic [ref=f13e122]:
+    - heading "How It Works" [level=2] [ref=f13e123]
+    - paragraph [ref=f13e124]: From ring to lead in four steps. No hardware, no new number, no training.
+    - generic [ref=f13e125]:
+      - generic [ref=f13e126]:
+        - generic [ref=f13e127]: "1"
+        - heading "Your Number Rings" [level=3] [ref=f13e128]
+        - paragraph [ref=f13e129]: Forward your existing line to Dispango. Callers dial the same number as always.
+      - generic [ref=f13e130]:
+        - generic [ref=f13e131]: "2"
+        - heading "Dispango Answers" [level=3] [ref=f13e132]
+        - paragraph [ref=f13e133]: In your shop's name, in a natural voice — 24/7, on the very first rush.
+      - generic [ref=f13e134]:
+        - generic [ref=f13e135]: "3"
+        - heading "It Captures the Job" [level=3] [ref=f13e136]
+        - paragraph [ref=f13e137]: Name, number, address, the problem and how urgent it is — every single time.
+      - generic [ref=f13e138]:
+        - generic [ref=f13e139]: "4"
+        - heading "You Get the Lead" [level=3] [ref=f13e140]
+        - paragraph [ref=f13e141]: Texted straight to your phone in seconds, ready for you to dispatch.
+  - generic [ref=f13e142]:
+    - heading "See It in Action" [level=2] [ref=f13e143]
+    - paragraph [ref=f13e144]: Watch a live call come in above — or hear it and try it for yourself.
+    - generic [ref=f13e145]:
+      - generic [ref=f13e146]:
+        - heading "Call and Talk to It Yourself" [level=3] [ref=f13e150]
+        - paragraph [ref=f13e151]: Our public demo line is launching shortly. Want a live walkthrough now? Book a 15-minute demo.
+      - generic [ref=f13e152]:
+        - heading "Hear a Sample Call" [level=3] [ref=f13e156]
+        - paragraph [ref=f13e157]: A recorded sample is on its way. In the meantime, the live transcript above shows exactly how a call unfolds.
+    - link "Book a Live Demo" [ref=f13e159] [cursor=pointer]:
+      - /url: https://cal.com/REPLACE/dispango-demo
+  - generic [ref=f13e163]:
+    - heading "Built for Every Trade" [level=2] [ref=f13e164]
+    - paragraph [ref=f13e165]: One receptionist, tuned to how your trade takes a call.
+    - generic [ref=f13e166]:
+      - generic [ref=f13e167]:
+        - heading "Locksmiths" [level=3] [ref=f13e171]
+        - paragraph [ref=f13e172]: Lockouts logged with address and urgency, day or night.
+      - generic [ref=f13e173]:
+        - heading "Plumbers" [level=3] [ref=f13e177]
+        - paragraph [ref=f13e178]: Burst pipes and floods triaged the second they call.
+      - generic [ref=f13e179]:
+        - heading "HVAC" [level=3] [ref=f13e183]
+        - paragraph [ref=f13e184]: No-heat and no-cool calls captured and sent to you fast.
+      - generic [ref=f13e185]:
+        - heading "Electricians" [level=3] [ref=f13e189]
+        - paragraph [ref=f13e190]: Every service call caught, even after hours.
+      - generic [ref=f13e191]:
+        - heading "Contractors" [level=3] [ref=f13e195]
+        - paragraph [ref=f13e196]: Quote requests captured while you're on site.
+      - generic [ref=f13e197]:
+        - heading "Garage Doors" [level=3] [ref=f13e201]
+        - paragraph [ref=f13e202]: Stuck-door emergencies routed to you instantly.
+      - generic [ref=f13e203]:
+        - heading "Roofers" [level=3] [ref=f13e207]
+        - paragraph [ref=f13e208]: Storm-damage leads booked before the competition calls back.
+      - generic [ref=f13e209]:
+        - heading "& Every Trade" [level=3] [ref=f13e212]
+        - paragraph [ref=f13e213]: If your business lives on the phone, Dispango fits.
+  - generic [ref=f13e214]:
+    - heading "Dispango vs a Human Receptionist" [level=2] [ref=f13e215]
+    - paragraph [ref=f13e216]: Same job answered. One of them takes weekends off and costs fifteen times more.
+    - generic [ref=f13e217]:
+      - generic [ref=f13e219]:
+        - generic [ref=f13e220]: A human receptionist
+        - generic [ref=f13e221]: $3,000+/mo
+      - generic [ref=f13e225]:
+        - generic [ref=f13e226]: Dispango
+        - generic [ref=f13e227]: $199/mo
+    - generic [ref=f13e230]:
+      - generic [ref=f13e231]: Answers 5 calls at once
+      - generic [ref=f13e234]: Never off sick or on break
+      - generic [ref=f13e237]: No wages, no HR, no training
+  - generic [ref=f13e241]:
+    - heading "The Honest Comparison" [level=2] [ref=f13e242]
+    - table [ref=f13e244]:
+      - rowgroup [ref=f13e245]:
+        - row [ref=f13e246]:
+          - columnheader "What matters" [ref=f13e247]
+          - columnheader "Dispango" [ref=f13e248]
+          - columnheader "Answering service" [ref=f13e249]
+          - columnheader "Voicemail" [ref=f13e250]
+      - rowgroup [ref=f13e251]:
+        - row [ref=f13e252]:
+          - cell "Answers 24/7, instantly" [ref=f13e253]
+          - cell [ref=f13e254]
+          - cell "limited" [ref=f13e257]
+          - cell "—" [ref=f13e258]
+        - row [ref=f13e260]:
+          - cell "Takes every call at once" [ref=f13e261]
+          - cell [ref=f13e262]
+          - cell "—" [ref=f13e265]
+          - cell "—" [ref=f13e267]
+        - row [ref=f13e269]:
+          - cell "Captures the full job" [ref=f13e270]
+          - cell [ref=f13e271]
+          - cell "limited" [ref=f13e274]
+          - cell "—" [ref=f13e275]
+        - row [ref=f13e277]:
+          - cell "Texts you the lead in seconds" [ref=f13e278]
+          - cell [ref=f13e279]
+          - cell "limited" [ref=f13e282]
+          - cell "—" [ref=f13e283]
+        - row [ref=f13e285]:
+          - cell "Keeps your own number" [ref=f13e286]
+          - cell [ref=f13e287]
+          - cell "limited" [ref=f13e290]
+          - cell [ref=f13e291]
+        - row [ref=f13e294]:
+          - cell "Monthly cost" [ref=f13e295]
+          - cell "$199" [ref=f13e296]
+          - cell "$1,500+" [ref=f13e297]
+          - cell "$0" [ref=f13e298]
+        - row [ref=f13e299]:
+          - cell "Blocks spam & robocalls" [ref=f13e300]
+          - cell [ref=f13e301]
+          - cell "limited" [ref=f13e304]
+          - cell "—" [ref=f13e305]
+  - generic [ref=f13e307]:
+    - heading "What Are Missed Calls Costing You?" [level=2] [ref=f13e308]
+    - paragraph [ref=f13e309]: Your numbers, not ours. Drag the sliders.
+    - generic [ref=f13e311]:
+      - generic [ref=f13e312]:
+        - generic [ref=f13e313]:
+          - generic [ref=f13e314]:
+            - generic [ref=f13e315]: Missed calls per week
+            - generic [ref=f13e316]: "12"
+          - slider [ref=f13e317]: "12"
+        - generic [ref=f13e318]:
+          - generic [ref=f13e319]:
+            - generic [ref=f13e320]: Average job value
+            - generic [ref=f13e321]: $180
+          - slider [ref=f13e322]: "180"
+        - generic [ref=f13e323]:
+          - generic [ref=f13e324]:
+            - generic [ref=f13e325]: Callers who hire someone else
+            - generic [ref=f13e326]: 60%
+          - slider [ref=f13e327]: "60"
+      - generic [ref=f13e328]:
+        - paragraph [ref=f13e329]: You're losing about
+        - paragraph [ref=f13e330]: $5,573
+        - paragraph [ref=f13e331]: every month to missed calls.
+        - paragraph [ref=f13e332]: Dispango pays for itself 28.0× over.
+  - generic [ref=f13e334]:
+    - heading "Works with the Tools You Already Use" [level=2] [ref=f13e335]
+    - paragraph [ref=f13e336]: Send captured jobs straight into the software your shop already runs on.
+    - generic [ref=f13e338]:
+      - generic [ref=f13e339]: Jobber
+      - generic [ref=f13e340]: Housecall Pro
+      - generic [ref=f13e341]: ServiceTitan
+      - generic [ref=f13e342]: QuickBooks
+      - generic [ref=f13e343]: Google Calendar
+      - generic [ref=f13e344]: Zapier
+      - generic [ref=f13e345]: Slack
+      - generic [ref=f13e346]: HubSpot
+      - generic [ref=f13e347]: Jobber
+      - generic [ref=f13e348]: Housecall Pro
+      - generic [ref=f13e349]: ServiceTitan
+      - generic [ref=f13e350]: QuickBooks
+      - generic [ref=f13e351]: Google Calendar
+      - generic [ref=f13e352]: Zapier
+      - generic [ref=f13e353]: Slack
+      - generic [ref=f13e354]: HubSpot
+    - generic [ref=f13e355]:
+      - generic [ref=f13e356]:
+        - heading "We Build Your Integration" [level=3] [ref=f13e357]
+        - paragraph [ref=f13e358]: Don't see your software? We'll connect it. Tell us the tool and we'll make it fit.
+      - generic [ref=f13e359]:
+        - heading "Custom Reporting & Analysis" [level=3] [ref=f13e360]
+        - paragraph [ref=f13e361]: Want call trends, lead sources or after-hours volume? We'll run the analysis for your shop.
+      - generic [ref=f13e362]:
+        - heading "Same-Day Support" [level=3] [ref=f13e363]
+        - paragraph [ref=f13e364]: A real person, same day. No ticket queues, no offshore call centre.
+    - link "Talk to Us About Your Setup" [ref=f13e366] [cursor=pointer]:
+      - /url: "#contact"
+  - generic [ref=f13e367]:
+    - heading "One Plan. No Surprises." [level=2] [ref=f13e368]
+    - paragraph [ref=f13e369]: Everything below, one flat price, cancel anytime.
+    - generic [ref=f13e370]:
+      - generic [ref=f13e371]:
+        - paragraph [ref=f13e372]: The Dispango Plan
+        - paragraph [ref=f13e373]:
+          - generic [ref=f13e374]: $
+          - generic [ref=f13e375]: "0"
+          - generic [ref=f13e376]: /mo
+        - paragraph [ref=f13e377]: 14-day free trial · cancel anytime · keep your number
+      - generic [ref=f13e378]:
+        - generic [ref=f13e379]: Answers every call, 24/7
+        - generic [ref=f13e383]: Full job details texted in seconds
+        - generic [ref=f13e387]: Greets callers in your shop's name
+        - generic [ref=f13e391]: Remembers repeat callers
+        - generic [ref=f13e395]: Blocks spam & robocalls
+        - generic [ref=f13e399]: No per-call or setup fees
+        - generic [ref=f13e403]: Works with your existing number
+        - generic [ref=f13e407]: Live the same day
+      - link "Start Your Free Trial" [ref=f13e412] [cursor=pointer]:
+        - /url: /get-started
+  - generic [ref=f13e416]:
+    - heading "Questions, Answered" [level=2] [ref=f13e417]
+    - generic [ref=f13e418]:
+      - group [ref=f13e419]:
+        - generic "Do I keep my own number? +" [ref=f13e420] [cursor=pointer]:
+          - text: Do I keep my own number?
+          - generic [ref=f13e421]: +
+      - group [ref=f13e422]:
+        - generic "Will it sound like a robot? +" [ref=f13e423] [cursor=pointer]:
+          - text: Will it sound like a robot?
+          - generic [ref=f13e424]: +
+      - group [ref=f13e425]:
+        - generic "What does it cost? +" [ref=f13e426] [cursor=pointer]:
+          - text: What does it cost?
+          - generic [ref=f13e427]: +
+      - group [ref=f13e428]:
+        - generic "Can it work with my software? +" [ref=f13e429] [cursor=pointer]:
+          - text: Can it work with my software?
+          - generic [ref=f13e430]: +
+      - group [ref=f13e431]:
+        - generic "What about my callers' data? +" [ref=f13e432] [cursor=pointer]:
+          - text: What about my callers' data?
+          - generic [ref=f13e433]: +
+  - generic [ref=f13e434]:
+    - heading "Let's Talk" [level=2] [ref=f13e435]
+    - paragraph [ref=f13e436]: Questions, custom setups, or a live walkthrough — reach a real person the same day.
+    - generic [ref=f13e437]:
+      - link [ref=f13e438] [cursor=pointer]:
+        - /url: https://cal.com/REPLACE/dispango-demo
+        - paragraph [ref=f13e439]: Book a Demo
+        - paragraph [ref=f13e440]: See it live in 15 minutes.
+      - link [ref=f13e441] [cursor=pointer]:
+        - /url: mailto:hello@dispango.com
+        - paragraph [ref=f13e442]: Email Us
+        - paragraph [ref=f13e443]: hello@dispango.com
+      - link [ref=f13e444] [cursor=pointer]:
+        - /url: tel:0000000000
+        - paragraph [ref=f13e445]: Call Us
+        - paragraph [ref=f13e446]: (000) 000-0000
+  - generic [ref=f13e448]:
+    - heading "Stop Losing Jobs to Voicemail" [level=2] [ref=f13e449]
+    - paragraph [ref=f13e450]: Get set up today and let Dispango answer your very next call.
+    - generic [ref=f13e451]:
+      - link "Get Started" [ref=f13e452] [cursor=pointer]:
+        - /url: /get-started
+      - link "Book a Demo" [ref=f13e455] [cursor=pointer]:
+        - /url: https://cal.com/REPLACE/dispango-demo
+  - generic [ref=f13e456]:
+    - generic [ref=f13e457]:
+      - generic [ref=f13e458]:
+        - generic [ref=f13e459]: Dispango
+        - paragraph [ref=f13e466]: AI receptionist for the Canadian trades industry. Answers every call, texts you the lead.
+        - paragraph [ref=f13e467]: Jam Works Inc.REPLACE — registered mailing address, City, ON, Canada
+      - generic [ref=f13e468]:
+        - link "How It Works" [ref=f13e469] [cursor=pointer]:
+          - /url: "#how"
+        - link "Pricing" [ref=f13e470] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "FAQ" [ref=f13e471] [cursor=pointer]:
+          - /url: "#faq"
+        - link "Contact" [ref=f13e472] [cursor=pointer]:
+          - /url: "#contact"
+        - link "Privacy" [ref=f13e473] [cursor=pointer]:
+          - /url: /privacy
+        - link "hello@dispango.com" [ref=f13e474] [cursor=pointer]:
+          - /url: mailto:hello@dispango.com
+    - paragraph [ref=f13e475]: © 2026 Jam Works Inc.. Dispango is a product of Jam Works Inc.. All rights reserved.
+  - button "Contact us" [ref=f13e477]

@@ -1,0 +1,239 @@
+- generic [active] [ref=f10e1]:
+  - main [ref=f10e2]:
+    - generic [ref=f10e4]:
+      - generic [ref=f10e5]: Dispango
+      - navigation [ref=f10e12]:
+        - link "How it works" [ref=f10e13] [cursor=pointer]:
+          - /url: "#how"
+        - link "Industries" [ref=f10e14] [cursor=pointer]:
+          - /url: "#industries"
+        - link "Pricing" [ref=f10e15] [cursor=pointer]:
+          - /url: "#pricing"
+        - link "FAQ" [ref=f10e16] [cursor=pointer]:
+          - /url: "#faq"
+      - link "Book a demo" [ref=f10e17] [cursor=pointer]:
+        - /url: https://calendly.com/REPLACE-WITH-YOUR-LINK/demo
+    - generic [ref=f10e21]:
+      - generic [ref=f10e22]:
+        - generic [ref=f10e23]: AI receptionist for home & trade services
+        - heading "The call you missed just became someone else's job." [level=1] [ref=f10e24]
+        - paragraph [ref=f10e25]: Dispango answers every call, captures the job, and texts you the lead in seconds — 24/7, even when you're on the tools.
+        - generic [ref=f10e26]:
+          - link "Book a demo" [ref=f10e27] [cursor=pointer]:
+            - /url: https://calendly.com/REPLACE-WITH-YOUR-LINK/demo
+          - link "See how it works" [ref=f10e30] [cursor=pointer]:
+            - /url: "#how"
+        - list [ref=f10e31]:
+          - listitem [ref=f10e32]: Keeps your number
+          - listitem [ref=f10e35]: Live today
+          - listitem [ref=f10e38]: Flat $199/mo
+      - generic [ref=f10e46]:
+        - generic [ref=f10e48]:
+          - generic [ref=f10e49]: 9:41
+          - generic [ref=f10e50]: Dispango
+        - generic [ref=f10e51]:
+          - paragraph [ref=f10e52]: Rapid Plumbing
+          - generic [ref=f10e53]:
+            - text: Live call
+            - generic [ref=f10e55]: · 0:00
+        - generic [ref=f10e62]:
+          - paragraph [ref=f10e63]: Live transcript
+          - generic [ref=f10e64]: ▋
+    - generic [ref=f10e66]:
+      - heading "Five calls at once? It answers all five." [level=2] [ref=f10e67]
+      - paragraph [ref=f10e68]: You can only pick up one. The other four hit voicemail — and voicemail is where jobs go to die.
+      - generic [ref=f10e69]:
+        - generic [ref=f10e70]:
+          - paragraph [ref=f10e71]: Without Dispango
+          - paragraph [ref=f10e72]: 4 of 5 → voicemail
+          - paragraph [ref=f10e73]: One line, one you. The rush hits and most callers just dial the next name on the list.
+        - generic [ref=f10e74]:
+          - paragraph [ref=f10e75]: With Dispango
+          - paragraph [ref=f10e76]: 5 of 5 → captured
+          - paragraph [ref=f10e77]: Every caller answered at once, job details taken, leads texted straight to your phone.
+    - generic [ref=f10e79]:
+      - heading "Trained on your shop, not a script." [level=2] [ref=f10e80]
+      - paragraph [ref=f10e81]: It answers in your business name, knows your service area and hours, and greets repeat callers by name — so it sounds like the person who's worked your front desk for years.
+    - generic [ref=f10e82]:
+      - heading "Everything a great receptionist does. None of the overhead." [level=2] [ref=f10e83]
+      - generic [ref=f10e84]:
+        - generic [ref=f10e85]:
+          - heading "Answers in 2 rings, 24/7" [level=3] [ref=f10e89]
+          - paragraph [ref=f10e90]: Nights, weekends, mid-job — every call gets picked up.
+        - generic [ref=f10e91]:
+          - heading "The whole job, texted to you" [level=3] [ref=f10e95]
+          - paragraph [ref=f10e96]: Name, number, address and what they need — in seconds.
+        - generic [ref=f10e97]:
+          - heading "No busy signal, ever" [level=3] [ref=f10e101]
+          - paragraph [ref=f10e102]: Answers unlimited calls at once. Nobody waits on hold.
+        - generic [ref=f10e103]:
+          - heading "Callers can't tell it's AI" [level=3] [ref=f10e107]
+          - paragraph [ref=f10e108]: A natural voice that greets them with your shop's name.
+        - generic [ref=f10e109]:
+          - heading "Kills the time-wasters" [level=3] [ref=f10e113]
+          - paragraph [ref=f10e114]: Spam, robocalls and wrong numbers never reach your phone.
+        - generic [ref=f10e115]:
+          - heading "One flat $199/mo" [level=3] [ref=f10e119]
+          - paragraph [ref=f10e120]: A fraction of an answering service. Zero per-call fees.
+    - generic [ref=f10e122]:
+      - heading "Built for the trades that live on the phone." [level=2] [ref=f10e123]
+      - generic [ref=f10e124]:
+        - generic [ref=f10e125]:
+          - heading "Locksmiths" [level=3] [ref=f10e126]
+          - paragraph [ref=f10e127]: Lockouts captured with address and urgency, day or night.
+        - generic [ref=f10e128]:
+          - heading "Plumbers" [level=3] [ref=f10e129]
+          - paragraph [ref=f10e130]: Burst pipes and floods triaged the second they call.
+        - generic [ref=f10e131]:
+          - heading "HVAC" [level=3] [ref=f10e132]
+          - paragraph [ref=f10e133]: No-heat and no-cool calls logged and sent to you fast.
+        - generic [ref=f10e134]:
+          - heading "Electricians" [level=3] [ref=f10e135]
+          - paragraph [ref=f10e136]: Every service call caught, even after hours.
+        - generic [ref=f10e137]:
+          - heading "Contractors" [level=3] [ref=f10e138]
+          - paragraph [ref=f10e139]: Quote requests captured while you're on site.
+        - generic [ref=f10e140]:
+          - heading "Garage & more" [level=3] [ref=f10e141]
+          - paragraph [ref=f10e142]: Any trade that lives and dies by the phone.
+    - generic [ref=f10e144]:
+      - generic [ref=f10e145]:
+        - paragraph [ref=f10e146]: 2 rings
+        - paragraph [ref=f10e147]: And it picks up — always
+      - generic [ref=f10e148]:
+        - paragraph [ref=f10e149]: <10s
+        - paragraph [ref=f10e150]: Lead texted to your phone
+      - generic [ref=f10e151]:
+        - paragraph [ref=f10e152]: 24/7
+        - paragraph [ref=f10e153]: Every call, every night
+    - generic [ref=f10e154]:
+      - heading "The honest comparison." [level=2] [ref=f10e155]
+      - table [ref=f10e157]:
+        - rowgroup [ref=f10e158]:
+          - row [ref=f10e159]:
+            - columnheader "What matters" [ref=f10e160]
+            - columnheader "Dispango" [ref=f10e161]
+            - columnheader "Answering service" [ref=f10e162]
+            - columnheader "Voicemail" [ref=f10e163]
+        - rowgroup [ref=f10e164]:
+          - row [ref=f10e165]:
+            - cell "Answers 24/7, instantly" [ref=f10e166]
+            - cell [ref=f10e167]
+            - cell "limited" [ref=f10e170]
+            - cell "—" [ref=f10e171]
+          - row [ref=f10e173]:
+            - cell "Takes every call at once" [ref=f10e174]
+            - cell [ref=f10e175]
+            - cell "—" [ref=f10e178]
+            - cell "—" [ref=f10e180]
+          - row [ref=f10e182]:
+            - cell "Captures the full job" [ref=f10e183]
+            - cell [ref=f10e184]
+            - cell "limited" [ref=f10e187]
+            - cell "—" [ref=f10e188]
+          - row [ref=f10e190]:
+            - cell "Texts you the lead in seconds" [ref=f10e191]
+            - cell [ref=f10e192]
+            - cell "limited" [ref=f10e195]
+            - cell "—" [ref=f10e196]
+          - row [ref=f10e198]:
+            - cell "Keeps your own number" [ref=f10e199]
+            - cell [ref=f10e200]
+            - cell "limited" [ref=f10e203]
+            - cell [ref=f10e204]
+          - row [ref=f10e207]:
+            - cell "Monthly cost" [ref=f10e208]
+            - cell "$199" [ref=f10e209]
+            - cell "$1,500+" [ref=f10e210]
+            - cell "$0" [ref=f10e211]
+          - row [ref=f10e212]:
+            - cell "Blocks spam & robocalls" [ref=f10e213]
+            - cell [ref=f10e214]
+            - cell "limited" [ref=f10e217]
+            - cell "—" [ref=f10e218]
+    - generic [ref=f10e221]:
+      - heading "What are missed calls costing you?" [level=2] [ref=f10e222]
+      - paragraph [ref=f10e223]: Your numbers, not ours. Drag the sliders.
+      - generic [ref=f10e225]:
+        - generic [ref=f10e226]:
+          - generic [ref=f10e227]:
+            - generic [ref=f10e228]:
+              - generic [ref=f10e229]: Missed calls per week
+              - generic [ref=f10e230]: "12"
+            - slider [ref=f10e231]: "12"
+          - generic [ref=f10e232]:
+            - generic [ref=f10e233]:
+              - generic [ref=f10e234]: Average job value
+              - generic [ref=f10e235]: $180
+            - slider [ref=f10e236]: "180"
+          - generic [ref=f10e237]:
+            - generic [ref=f10e238]:
+              - generic [ref=f10e239]: Callers who hire someone else
+              - generic [ref=f10e240]: 60%
+            - slider [ref=f10e241]: "60"
+        - generic [ref=f10e242]:
+          - paragraph [ref=f10e243]: You're losing about
+          - paragraph [ref=f10e244]: $5,573
+          - paragraph [ref=f10e245]: every month to missed calls.
+          - paragraph [ref=f10e246]: Dispango pays for itself 28.0× over.
+    - generic [ref=f10e247]:
+      - heading "One plan. No surprises." [level=2] [ref=f10e248]
+      - generic [ref=f10e249]:
+        - generic [ref=f10e250]:
+          - paragraph [ref=f10e251]: Dispango
+          - paragraph [ref=f10e252]: $199/mo
+          - paragraph [ref=f10e253]: 14-day free trial · cancel anytime · keep your number
+        - generic [ref=f10e254]:
+          - generic [ref=f10e255]: Answers every call, 24/7
+          - generic [ref=f10e259]: Full job details texted in seconds
+          - generic [ref=f10e263]: Greets callers in your shop's name
+          - generic [ref=f10e267]: Remembers repeat callers
+          - generic [ref=f10e271]: Blocks spam & robocalls
+          - generic [ref=f10e275]: No per-call or setup fees
+          - generic [ref=f10e279]: Works with your existing number
+          - generic [ref=f10e283]: Live the same day
+        - link "Start your free trial" [ref=f10e288] [cursor=pointer]:
+          - /url: https://calendly.com/REPLACE-WITH-YOUR-LINK/demo
+    - generic [ref=f10e292]:
+      - heading "Questions, answered." [level=2] [ref=f10e293]
+      - generic [ref=f10e294]:
+        - group [ref=f10e295]:
+          - generic "Do I keep my own number? +" [ref=f10e296] [cursor=pointer]:
+            - text: Do I keep my own number?
+            - generic [ref=f10e297]: +
+        - group [ref=f10e298]:
+          - generic "Will it sound like a robot? +" [ref=f10e299] [cursor=pointer]:
+            - text: Will it sound like a robot?
+            - generic [ref=f10e300]: +
+        - group [ref=f10e301]:
+          - generic "What does it cost? +" [ref=f10e302] [cursor=pointer]:
+            - text: What does it cost?
+            - generic [ref=f10e303]: +
+        - group [ref=f10e304]:
+          - generic "What about my callers' data? +" [ref=f10e305] [cursor=pointer]:
+            - text: What about my callers' data?
+            - generic [ref=f10e306]: +
+    - generic [ref=f10e308]:
+      - heading "Stop losing jobs to voicemail." [level=2] [ref=f10e309]
+      - paragraph [ref=f10e310]: See it answer a call in 15 minutes. We'll show you exactly what your callers hear.
+      - link "Book your demo" [ref=f10e312] [cursor=pointer]:
+        - /url: https://calendly.com/REPLACE-WITH-YOUR-LINK/demo
+    - generic [ref=f10e315]:
+      - generic [ref=f10e316]:
+        - generic [ref=f10e317]:
+          - generic [ref=f10e318]: Dispango
+          - paragraph [ref=f10e325]: AI receptionist for home & trade services. Answers every call, texts you the lead.
+          - paragraph [ref=f10e326]: Jam Works Inc.REPLACE — registered mailing address, City, ON, Canada
+        - generic [ref=f10e327]:
+          - link "How it works" [ref=f10e328] [cursor=pointer]:
+            - /url: "#how"
+          - link "Pricing" [ref=f10e329] [cursor=pointer]:
+            - /url: "#pricing"
+          - link "FAQ" [ref=f10e330] [cursor=pointer]:
+            - /url: "#faq"
+          - link "Privacy" [ref=f10e331] [cursor=pointer]:
+            - /url: /privacy
+          - link "hello@dispango.com" [ref=f10e332] [cursor=pointer]:
+            - /url: mailto:hello@dispango.com
+      - paragraph [ref=f10e333]: © 2026 Dispango. All rights reserved.
+  - alert [ref=f10e334]

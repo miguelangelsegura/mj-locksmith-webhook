@@ -1,0 +1,14 @@
+[     420ms] [ERROR] The Content-Security-Policy directive 'script-src' contains 'frame-src' as a source expression. Did you want to add it as a directive and forget a semicolon? @ https://www.cooleygo.com/founder-basics-founders-stock/:0
+[     678ms] [LOG] JQMIGRATE: Migrate is installed, version 3.4.1 @ https://www.cooleygo.com/wp-content/cache/wpfc-minified/mbxhov86/81he3.js:6
+[     712ms] [ERROR] The Content-Security-Policy directive 'script-src' contains 'frame-src' as a source expression. Did you want to add it as a directive and forget a semicolon? @ about:blank:0
+[     712ms] [ERROR] The Content-Security-Policy directive 'script-src' contains 'frame-src' as a source expression. Did you want to add it as a directive and forget a semicolon? @ about:blank:0
+[     883ms] [LOG] The $ doesn't have the function required for displaying the AudioPlayer. 
+ This is probably because the $ has been reinitialized after the "mediaplayerelement" has already been added. @ https://www.cooleygo.com/wp-content/plugins/TooltipProPlus/assets/js/tooltip.min.js?ver=4.4.1:0
+[    1194ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://www.cooleygo.com/wp-json/wordpress-popular-posts/v2/views/1974:0
+[    1194ms] [ERROR] Fetch error: Error: Network response was not ok
+    at https://www.cooleygo.com/wp-content/plugins/wordpress-popular-posts/assets/js/wpp.min.js?ver=7.4.0:1:686 @ https://www.cooleygo.com/wp-content/plugins/wordpress-popular-posts/assets/js/wpp.min.js?ver=7.4.0:0
+[    1488ms] [ERROR] The Content-Security-Policy directive 'script-src' contains 'frame-src' as a source expression. Did you want to add it as a directive and forget a semicolon? @ https://tag.demandbase.com/2f398c2f1cd415d5.min.js:1
+[    1595ms] [ERROR] The Content-Security-Policy directive 'script-src' contains 'frame-src' as a source expression. Did you want to add it as a directive and forget a semicolon? @ https://cdn.cookielaw.org/scripttemplates/202604.2.0/otBannerSdk.js:6
+[    1596ms] [ERROR] The Content-Security-Policy directive 'script-src' contains 'frame-src' as a source expression. Did you want to add it as a directive and forget a semicolon? @ https://cdn.cookielaw.org/scripttemplates/202604.2.0/otBannerSdk.js:6
+[    1598ms] [ERROR] The Content-Security-Policy directive 'script-src' contains 'frame-src' as a source expression. Did you want to add it as a directive and forget a semicolon? @ https://cdn.cookielaw.org/scripttemplates/202604.2.0/otBannerSdk.js:6
+[    1598ms] [ERROR] The Content-Security-Policy directive 'script-src' contains 'frame-src' as a source expression. Did you want to add it as a directive and forget a semicolon? @ https://cdn.cookielaw.org/scripttemplates/202604.2.0/otBannerSdk.js:6

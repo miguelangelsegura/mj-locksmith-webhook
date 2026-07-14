@@ -1,0 +1,32 @@
+- generic [active] [ref=f2e1]:
+  - main [ref=f2e2]:
+    - link "← Back to Dispango" [ref=f2e3] [cursor=pointer]:
+      - /url: /
+    - heading "Privacy Policy" [level=1] [ref=f2e4]
+    - paragraph [ref=f2e5]: This is a starting template written to Canada's PIPEDA. Have it reviewed by a professional before relying on it.
+    - generic [ref=f2e6]:
+      - heading "Who we are" [level=2] [ref=f2e7]
+      - paragraph [ref=f2e9]: REPLACE — legal corporation name operates Dispango, an AI call-answering and lead-dispatch service for locksmith businesses. When you call a business that uses Dispango, our AI receptionist answers on their behalf.
+    - generic [ref=f2e10]:
+      - heading "What we collect" [level=2] [ref=f2e11]
+      - paragraph [ref=f2e13]: "When you call a Dispango-powered line, we may collect: your phone number, your name, the service address or location you provide, the details of your request, and a recording, transcript, and summary of the call."
+    - generic [ref=f2e14]:
+      - heading "Why we collect it" [level=2] [ref=f2e15]
+      - paragraph [ref=f2e17]: Solely to deliver your request to the locksmith business you called, so they can call you back and help. We do not sell personal information.
+    - generic [ref=f2e18]:
+      - heading "How it's stored and shared" [level=2] [ref=f2e19]
+      - paragraph [ref=f2e21]: Call information is shared only with the specific locksmith business that received your call. It is stored securely and retained only as long as needed to provide the service.
+    - generic [ref=f2e22]:
+      - heading "Your choices" [level=2] [ref=f2e23]
+      - paragraph [ref=f2e25]:
+        - text: You may request access to, correction of, or deletion of your personal information by emailing
+        - link "hello@dispango.com" [ref=f2e26] [cursor=pointer]:
+          - /url: mailto:hello@dispango.com
+        - text: .
+    - generic [ref=f2e27]:
+      - heading "Contact" [level=2] [ref=f2e28]
+      - paragraph [ref=f2e30]:
+        - text: REPLACE — legal corporation nameREPLACE — registered mailing address, City, ON, Canada
+        - link "hello@dispango.com" [ref=f2e31] [cursor=pointer]:
+          - /url: mailto:hello@dispango.com
+  - alert [ref=f2e32]

@@ -58,8 +58,10 @@ const PUBLIC_SITE_URL = (Deno.env.get("PUBLIC_SITE_URL") || "").replace(/\/$/, "
 const CONTRACTS_BUCKET = "contracts";
 
 function donePageUrl(token: string): string {
+  // Prefer the branded success page on our own site; fall back to the plain
+  // in-function /done route when PUBLIC_SITE_URL isn't set.
   return PUBLIC_SITE_URL
-    ? `${PUBLIC_SITE_URL}/done.html`
+    ? `${PUBLIC_SITE_URL}/welcome`
     : `${PUBLIC_BASE_URL}/billing/onboarding/${token}/done`;
 }
 
@@ -359,6 +361,161 @@ async function sendOnboardingLink(body: Record<string, unknown>): Promise<Respon
   return json({ sent: true, to });
 }
 
+// --- Public self-serve signup --------------------------------------------
+// PUBLIC (no admin token). A prospect fills the "Get Started" form; we create a
+// clients row (active=false — the vapi-webhook keeps ignoring it), then run the
+// SAME SignWell + Stripe onboarding as the admin flow and hand back the sign/pay
+// URL. Number/assistant provisioning is still a human step after payment (there
+// is no provisioning robot yet), so vapi_assistant_id / inbound_number stay null.
+// This is a new, unauthenticated trust boundary — hence the honeypot, per-IP
+// rate limit, dedupe, and strict field whitelist below.
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const E164_RE = /^\+\d{10,15}$/;
+const VOICE_ALLOWED = new Set(["elliot", "ava", "cole", "harper", "no preference"]);
+
+// Best-effort per-instance rate limit. Edge instances are ephemeral and can run
+// in parallel, so this is a speed bump, not a wall — the email dedupe below is
+// the real duplicate guard. Cap: 5 signups / IP / hour.
+const signupHits = new Map<string, number[]>();
+function rateLimited(ip: string): boolean {
+  const now = Date.now();
+  const windowMs = 60 * 60 * 1000;
+  // Bound the map so stale keys can't grow it without limit over the isolate's life.
+  if (signupHits.size > 2000) {
+    for (const [k, v] of signupHits) {
+      const recent = v.filter((t) => now - t < windowMs);
+      if (recent.length === 0) signupHits.delete(k);
+      else signupHits.set(k, recent);
+    }
+  }
+  const hits = (signupHits.get(ip) ?? []).filter((t) => now - t < windowMs);
+  hits.push(now);
+  signupHits.set(ip, hits);
+  return hits.length > 5;
+}
+
+// North-America-friendly E.164 normalization: keep a leading +, add +1 for a bare
+// 10-digit number, + for a bare 11-digit starting with 1. Returns null if it can't
+// produce a valid E.164 string.
+function normalizePhone(raw: string): string | null {
+  const s = raw.trim();
+  if (s.startsWith("+")) {
+    const p = "+" + s.slice(1).replace(/\D/g, "");
+    return E164_RE.test(p) ? p : null;
+  }
+  const digits = s.replace(/\D/g, "");
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  return null;
+}
+
+function clientIp(req: Request): string {
+  const fwd = req.headers.get("x-forwarded-for") ?? "";
+  return fwd.split(",")[0].trim() || "unknown";
+}
+
+async function handleSignup(req: Request, body: Record<string, unknown>): Promise<Response> {
+  if (!supabase) return json({ error: "service unavailable" }, 503);
+  if (!SIGNWELL_API_KEY || !SIGNWELL_TEMPLATE_ID || !PUBLIC_BASE_URL) {
+    return json({ error: "signup temporarily unavailable" }, 503);
+  }
+
+  // Honeypot: bots fill hidden fields humans never see. Pretend success, do nothing.
+  if (String(body.company_url ?? "").trim() !== "") {
+    console.log("[signup] honeypot tripped — ignoring");
+    return json({ ok: true });
+  }
+
+  const ip = clientIp(req);
+  if (rateLimited(ip)) {
+    console.log(`[signup] rate limited ip=${ip}`);
+    return json({ error: "too many attempts — please try again later" }, 429);
+  }
+
+  const businessName = String(body.business_name ?? "").trim().slice(0, 200);
+  const contactEmail = String(body.contact_email ?? "").trim().slice(0, 200).toLowerCase();
+  const phone = normalizePhone(String(body.phone ?? ""));
+  const trade = String(body.trade ?? "").trim().slice(0, 80);
+  const phoneType = String(body.phone_type ?? "").trim().slice(0, 40);
+  const voiceRaw = String(body.voice ?? "").trim().slice(0, 40);
+  const voice = VOICE_ALLOWED.has(voiceRaw.toLowerCase()) ? voiceRaw : "";
+
+  if (!businessName) return json({ error: "business name is required" }, 400);
+  if (!EMAIL_RE.test(contactEmail)) return json({ error: "a valid email is required" }, 400);
+  if (!phone) return json({ error: "a valid phone number is required" }, 400);
+
+  // Dedupe by email so a resubmit / double-click never makes a second row — and,
+  // critically, never regenerates onboarding for an email that has ALREADY signed
+  // (re-running createOnboarding would mint a fresh unsigned doc and regress the
+  // completed signature back to "sent" — an unauthenticated griefing vector).
+  const { data: existing } = await supabase
+    .from("clients").select("id, active, contract_status, onboarding_token")
+    .eq("contact_email", contactEmail).limit(1);
+  const row = existing?.[0];
+
+  if (row?.active) {
+    return json({ error: "This email is already set up. Contact us if you need help." }, 409);
+  }
+  // Signed but not yet paid → send them straight to payment; do NOT re-create the
+  // contract. (/pay gates on signed, so this only ever advances a real signer.)
+  if (row && row.contract_status === "signed" && row.onboarding_token) {
+    return json({ ok: true, onboarding_url: `${PUBLIC_BASE_URL}/billing/onboarding/${row.onboarding_token}/pay` });
+  }
+
+  let clientId = row?.id as string | undefined;
+
+  if (!clientId) {
+    // Force the safe defaults: active=false, no assistant/inbound number (a human
+    // wires those after payment). The prospect's phone is both where leads get
+    // texted and the owner contact until provisioning refines it.
+    const { data: ins, error: insErr } = await supabase.from("clients").insert({
+      business_name: businessName,
+      contact_email: contactEmail,
+      dispatch_phone: phone,
+      owner_phone: phone,
+      active: false,
+    }).select("id").limit(1);
+    if (insErr) {
+      // Unique-violation (needs the clients_contact_email_unique index): a
+      // concurrent request just created the row — re-select and continue.
+      if ((insErr as { code?: string }).code === "23505") {
+        const { data: again } = await supabase
+          .from("clients").select("id").eq("contact_email", contactEmail).limit(1);
+        clientId = again?.[0]?.id;
+      }
+      if (!clientId) {
+        console.log(`[signup] insert failed: ${insErr.message}`);
+        return json({ error: "could not create your account" }, 400);
+      }
+    } else {
+      clientId = ins?.[0]?.id;
+    }
+    if (!clientId) return json({ error: "could not create your account" }, 400);
+  } else {
+    // Existing in-progress row (contract not yet signed): save the latest details
+    // the prospect entered so a correction on resubmit isn't silently dropped.
+    await supabase.from("clients").update({
+      business_name: businessName,
+      dispatch_phone: phone,
+      owner_phone: phone,
+    }).eq("id", clientId);
+  }
+
+  // Fire-and-forget lead alert with the details a human needs to provision later
+  // (voice/trade aren't stored — no column yet — so they ride the notification).
+  notifyOps(
+    "New self-serve signup",
+    `${businessName} started signup.\nEmail: ${contactEmail}\nLead phone: ${phone}\n` +
+      `Line type: ${phoneType || "n/a"}\nTrade: ${trade || "n/a"}\n` +
+      `Voice: ${voice || "no preference"}\nClient: ${clientId}`,
+  ).catch(() => {});
+
+  // Reuse the exact admin onboarding path (SignWell doc + stored token) and hand
+  // back the sign/pay URL for the browser to redirect into.
+  return await createOnboarding({ client_id: clientId, contact_email: contactEmail });
+}
+
 async function onboardingPay(token: string): Promise<Response> {
   if (!supabase) return html("<p>Service unavailable.</p>", 503);
   if (!stripe || !STRIPE_PRICE_ID) return html("<p>Payment is not configured.</p>", 503);
@@ -630,6 +787,17 @@ Deno.serve(async (req) => {
 
     const doneMatch = path.match(/^\/onboarding\/([^/]+)\/done$/);
     if (req.method === "GET" && doneMatch) return onboardingDone();
+
+    // Public self-serve signup (no admin token; guarded by honeypot + rate limit).
+    if (req.method === "POST" && path === "/signup") {
+      let signupBody: Record<string, unknown>;
+      try {
+        signupBody = await req.json();
+      } catch {
+        return json({ error: "invalid request" }, 400);
+      }
+      return await handleSignup(req, signupBody);
+    }
 
     // Webhooks (signature is the auth) — read the raw body for verification.
     if (req.method === "POST" && path === "/webhooks/stripe") {
