@@ -112,6 +112,16 @@ UA (Cloudflare 1010) + full-object PATCH.
 `provision_status`/`fallback_number`, `web/app/welcome/page.jsx`. **Branch:** `feat/provisioning`.
 **Review:** **`/deep-review`** (payments + live call path + spends money). **Dedicated session. Riskiest.**
 
+> **STATUS (2026-07-14): SHIPPED — but gated OFF pending secrets. ⚠️ ACTION REQUIRED.**
+> Provisioning + one-click Activate + the `/welcome` real-number display are built, reviewed,
+> merged, and deployed. The migration is applied (existing clients kept live). BUT the robot
+> **won't buy anything** until these secrets are set on the `billing` function (else it falls
+> back to the old "provision now" email): **`VAPI_PRIVATE_KEY`, `VAPI_ASSISTANT_ID`,
+> `VAPI_SECRET`, `TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`** (+ optional `TWILIO_NUMBER_COUNTRY`,
+> default CA). Full checklist + behavior: [billing README](../supabase/functions/billing/README.md#provisioning-secrets-phase-2--auto-buy-a-number-on-payment).
+> Not yet proven with a real paid onboarding (Twilio-test-creds verification only) — **watch
+> the first real one in logs.**
+
 ### Phase 3 — Live "call our AI" demo number
 **Goal:** a real number on the site to hear the AI. **Depends on Phase 2 + the shipped rate limit.**
 **Plan:** provision one demo number → shared assistant with demo `variableValues` ("Dispango Demo"),
@@ -132,6 +142,21 @@ webhook/billing/admin service-role paths still work** (service role bypasses RLS
 (new authed `web/app/dashboard/**`): leads list + call detail (fields, summary, transcript), analytics/
 ROI (calls answered, leads, after-hours, est. $ saved), and the approved editable settings via a safe
 authed API (never expose the service-role key to the browser). (5) Wire "Sign In"; premium motion.
+
+> **REQUIRED Phase 4 feature — business-hours forwarding window (documented so admins know the
+> intended behavior).** Today forwarding is all-or-nothing at the carrier (the `/welcome` guide
+> steers shops to "forward when unanswered"), and the `clients` columns `answer_mode='scheduled'`
+> + `business_hours` + `timezone` exist but are **NOT wired into the vapi-webhook**. Build a
+> real business-hours window: **inside** the shop's configured hours, a call to their Dispango
+> number is handled by **our AI agent** (captures the lead as normal); **outside** those hours,
+> the AI **bounces the call back to the shop's own number** (Vapi transfer to `fallback_number`)
+> rather than answering. Make the window + timezone **customer-editable** in the dashboard, and
+> surface the current mode in the **admin** view so we (as admins) can always see, per shop,
+> whether calls are going to the AI or bouncing back right now. *(Confirm the exact in-hours vs
+> out-of-hours mapping with Abdul before building — this note records the stated intent: AI
+> in-hours, bounce-to-shop out-of-hours.)* Prompt stays LEAN; the hours check is webhook logic,
+> not a prompt rule.
+
 **Files:** `web/app/dashboard/**`, `web/app/login/**`, a Supabase browser client (anon + RLS), authed
 API, migration (RLS + policies + `clients.auth_uid`). **Branch:** `feat/customer-dashboard`.
 **Review:** **`/deep-review`** (auth + credentials + RLS). **Sequential.**
