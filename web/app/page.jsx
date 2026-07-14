@@ -14,7 +14,7 @@ const CONFIG = {
   // reads one of these degrades gracefully when it's blank (see helpers below).
   book: "https://cal.com/abdul-zxafqn/30min", // live Cal.com 30-min demo booking link
   portal: "", // TODO(Phase 4): customer dashboard/login. "Sign In" is hidden until set.
-  demoLine: "", // TODO(Phase 3): live call-in demo number. Call-in tile shows "launching shortly" until set.
+  demoLine: "+1 (651) 551-9855", // live call-in demo number (Phase 3). tel: link strips to digits; webhook handles it as the "Dispango Demo" persona with tight caps and no lead SMS.
   sampleAudio: "", // TODO: URL to a recorded sample call. The audio player renders only when set.
   phone: "", // TODO(Phase 7): public business contact line. Phone contact points are hidden until set.
   address: "", // TODO(Phase 7): registered mailing address. Footer/Terms/Privacy omit it until set.
