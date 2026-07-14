@@ -194,19 +194,37 @@
     return { label: '—', cls: 'off' };
   }
 
+  // Provisioning (robot) state — SEPARATE from the active/lifecycle flag above.
+  // 'staged' = number bought + wired, awaiting your one-click Activate; 'error' =
+  // partial failure, retryable. Renders the contextual pill + call-to-action.
+  function provisionPill(c) {
+    var ps = c.provision_status;
+    if (ps === 'staged') return ' <span class="pill warn">staged</span>';
+    if (ps === 'error') return ' <span class="pill bad" title="' + esc(c.provision_error || '') + '">error</span>';
+    if (ps === 'active') return ' <span class="pill on">live</span>';
+    return '';
+  }
+
   function rowsHtml(clients) {
     if (!clients.length) return '<div class="muted" style="margin-top:10px">No clients yet. Add one below.</div>';
     var h = '<table><thead><tr><th>Business</th><th>Agent</th><th>Dispatch</th><th>Inbound</th><th>Status</th><th></th></tr></thead><tbody>';
     clients.forEach(function (c) {
       var lc = lifecycle(c);
       var pill = '<span class="pill ' + lc.cls + '">' + esc(lc.label) + '</span>';
+      var provisionBtn = '';
+      if (c.provision_status === 'staged') {
+        provisionBtn = '<button class="sm" style="background:var(--ok)" data-act="activateNum" data-id="' + esc(c.id) + '">Activate number</button>';
+      } else if (c.provision_status === 'error') {
+        provisionBtn = '<button class="sm" style="background:var(--danger)" data-act="retryNum" data-id="' + esc(c.id) + '">Retry provisioning</button>';
+      }
       h += '<tr>' +
         '<td>' + esc(c.business_name) + '</td>' +
         '<td>' + esc(c.agent_name) + '</td>' +
         '<td>' + esc(c.dispatch_phone) + '</td>' +
-        '<td>' + esc(c.inbound_number) + '</td>' +
+        '<td>' + esc(c.inbound_number) + provisionPill(c) + '</td>' +
         '<td>' + pill + '</td>' +
         '<td class="actions">' +
+          provisionBtn +
           '<button class="ghost sm" data-act="link" data-id="' + esc(c.id) + '">Onboarding link</button>' +
           '<button class="ghost sm" data-act="test" data-id="' + esc(c.id) + '">Test SMS</button>' +
           '<button class="ghost sm" data-act="toggle" data-id="' + esc(c.id) + '" data-active="' + (c.active ? '1' : '0') + '">' + (c.active ? 'Deactivate' : 'Activate') + '</button>' +
@@ -265,6 +283,26 @@
       if (res.status === 200) { toast(isActive ? 'Deactivated' : 'Activated', 'ok'); loadClients(); }
       else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
     });
+  }
+
+  // One-click Activate for a staged number (billing API; separate from the
+  // active/lifecycle toggle above — this only flips provision_status → active).
+  function activateNumber(id) {
+    if (!confirm('Take this number live? It will start routing real calls to the AI.')) return;
+    toast('Activating…');
+    api('/provision/' + id + '/activate', 'POST', null, BILLING_API).then(function (res) {
+      if (res.status === 200) { toast('Number is live', 'ok'); loadClients(); }
+      else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
+    }).catch(function () { toast('Network error', 'err'); });
+  }
+
+  function retryProvision(id) {
+    toast('Retrying provisioning…');
+    api('/provision/' + id + '/retry', 'POST', null, BILLING_API).then(function (res) {
+      var r = res.body && res.body.result;
+      if (res.status === 200 && r && r.status === 'staged') { toast('Provisioned — ready to activate', 'ok'); loadClients(); }
+      else { toast((r && r.error) || (res.body && res.body.error) || ('Error ' + res.status), 'err'); loadClients(); }
+    }).catch(function () { toast('Network error', 'err'); });
   }
 
   var linkClientId = null;
@@ -414,6 +452,8 @@
     var act = btn.getAttribute('data-act');
     if (act === 'link') openLinkModal(id);
     else if (act === 'test') testSms(id);
+    else if (act === 'activateNum') activateNumber(id);
+    else if (act === 'retryNum') retryProvision(id);
     else toggleActive(id, btn.getAttribute('data-active') === '1');
   });
   $('modalCancel').addEventListener('click', closeModal);

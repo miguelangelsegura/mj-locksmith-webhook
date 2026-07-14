@@ -1,6 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+// Supabase billing Edge Function base (same env the get-started page uses). The
+// placeholder keeps the build green until NEXT_PUBLIC_BILLING_URL is set in Vercel.
+const BILLING_URL =
+  process.env.NEXT_PUBLIC_BILLING_URL || "https://REPLACE.supabase.co/functions/v1/billing";
+
+function formatPhone(n) {
+  const m = /^\+1(\d{3})(\d{3})(\d{4})$/.exec(n || "");
+  return m ? `+1 (${m[1]}) ${m[2]}-${m[3]}` : n;
+}
 
 function Logo() {
   return (
@@ -51,7 +61,38 @@ const TABS = Object.keys(GUIDES);
 
 export default function Welcome() {
   const [tab, setTab] = useState(TABS[0]);
+  const [number, setNumber] = useState(null);
   const guide = GUIDES[tab];
+
+  // The Stripe success redirect can land here before the payment webhook has
+  // finished provisioning, so poll the tokenized read endpoint until the assigned
+  // number shows up (or we give up and keep the graceful "watch for a text" copy).
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token");
+    if (!token) return;
+    let tries = 0;
+    let timer;
+    let cancelled = false;
+    async function poll() {
+      tries += 1;
+      try {
+        const res = await fetch(`${BILLING_URL}/welcome-info/${encodeURIComponent(token)}`);
+        const data = await res.json().catch(() => ({}));
+        if (!cancelled && res.ok && data.inbound_number) {
+          setNumber(data.inbound_number);
+          return; // done
+        }
+      } catch {
+        // network hiccup — just keep polling
+      }
+      if (!cancelled && tries < 12) timer = setTimeout(poll, 4000);
+    }
+    poll();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, []);
+
+  // Drop the real number into the forwarding codes once we have it.
+  const withNumber = (code) => (number ? code.replace("YOUR-DISPANGO-NUMBER", number) : code);
 
   return (
     <main className="glow-hero min-h-screen">
@@ -70,10 +111,21 @@ export default function Welcome() {
           you&apos;ll be taking AI-answered calls today.
         </p>
 
+        {/* Assigned number */}
+        {number && (
+          <div className="mt-8 rounded-3xl border border-brand/30 bg-brand/5 p-7 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand">Your Dispango number</p>
+            <p className="mt-2 font-mono text-3xl font-extrabold tracking-tight text-ink">{formatPhone(number)}</p>
+            <p className="mt-2 text-sm text-body">Forward your business line to this number using the steps below — we&apos;ll flip it live and text you the moment it&apos;s ready.</p>
+          </div>
+        )}
+
         {/* Next steps */}
         <ol className="mt-8 space-y-4">
           {[
-            ["We're activating your Dispango number", "Watch for a text and email in the next few hours with your dedicated number."],
+            number
+              ? ["Your Dispango number is ready", "It's shown above — we're doing a final check and will text + email you the moment it's live."]
+              : ["We're setting up your Dispango number", "Watch for a text and email shortly with your dedicated number — usually within a few hours."],
             ["Forward your business line to it", "Use the steps below — takes about a minute. Pick your line type."],
             ["Dispango starts answering", "Every call captured, every job texted straight to your phone."],
           ].map(([h, p], i) => (
@@ -104,7 +156,7 @@ export default function Welcome() {
             {guide.steps.map(([label, code]) => (
               <div key={label} className="rounded-xl bg-soft p-4">
                 <p className="text-sm font-semibold text-ink">{label}</p>
-                <p className="mt-1 font-mono text-sm text-brand">{code}</p>
+                <p className="mt-1 font-mono text-sm text-brand">{withNumber(code)}</p>
               </div>
             ))}
           </div>
