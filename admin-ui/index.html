@@ -3,113 +3,252 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dispango — Client Admin</title>
+<title>Dispango — Operator Console</title>
 <style>
-  :root { --bg:#0f1115; --card:#181b22; --line:#262b35; --text:#e8eaed; --muted:#9aa3b2; --accent:#4f7cff; --danger:#ff5d5d; --ok:#3ecf8e; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background:var(--bg); color:var(--text); }
-  .wrap { max-width: 1000px; margin: 0 auto; padding: 28px 20px 80px; }
-  h1 { font-size: 20px; margin: 0; }
-  .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-top:18px; }
-  label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; }
-  input { width:100%; padding:9px 11px; background:#0e1016; border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:14px; }
-  input:focus { outline:none; border-color:var(--accent); }
-  .grid { display:grid; grid-template-columns: 1fr 1fr; gap:8px 14px; }
-  button { cursor:pointer; border:none; border-radius:8px; padding:9px 14px; font-size:13px; font-weight:600; color:#fff; background:var(--accent); }
-  button.ghost { background:transparent; border:1px solid var(--line); color:var(--text); font-weight:500; }
-  button.sm { padding:5px 10px; font-size:12px; }
+  :root {
+    --bg:#f7f8fe; --card:#ffffff; --soft:#f3f4fd; --line:#e8eaf6; --line-strong:#dcdff0;
+    --ink:#0d1220; --body:#4b5468; --muted:#8a93a6;
+    --brand:#5b5bf5; --brand-600:#4a45ec; --brand-700:#3a34c9; --brand-50:#eef0ff;
+    --warm:#ff7a4d; --amber:#ffb020;
+    --ok:#10b981; --ok-50:#e7f8f1; --danger:#ef4444; --danger-50:#fdeaea;
+    --sky:#2f9bff; --sky-50:#e8f4ff; --amber-50:#fff6e5;
+    --shadow:0 1px 2px rgba(13,18,32,.04), 0 6px 24px rgba(13,18,32,.05);
+    --shadow-lg:0 12px 48px rgba(13,18,32,.14);
+  }
+  * { box-sizing:border-box; }
+  html, body { overflow-x:hidden; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  .wrap { max-width:1060px; margin:0 auto; padding:26px 20px 96px; }
+  a { color:var(--brand-600); }
+
+  /* Header */
+  .top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; }
+  .brand { display:flex; align-items:center; gap:11px; }
+  .logo { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--brand),var(--warm)); box-shadow:0 4px 14px rgba(91,91,245,.35); }
+  h1 { font-size:19px; margin:0; letter-spacing:-.01em; }
+  .sub { color:var(--muted); font-size:12.5px; margin-top:1px; }
+
+  /* Cards */
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-top:16px; box-shadow:var(--shadow); }
+  .card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .card-title { font-size:15.5px; font-weight:700; letter-spacing:-.01em; display:flex; align-items:center; gap:8px; }
+  .help { color:var(--muted); font-size:12.5px; margin-top:3px; max-width:62ch; }
+
+  /* Buttons */
+  button { cursor:pointer; border:none; border-radius:10px; padding:9px 15px; font-size:13px; font-weight:650; color:#fff; background:var(--brand); transition:filter .15s, transform .05s, background .15s; font-family:inherit; }
+  button:hover { filter:brightness(1.06); }
+  button:active { transform:translateY(1px); }
+  button.ghost { background:var(--soft); color:var(--ink); border:1px solid var(--line-strong); font-weight:600; }
+  button.ghost:hover { background:#eceeffe0; filter:none; }
+  button.sm { padding:6px 11px; font-size:12px; border-radius:8px; }
+  button.ok { background:var(--ok); }
+  button.warm { background:var(--warm); }
+  button.danger { background:var(--danger); }
+  button.link { background:none; color:var(--brand-600); padding:0; font-weight:650; border-radius:0; }
+  button.link:hover { text-decoration:underline; filter:none; }
   button:disabled { opacity:.5; cursor:default; }
-  table { width:100%; border-collapse:collapse; margin-top:6px; font-size:13px; }
-  th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
-  th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
-  .pill { font-size:11px; padding:2px 8px; border-radius:999px; white-space:nowrap; }
-  .pill.on { background:rgba(62,207,142,.15); color:var(--ok); }
-  .pill.off { background:rgba(154,163,178,.15); color:var(--muted); }
-  .pill.info { background:rgba(79,124,255,.15); color:var(--accent); }
-  .pill.warn { background:rgba(245,179,80,.15); color:#f5b350; }
-  .pill.bad { background:rgba(255,93,93,.15); color:var(--danger); }
-  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; padding:20px; z-index:10; }
+
+  /* Inputs */
+  label { display:block; font-size:12px; font-weight:600; color:var(--body); margin:12px 0 5px; }
+  label .hint { font-weight:400; color:var(--muted); }
+  input, select { width:100%; padding:10px 12px; background:#fff; border:1px solid var(--line-strong); border-radius:10px; color:var(--ink); font-size:14px; font-family:inherit; }
+  input:focus, select:focus { outline:none; border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-50); }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:2px 16px; }
+
+  /* Tables */
+  table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13.5px; }
+  th, td { text-align:left; padding:11px 12px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  th { color:var(--muted); font-weight:650; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  tr:last-child td { border-bottom:none; }
+  td.actions { text-align:right; white-space:nowrap; }
+  td.actions button { margin-left:6px; }
+
+  /* Pills */
+  .pill { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:650; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+  .pill.on   { background:var(--ok-50); color:#0a7d5a; }
+  .pill.off  { background:var(--soft); color:var(--muted); }
+  .pill.info { background:var(--sky-50); color:#1877cc; }
+  .pill.warn { background:var(--amber-50); color:#a86a00; }
+  .pill.bad  { background:var(--danger-50); color:#c0332c; }
+  .dot { width:7px; height:7px; border-radius:50%; background:currentColor; display:inline-block; }
+
+  /* Status banner */
+  .banner { display:flex; align-items:center; gap:14px; border-radius:16px; padding:18px 20px; margin-top:16px; border:1px solid var(--line); }
+  .banner.good { background:linear-gradient(120deg,var(--ok-50),#f4fbf8); border-color:#c7ecdd; }
+  .banner.bad  { background:linear-gradient(120deg,var(--danger-50),#fff4f3); border-color:#f4cdca; }
+  .banner .ic { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:22px; flex:none; }
+  .banner.good .ic { background:#d6f4e8; }
+  .banner.bad  .ic { background:#f9d8d5; }
+  .banner b { font-size:16px; letter-spacing:-.01em; }
+  .banner .bsub { color:var(--body); font-size:13px; margin-top:1px; }
+
+  /* Stat tiles */
+  .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px; }
+  .tile { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 15px; box-shadow:var(--shadow); }
+  .tile .k { font-size:11px; font-weight:650; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .tile .v { font-size:26px; font-weight:800; letter-spacing:-.02em; margin-top:5px; }
+  .tile .m { font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .tile.alert { border-color:#f4cdca; background:linear-gradient(160deg,#fff6f5,#fff); }
+  .tile.alert .v { color:var(--danger); }
+
+  /* Checklist (drill-down) */
+  .check { display:flex; gap:11px; padding:11px 0; border-bottom:1px solid var(--line); }
+  .check:last-child { border-bottom:none; }
+  .check .ci { width:22px; height:22px; border-radius:50%; flex:none; display:grid; place-items:center; font-size:13px; font-weight:800; color:#fff; margin-top:1px; }
+  .ci.pass { background:var(--ok); } .ci.fail { background:var(--danger); } .ci.skip { background:var(--muted); }
+  .check .cl { font-weight:650; font-size:13.5px; }
+  .check .cd { color:var(--body); font-size:12.5px; margin-top:2px; }
+
+  /* Modal */
+  .overlay { position:fixed; inset:0; background:rgba(13,18,32,.42); backdrop-filter:blur(2px); display:flex; align-items:flex-start; justify-content:center; padding:40px 18px; z-index:20; overflow-y:auto; }
   .overlay.hidden { display:none; }
-  .modal { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; max-width:540px; width:100%; }
-  .modal h3 { margin:0 0 4px; font-size:16px; }
+  .modal { background:var(--card); border-radius:18px; padding:24px; max-width:560px; width:100%; box-shadow:var(--shadow-lg); animation:pop .16s ease-out; }
+  @keyframes pop { from { opacity:0; transform:translateY(8px) scale(.98); } to { opacity:1; transform:none; } }
+  .modal h3 { margin:0 0 3px; font-size:17px; letter-spacing:-.01em; }
+  .modal-actions { display:flex; gap:9px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap; }
   .linkbox { display:flex; gap:8px; margin-top:10px; }
-  .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
-  .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:#1f2330; border:1px solid var(--line); padding:11px 16px; border-radius:10px; font-size:13px; max-width:90%; opacity:0; transition:opacity .2s; pointer-events:none; }
-  .toast.show { opacity:1; }
-  .toast.err { border-color:var(--danger); }
-  .toast.ok { border-color:var(--ok); }
+  .linkbox input { font-size:13px; }
+
+  /* Toast */
+  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(10px); background:var(--ink); color:#fff; padding:12px 18px; border-radius:12px; font-size:13.5px; font-weight:550; max-width:90%; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:40; box-shadow:var(--shadow-lg); }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.err { background:#7f1d1d; }
+  .toast.ok { background:#065f46; }
+
   .muted { color:var(--muted); font-size:13px; }
+  .err { color:var(--danger); font-size:12.5px; margin-top:8px; min-height:14px; font-weight:550; }
   .hidden { display:none; }
-  .err { color:var(--danger); font-size:12px; margin-top:8px; min-height:14px; }
-  .actions { display:flex; gap:6px; }
+  .spin { display:inline-block; width:14px; height:14px; border:2px solid var(--line-strong); border-top-color:var(--brand); border-radius:50%; animation:sp .7s linear infinite; vertical-align:-2px; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+  .rowsub { color:var(--muted); font-size:11.5px; }
+
+  @media (max-width:720px) {
+    .tiles { grid-template-columns:repeat(2,1fr); }
+    .grid { grid-template-columns:1fr; }
+    table, thead, tbody, th, td, tr { display:block; }
+    thead { display:none; }
+    tr { border:1px solid var(--line); border-radius:12px; padding:8px 4px; margin-top:10px; }
+    td { border:none; padding:5px 12px; }
+    td.actions { text-align:left; padding-top:8px; }
+    td.actions button { margin:4px 6px 0 0; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="row">
-    <div>
-      <h1>Dispango — Client Admin</h1>
-      <div class="sub">Onboard &amp; manage locksmith clients</div>
+  <div class="top">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Dispango — Operator Console</h1>
+        <div class="sub">Onboard shops, watch the system, fix problems</div>
+      </div>
     </div>
     <button id="logout" class="ghost hidden">Log out</button>
   </div>
 
   <!-- Token screen -->
-  <div id="login" class="card hidden">
-    <label>Admin token</label>
-    <input id="token" type="text" placeholder="paste your ADMIN_API_TOKEN" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+  <div id="login" class="card hidden" style="max-width:440px; margin-top:40px;">
+    <div class="card-title">Sign in</div>
+    <div class="help">Paste your operator token. It's stored only in this browser and used to talk to the admin API — nothing is saved on a server.</div>
+    <label>Operator token</label>
+    <input id="token" type="password" placeholder="ADMIN_API_TOKEN" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
     <div class="err" id="loginErr"></div>
-    <div style="margin-top:12px"><button id="connect">Connect</button></div>
-    <div class="muted" style="margin-top:10px">Stored only in this browser. Used to authenticate with the admin API.</div>
+    <div style="margin-top:14px"><button id="connect">Sign in</button></div>
   </div>
 
   <!-- App -->
   <div id="app" class="hidden">
-    <div class="card">
-      <div class="row"><strong>Monitoring</strong><button id="refreshHealth" class="ghost sm">Refresh</button></div>
-      <div id="healthWrap"><div class="muted" style="margin-top:10px">Loading…</div></div>
+
+    <!-- OVERVIEW / MONITORING -->
+    <div class="card-head" style="margin-top:6px">
+      <div>
+        <div class="card-title">System health</div>
+        <div class="help">A live read of whether calls are being answered and leads are being texted. Refreshes when you load the page.</div>
+      </div>
+      <button id="refreshHealth" class="ghost sm">Refresh</button>
+    </div>
+    <div id="banner"></div>
+    <div id="tiles" class="tiles"></div>
+
+    <!-- FAILED LEADS -->
+    <div class="card" id="failedCard">
+      <div class="card-title">Leads that didn't text out</div>
+      <div class="help">A caller left a real job but the text to the shop never sent (usually a Twilio hiccup). Hit <b>Resend</b> to deliver it now.</div>
+      <div id="failedWrap"></div>
     </div>
 
+    <!-- SHOPS -->
     <div class="card">
-      <div class="row"><strong>Clients</strong><button id="refresh" class="ghost sm">Refresh</button></div>
+      <div class="card-head">
+        <div>
+          <div class="card-title">Shops</div>
+          <div class="help">Every locksmith on the system. <b>Check</b> runs a full end-to-end test of a shop's phone routing without placing a real call — the fastest way to catch a broken number.</div>
+        </div>
+        <button id="refresh" class="ghost sm">Refresh</button>
+      </div>
       <div id="tableWrap"><div class="muted" style="margin-top:10px">Loading…</div></div>
     </div>
 
+    <!-- ADD SHOP -->
     <div class="card">
-      <strong>New client</strong>
-      <div class="grid">
-        <div><label>Business name *</label><input id="f_business_name" /></div>
-        <div><label>Agent name</label><input id="f_agent_name" placeholder="e.g. Mike" /></div>
-        <div><label>Vapi assistant ID *</label><input id="f_vapi_assistant_id" /></div>
-        <div><label>Owner phone * (E.164)</label><input id="f_owner_phone" placeholder="+14165551234" /></div>
-        <div><label>Dispatch phone * (E.164)</label><input id="f_dispatch_phone" placeholder="+14165551234" /></div>
-        <div><label>Inbound number (E.164)</label><input id="f_inbound_number" placeholder="+16514444875" /></div>
+      <div class="card-title">Add a shop</div>
+      <div class="help">Creates the shop record. It starts <b>inactive</b> — it goes live once the owner signs and pays (or you flip it on manually).</div>
+      <div class="grid" style="margin-top:6px">
+        <div><label>Business name <span class="hint">— shown to callers</span></label><input id="f_business_name" placeholder="Acme Locksmith" /></div>
+        <div><label>Agent name <span class="hint">— the AI's name on calls</span></label><input id="f_agent_name" placeholder="Mike" /></div>
+        <div><label>Vapi assistant ID <span class="hint">— the shared assistant</span></label><input id="f_vapi_assistant_id" /></div>
+        <div><label>Owner phone <span class="hint">— E.164, e.g. +1416…</span></label><input id="f_owner_phone" placeholder="+14165551234" /></div>
+        <div><label>Where leads text to <span class="hint">— dispatch phone, E.164</span></label><input id="f_dispatch_phone" placeholder="+14165551234" /></div>
+        <div><label>Assigned phone number <span class="hint">— optional, E.164</span></label><input id="f_inbound_number" placeholder="+16514444875" /></div>
       </div>
       <div class="err" id="createErr"></div>
-      <div style="margin-top:12px"><button id="create">Create client</button></div>
+      <div style="margin-top:14px"><button id="create">Add shop</button></div>
     </div>
 
+    <!-- BLOCKED NUMBERS -->
     <div class="card">
-      <div class="row"><strong>Banned numbers</strong><button id="refreshBanned" class="ghost sm">Refresh</button></div>
+      <div class="card-head">
+        <div>
+          <div class="card-title">Blocked numbers</div>
+          <div class="help">Callers here are refused before they ever reach the AI — use it to stop a repeat spammer from burning call credits.</div>
+        </div>
+        <button id="refreshBanned" class="ghost sm">Refresh</button>
+      </div>
       <div id="bannedWrap"><div class="muted" style="margin-top:10px">Loading…</div></div>
-      <div class="grid" style="margin-top:12px">
-        <div><label>Phone to ban (E.164)</label><input id="f_ban_phone" placeholder="+14165551234" /></div>
-        <div><label>Reason</label><input id="f_ban_reason" placeholder="e.g. repeat spammer" /></div>
+      <div class="grid" style="margin-top:10px">
+        <div><label>Number to block <span class="hint">— E.164</span></label><input id="f_ban_phone" placeholder="+14165551234" /></div>
+        <div><label>Reason <span class="hint">— optional note</span></label><input id="f_ban_reason" placeholder="repeat spammer" /></div>
       </div>
       <div class="err" id="banErr"></div>
-      <div style="margin-top:12px"><button id="banBtn">Ban number</button></div>
+      <div style="margin-top:12px"><button id="banBtn" class="danger">Block number</button></div>
     </div>
   </div>
 </div>
 
+<!-- Drill-down / check modal -->
+<div id="checkOverlay" class="overlay hidden">
+  <div class="modal">
+    <h3 id="checkTitle">Checking shop…</h3>
+    <div class="muted" id="checkSub">Testing the full path a real call takes.</div>
+    <div id="checkBody" style="margin-top:14px"></div>
+    <div class="modal-actions" id="checkActions">
+      <button class="ghost" id="checkClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Onboarding link modal -->
 <div id="overlay" class="overlay hidden">
   <div class="modal">
     <h3>Onboarding link</h3>
-    <div class="muted">Generate a sign &amp; pay link for <b id="modalBiz"></b>, then send it to the client.</div>
+    <div class="muted">Generate a sign &amp; pay link for <b id="modalBiz"></b>, then send it to the shop.</div>
     <div id="modalForm">
-      <label>Client contact email *</label>
+      <label>Shop contact email</label>
       <input id="m_email" type="email" placeholder="owner@theirshop.com" autocomplete="off" />
       <div class="err" id="modalErr"></div>
       <div class="modal-actions">
@@ -118,13 +257,13 @@
       </div>
     </div>
     <div id="modalResult" class="hidden">
-      <label>Send this link to the client:</label>
+      <label>Send this link to the shop:</label>
       <div class="linkbox">
         <input id="m_link" readonly />
         <button id="m_copy" class="sm">Copy</button>
-        <button id="m_send" class="sm">Email to client</button>
+        <button id="m_send" class="sm ghost">Email it</button>
       </div>
-      <div class="muted" style="margin-top:8px">They sign the contract, then pay — and activate automatically.</div>
+      <div class="muted" style="margin-top:8px">They sign the contract, then pay — and the number activates automatically.</div>
       <div id="m_sendMsg" style="margin-top:8px;font-size:13px;min-height:16px"></div>
       <div class="modal-actions">
         <button class="ghost" id="modalClose">Done</button>
@@ -141,6 +280,7 @@
   var KEY = 'dispango_admin_token';
   var $ = function (id) { return document.getElementById(id); };
   var clientsCache = [];
+  var healthCache = null;
 
   function token() { return localStorage.getItem(KEY) || ''; }
   function esc(v) { return v == null ? '' : String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -149,7 +289,8 @@
     var t = $('toast');
     t.textContent = msg;
     t.className = 'toast show ' + (kind || '');
-    setTimeout(function(){ t.className = 'toast ' + (kind || ''); }, 3200);
+    clearTimeout(t._t);
+    t._t = setTimeout(function(){ t.className = 'toast ' + (kind || ''); }, 3400);
   }
 
   function api(path, method, body, base) {
@@ -164,6 +305,7 @@
 
   function show(which) {
     $('login').className = 'card' + (which === 'login' ? '' : ' hidden');
+    $('login').style.marginTop = '40px';
     $('app').className = which === 'app' ? '' : 'hidden';
     $('logout').className = 'ghost' + (which === 'app' ? '' : ' hidden');
   }
@@ -180,54 +322,156 @@
     }).catch(function(){ $('loginErr').textContent = 'Network error.'; });
   }
 
-  // Derive a single lifecycle state from the billing columns the webhooks manage.
+  // ---- Lifecycle / status labels -----------------------------------------
+
+  // Billing lifecycle (signed + paid + active), shown as the shop's headline status.
   function lifecycle(c) {
     var cs = c.contract_status, ss = c.subscription_status, active = !!c.active, hasLink = !!c.onboarding_token;
-    if (active && cs === 'signed' && ss === 'active') return { label: 'Active', cls: 'on' };
-    if (active && cs === 'none') return { label: 'Legacy', cls: 'info' };
+    if (active && cs === 'signed' && ss === 'active') return { label: 'Live', cls: 'on' };
+    if (active && cs === 'none') return { label: 'Live (legacy)', cls: 'info' };
     if (ss === 'past_due') return { label: 'Past due', cls: 'warn' };
     if (ss === 'unpaid' || ss === 'canceled') return { label: 'Lapsed', cls: 'bad' };
     if (cs === 'declined') return { label: 'Declined', cls: 'bad' };
     if (cs === 'signed') return { label: 'Signed · unpaid', cls: 'info' };
-    if (cs === 'sent') return { label: 'Link sent · unsigned', cls: 'off' };
-    if (!hasLink && cs === 'none' && !active) return { label: 'Added · no link', cls: 'off' };
+    if (cs === 'sent') return { label: 'Link sent', cls: 'off' };
+    if (!hasLink && cs === 'none' && !active) return { label: 'New', cls: 'off' };
     return { label: '—', cls: 'off' };
   }
 
-  // Provisioning (robot) state — SEPARATE from the active/lifecycle flag above.
-  // 'staged' = number bought + wired, awaiting your one-click Activate; 'error' =
-  // partial failure, retryable. Renders the contextual pill + call-to-action.
+  // Provisioning (robot) state — the phone-number wiring, separate from billing.
   function provisionPill(c) {
     var ps = c.provision_status;
-    if (ps === 'staged') return ' <span class="pill warn">staged</span>';
-    if (ps === 'error') return ' <span class="pill bad" title="' + esc(c.provision_error || '') + '">error</span>';
-    if (ps === 'active') return ' <span class="pill on">live</span>';
+    if (ps === 'staged') return '<span class="pill warn">number staged</span>';
+    if (ps === 'error')  return '<span class="pill bad" title="' + esc(c.provision_error || '') + '">wiring failed</span>';
     return '';
   }
 
+  // ---- Health / monitoring -----------------------------------------------
+
+  function relTime(iso) {
+    if (!iso) return 'never';
+    var t = new Date(iso).getTime();
+    if (isNaN(t)) return 'unknown';
+    var s = Math.round((Date.now() - t) / 1000);
+    if (s < 60) return s + 's ago';
+    if (s < 3600) return Math.round(s/60) + ' min ago';
+    if (s < 86400) return Math.round(s/3600) + ' hr ago';
+    return Math.round(s/86400) + ' d ago';
+  }
+
+  function renderHealth(h) {
+    healthCache = h;
+    var failed = (h.failedLeads || []).length;
+    var abusers = h.abusers || [];
+    var problems = failed > 0 || abusers.length > 0;
+
+    // Banner
+    var b = $('banner');
+    if (problems) {
+      var bits = [];
+      if (failed) bits.push(failed + ' lead' + (failed>1?'s':'') + ' didn’t text out');
+      if (abusers.length) bits.push(abusers.length + ' number' + (abusers.length>1?'s':'') + ' calling a lot');
+      b.className = 'banner bad';
+      b.innerHTML = '<div class="ic">⚠️</div><div><b>Needs attention</b>' +
+        '<div class="bsub">' + esc(bits.join(' · ')) + '. See the details below.</div></div>';
+    } else {
+      b.className = 'banner good';
+      b.innerHTML = '<div class="ic">✅</div><div><b>Everything’s working</b>' +
+        '<div class="bsub">Calls are being answered and leads are texting through.</div></div>';
+    }
+
+    // Tiles
+    var hb = h.heartbeat || {};
+    var hbLabel = hb.lastRunAt ? relTime(hb.lastRunAt) : 'not set up';
+    var hbStale = hb.lastRunAt && (Date.now() - new Date(hb.lastRunAt).getTime() > 45*60*1000);
+    var tiles = [
+      { k:'Calls (last hour)', v: h.callsLastHour != null ? h.callsLastHour : '—', m:'inbound calls handled' },
+      { k:'Failed lead texts', v: failed, m: failed ? 'need resending' : 'all delivered', alert: failed>0 },
+      { k:'Heavy callers', v: abusers.length, m: abusers.length ? 'possible abuse' : 'nothing unusual', alert: abusers.length>0 },
+      { k:'Watchdog check-in', v: hbLabel, m: hbStale ? 'probe looks stalled' : 'external monitor', alert: hbStale, small:true },
+    ];
+    $('tiles').innerHTML = tiles.map(function (t) {
+      return '<div class="tile' + (t.alert ? ' alert' : '') + '">' +
+        '<div class="k">' + esc(t.k) + '</div>' +
+        '<div class="v"' + (t.small ? ' style="font-size:17px"' : '') + '>' + esc(t.v) + '</div>' +
+        '<div class="m">' + esc(t.m) + '</div></div>';
+    }).join('');
+
+    // Failed leads list
+    renderFailed(h.failedLeads || []);
+    // Abuse callers get folded into the failed card footer for one-click banning.
+    renderAbusers(abusers);
+  }
+
+  function renderFailed(list) {
+    var w = $('failedWrap');
+    if (!list.length) { $('failedCard').classList.remove('hidden'); w.innerHTML = '<div class="muted" style="margin-top:8px">✓ No failed lead texts.</div>'; return; }
+    var h = '<table><thead><tr><th>Shop</th><th>Caller</th><th>Job</th><th>When</th><th></th></tr></thead><tbody>';
+    list.forEach(function (f) {
+      h += '<tr>' +
+        '<td>' + esc(f.business_name || '—') + '</td>' +
+        '<td>' + esc(f.caller_phone || 'not captured') + '</td>' +
+        '<td>' + esc(f.job || f.outcome || '—') + '</td>' +
+        '<td class="rowsub">' + esc(relTime(f.ended_at)) + '</td>' +
+        '<td class="actions"><button class="warm sm" data-resend="' + esc(f.vapi_call_id) + '">Resend text</button></td>' +
+      '</tr>';
+    });
+    w.innerHTML = h + '</tbody></table>';
+  }
+
+  function renderAbusers(list) {
+    if (!list.length) return;
+    var h = '<div style="margin-top:14px"><div class="card-title" style="font-size:13.5px">Heavy callers this hour</div>' +
+      '<div class="help">Ban a number here to stop it before it costs more call credits.</div><table><tbody>';
+    list.forEach(function (a) {
+      h += '<tr><td>' + esc(a.phone) + '</td><td class="rowsub">' + esc(a.calls) + ' calls/hr</td>' +
+        '<td class="actions"><button class="danger sm" data-banphone="' + esc(a.phone) + '">Block</button></td></tr>';
+    });
+    $('failedWrap').innerHTML += h + '</tbody></table></div>';
+  }
+
+  function loadHealth() {
+    $('banner').innerHTML = '<div class="banner"><div class="ic"><span class="spin"></span></div><div><b>Checking…</b></div></div>';
+    api('/health').then(function (res) {
+      if (res.status !== 200) { $('banner').innerHTML = '<div class="banner bad"><div class="ic">⚠️</div><div><b>Couldn’t load health</b><div class="bsub">' + esc((res.body && res.body.error) || 'Error') + '</div></div></div>'; return; }
+      renderHealth(res.body);
+    }).catch(function(){ $('banner').innerHTML = '<div class="banner bad"><div class="ic">⚠️</div><div><b>Network error</b></div></div>'; });
+  }
+
+  // ---- Shops table -------------------------------------------------------
+
+  function perClientFor(id) {
+    if (!healthCache || !healthCache.perClient) return null;
+    return healthCache.perClient.filter(function (p) { return p.id === id; })[0] || null;
+  }
+
+  function healthDot(c) {
+    var pc = perClientFor(c.id);
+    if (!pc) return '';
+    var cls = pc.status === 'ok' ? 'on' : pc.status === 'bad' ? 'bad' : pc.status === 'warn' ? 'warn' : 'off';
+    return '<span class="pill ' + cls + '" title="' + esc(pc.note) + '"><span class="dot"></span>' + esc(pc.status === 'ok' ? 'OK' : pc.note.length < 26 ? pc.note : pc.status) + '</span>';
+  }
+
   function rowsHtml(clients) {
-    if (!clients.length) return '<div class="muted" style="margin-top:10px">No clients yet. Add one below.</div>';
-    var h = '<table><thead><tr><th>Business</th><th>Agent</th><th>Dispatch</th><th>Inbound</th><th>Status</th><th></th></tr></thead><tbody>';
+    if (!clients.length) return '<div class="muted" style="margin-top:10px">No shops yet. Add one below.</div>';
+    var h = '<table><thead><tr><th>Shop</th><th>Leads text to</th><th>Phone number</th><th>Status</th><th>Calls today</th><th></th></tr></thead><tbody>';
     clients.forEach(function (c) {
       var lc = lifecycle(c);
-      var pill = '<span class="pill ' + lc.cls + '">' + esc(lc.label) + '</span>';
-      var provisionBtn = '';
-      if (c.provision_status === 'staged') {
-        provisionBtn = '<button class="sm" style="background:var(--ok)" data-act="activateNum" data-id="' + esc(c.id) + '">Activate number</button>';
-      } else if (c.provision_status === 'error') {
-        provisionBtn = '<button class="sm" style="background:var(--danger)" data-act="retryNum" data-id="' + esc(c.id) + '">Retry provisioning</button>';
-      }
+      var pc = perClientFor(c.id);
+      var provBtn = '';
+      if (c.provision_status === 'staged') provBtn = '<button class="ok sm" data-act="activateNum" data-id="' + esc(c.id) + '">Activate number</button>';
+      else if (c.provision_status === 'error') provBtn = '<button class="danger sm" data-act="retryNum" data-id="' + esc(c.id) + '">Retry wiring</button>';
       h += '<tr>' +
-        '<td>' + esc(c.business_name) + '</td>' +
-        '<td>' + esc(c.agent_name) + '</td>' +
-        '<td>' + esc(c.dispatch_phone) + '</td>' +
-        '<td>' + esc(c.inbound_number) + provisionPill(c) + '</td>' +
-        '<td>' + pill + '</td>' +
+        '<td><div>' + esc(c.business_name || '—') + '</div><div class="rowsub">' + esc(c.agent_name || '') + '</div></td>' +
+        '<td>' + esc(c.dispatch_phone || '—') + '</td>' +
+        '<td>' + esc(c.inbound_number || '—') + ' ' + provisionPill(c) + '</td>' +
+        '<td><span class="pill ' + lc.cls + '">' + esc(lc.label) + '</span> ' + (pc ? healthDot(c) : '') + '</td>' +
+        '<td>' + (pc ? esc(pc.callsToday) : '—') + '</td>' +
         '<td class="actions">' +
-          provisionBtn +
-          '<button class="ghost sm" data-act="link" data-id="' + esc(c.id) + '">Onboarding link</button>' +
-          '<button class="ghost sm" data-act="test" data-id="' + esc(c.id) + '">Test SMS</button>' +
-          '<button class="ghost sm" data-act="toggle" data-id="' + esc(c.id) + '" data-active="' + (c.active ? '1' : '0') + '">' + (c.active ? 'Deactivate' : 'Activate') + '</button>' +
+          provBtn +
+          '<button class="sm" data-act="check" data-id="' + esc(c.id) + '">Check</button>' +
+          '<button class="ghost sm" data-act="link" data-id="' + esc(c.id) + '">Link</button>' +
+          '<button class="ghost sm" data-act="toggle" data-id="' + esc(c.id) + '" data-active="' + (c.active ? '1' : '0') + '">' + (c.active ? 'Turn off' : 'Turn on') + '</button>' +
         '</td>' +
       '</tr>';
     });
@@ -235,7 +479,6 @@
   }
 
   function loadClients() {
-    $('tableWrap').innerHTML = '<div class="muted" style="margin-top:10px">Loading…</div>';
     api('/clients').then(function (res) {
       if (res.status === 401) { localStorage.removeItem(KEY); show('login'); return; }
       if (res.status !== 200) { $('tableWrap').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || 'Error') + '</div>'; return; }
@@ -261,7 +504,7 @@
     api('/clients', 'POST', body).then(function (res) {
       $('create').disabled = false;
       if (res.status === 201) {
-        toast('Client created', 'ok');
+        toast('Shop added', 'ok');
         ['f_business_name','f_agent_name','f_vapi_assistant_id','f_owner_phone','f_dispatch_phone','f_inbound_number'].forEach(function(id){ $(id).value=''; });
         loadClients();
       } else {
@@ -270,23 +513,13 @@
     }).catch(function(){ $('create').disabled = false; $('createErr').textContent = 'Network error.'; });
   }
 
-  function testSms(id) {
-    toast('Sending test SMS…');
-    api('/clients/' + id + '/test-sms', 'POST').then(function (res) {
-      if (res.status === 200) toast('Test SMS sent to ' + res.body.to, 'ok');
-      else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
-    }).catch(function(){ toast('Network error', 'err'); });
-  }
-
   function toggleActive(id, isActive) {
     api('/clients/' + id, 'PATCH', { active: !isActive }).then(function (res) {
-      if (res.status === 200) { toast(isActive ? 'Deactivated' : 'Activated', 'ok'); loadClients(); }
+      if (res.status === 200) { toast(isActive ? 'Turned off' : 'Turned on', 'ok'); loadClients(); }
       else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
     });
   }
 
-  // One-click Activate for a staged number (billing API; separate from the
-  // active/lifecycle toggle above — this only flips provision_status → active).
   function activateNumber(id) {
     if (!confirm('Take this number live? It will start routing real calls to the AI.')) return;
     toast('Activating…');
@@ -296,20 +529,94 @@
     }).catch(function () { toast('Network error', 'err'); });
   }
 
-  function retryProvision(id) {
-    toast('Retrying provisioning…');
-    api('/provision/' + id + '/retry', 'POST', null, BILLING_API).then(function (res) {
+  function retryProvision(id, silent) {
+    if (!silent) toast('Re-running provisioning…');
+    return api('/provision/' + id + '/retry', 'POST', null, BILLING_API).then(function (res) {
       var r = res.body && res.body.result;
-      if (res.status === 200 && r && r.status === 'staged') { toast('Provisioned — ready to activate', 'ok'); loadClients(); }
-      else { toast((r && r.error) || (res.body && res.body.error) || ('Error ' + res.status), 'err'); loadClients(); }
-    }).catch(function () { toast('Network error', 'err'); });
+      if (res.status === 200 && r && r.status === 'staged') { if (!silent) toast('Provisioned — ready to activate', 'ok'); loadClients(); return true; }
+      if (!silent) toast((r && r.error) || (res.body && res.body.error) || ('Error ' + res.status), 'err');
+      loadClients();
+      return false;
+    }).catch(function () { if (!silent) toast('Network error', 'err'); return false; });
   }
+
+  function resendLead(callId, btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    api('/calls/' + encodeURIComponent(callId) + '/resend-sms', 'POST').then(function (res) {
+      if (res.status === 200) { toast('Lead text sent to ' + res.body.to, 'ok'); loadHealth(); }
+      else { toast((res.body && res.body.error) || ('Error ' + res.status), 'err'); if (btn) { btn.disabled = false; btn.textContent = 'Resend text'; } }
+    }).catch(function () { toast('Network error', 'err'); if (btn) { btn.disabled = false; btn.textContent = 'Resend text'; } });
+  }
+
+  // ---- Check a shop (synthetic test call + guided fixes) ------------------
+
+  var checkClientId = null;
+  function openCheck(id) {
+    var c = clientsCache.filter(function (x) { return x.id === id; })[0] || {};
+    checkClientId = id;
+    $('checkTitle').textContent = 'Checking ' + (c.business_name || 'this shop');
+    $('checkSub').textContent = 'Testing the full path a real call takes — no real call placed.';
+    $('checkBody').innerHTML = '<div class="muted" style="padding:14px 0"><span class="spin"></span> Running checks…</div>';
+    $('checkActions').innerHTML = '<button class="ghost" id="checkClose">Close</button>';
+    $('checkClose').addEventListener('click', closeCheck);
+    $('checkOverlay').className = 'overlay';
+    runCheck(id);
+  }
+  function closeCheck() { $('checkOverlay').className = 'overlay hidden'; checkClientId = null; }
+
+  function runCheck(id) {
+    api('/clients/' + id + '/test-call', 'POST').then(function (res) {
+      if (res.status !== 200) { $('checkBody').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || ('Error ' + res.status)) + '</div>'; return; }
+      renderCheck(res.body);
+    }).catch(function () { $('checkBody').innerHTML = '<div class="err">Network error.</div>'; });
+  }
+
+  function renderCheck(r) {
+    var head = r.ok
+      ? '<div class="banner good" style="margin:0 0 12px"><div class="ic">✅</div><div><b>This shop is wired correctly</b><div class="bsub">A real call would be answered and its lead texted.</div></div></div>'
+      : '<div class="banner bad" style="margin:0 0 12px"><div class="ic">⚠️</div><div><b>Found a problem</b><div class="bsub">See the failing check(s) below, then use a fix button.</div></div></div>';
+    var rows = (r.checks || []).map(function (c) {
+      var cls = c.ok === true ? 'pass' : c.ok === false ? 'fail' : 'skip';
+      var mark = c.ok === true ? '✓' : c.ok === false ? '✕' : '?';
+      return '<div class="check"><div class="ci ' + cls + '">' + mark + '</div>' +
+        '<div><div class="cl">' + esc(c.label) + '</div><div class="cd">' + esc(c.detail) + '</div></div></div>';
+    }).join('');
+    $('checkBody').innerHTML = head + rows;
+
+    // Guided fixes
+    var actions = '';
+    if (r.repairable) actions += '<button class="warm" id="fixRepair">Repair routing</button>';
+    actions += '<button class="ghost" id="fixRetry">Re-run provisioning</button>';
+    actions += '<button class="ghost" id="checkClose">Close</button>';
+    $('checkActions').innerHTML = actions;
+    $('checkClose').addEventListener('click', closeCheck);
+    if (r.repairable) $('fixRepair').addEventListener('click', doRepair);
+    $('fixRetry').addEventListener('click', doRetryFromCheck);
+  }
+
+  function doRepair() {
+    var btn = $('fixRepair'); btn.disabled = true; btn.textContent = 'Repairing…';
+    api('/clients/' + checkClientId + '/repair-routing', 'POST').then(function (res) {
+      if (res.status === 200) { toast('Routing repaired — re-checking', 'ok'); runCheck(checkClientId); loadClients(); }
+      else { toast((res.body && res.body.error) || ('Error ' + res.status), 'err'); btn.disabled = false; btn.textContent = 'Repair routing'; }
+    }).catch(function () { toast('Network error', 'err'); btn.disabled = false; btn.textContent = 'Repair routing'; });
+  }
+
+  function doRetryFromCheck() {
+    var btn = $('fixRetry'); btn.disabled = true; btn.textContent = 'Re-running…';
+    retryProvision(checkClientId, true).then(function (okr) {
+      toast(okr ? 'Provisioning re-run' : 'Provisioning couldn’t complete', okr ? 'ok' : 'err');
+      runCheck(checkClientId);
+    });
+  }
+
+  // ---- Onboarding link ---------------------------------------------------
 
   var linkClientId = null;
   function openLinkModal(id) {
     var c = clientsCache.filter(function (x) { return x.id === id; })[0] || {};
     linkClientId = id;
-    $('modalBiz').textContent = c.business_name || 'this client';
+    $('modalBiz').textContent = c.business_name || 'this shop';
     $('m_email').value = c.contact_email || '';
     $('modalErr').textContent = '';
     $('m_link').value = '';
@@ -322,7 +629,7 @@
   function closeModal() { $('overlay').className = 'overlay hidden'; linkClientId = null; }
   function generateLink() {
     var email = $('m_email').value.trim();
-    if (!email) { $('modalErr').textContent = 'Enter the client’s contact email.'; return; }
+    if (!email) { $('modalErr').textContent = 'Enter the shop’s contact email.'; return; }
     $('modalErr').textContent = '';
     $('modalGen').disabled = true;
     api('/onboarding', 'POST', { client_id: linkClientId, contact_email: email }, BILLING_API).then(function (res) {
@@ -353,109 +660,99 @@
     api('/onboarding/send', 'POST', { client_id: linkClientId, onboarding_url: url }, BILLING_API).then(function (res) {
       $('m_send').disabled = false;
       if (res.status === 200 && res.body && res.body.sent) {
-        msg.textContent = '✓ Sent to ' + res.body.to;
-        msg.style.color = 'var(--ok)';
+        msg.textContent = '✓ Sent to ' + res.body.to; msg.style.color = 'var(--ok)';
         toast('Email sent', 'ok');
       } else {
-        msg.textContent = (res.body && res.body.error) || ('Error ' + res.status);
-        msg.style.color = 'var(--danger)';
+        msg.textContent = (res.body && res.body.error) || ('Error ' + res.status); msg.style.color = 'var(--danger)';
       }
     }).catch(function () { $('m_send').disabled = false; msg.textContent = 'Network error.'; msg.style.color = 'var(--danger)'; });
   }
 
-  function loadAll() { loadClients(); loadHealth(); loadBanned(); }
-
-  function healthHtml(h) {
-    var pill = h.ok
-      ? '<span class="pill on">healthy</span>'
-      : '<span class="pill" style="background:rgba(255,93,93,.15);color:var(--danger)">needs attention</span>';
-    var abusers = (h.abusers && h.abusers.length)
-      ? h.abusers.map(function (a) { return esc(a.phone) + ' (' + esc(a.calls) + '/hr)'; }).join(', ')
-      : 'none';
-    var unsent = h.unsentLeads ? '<span style="color:var(--danger)">' + esc(h.unsentLeads) + '</span>' : '0';
-    return '<div style="margin-top:10px">' + pill + '</div>' +
-      '<table><tbody>' +
-        '<tr><td>Calls (last hour)</td><td>' + esc(h.callsLastHour) + '</td></tr>' +
-        '<tr><td>Unsent lead texts</td><td>' + unsent + '</td></tr>' +
-        '<tr><td>Possible abuse</td><td>' + abusers + '</td></tr>' +
-      '</tbody></table>' +
-      '<div class="muted" style="margin-top:6px">Checked ' + esc((h.checkedAt || '').replace('T',' ').slice(0,19)) + ' UTC</div>';
-  }
-
-  function loadHealth() {
-    $('healthWrap').innerHTML = '<div class="muted" style="margin-top:10px">Loading…</div>';
-    api('/health').then(function (res) {
-      if (res.status !== 200) { $('healthWrap').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || 'Error') + '</div>'; return; }
-      $('healthWrap').innerHTML = healthHtml(res.body);
-    });
-  }
+  // ---- Blocked numbers ---------------------------------------------------
 
   function bannedHtml(list) {
-    if (!list.length) return '<div class="muted" style="margin-top:10px">No banned numbers.</div>';
+    if (!list.length) return '<div class="muted" style="margin-top:8px">No blocked numbers.</div>';
     var h = '<table><thead><tr><th>Number</th><th>Reason</th><th>Since</th><th></th></tr></thead><tbody>';
     list.forEach(function (b) {
       h += '<tr>' +
         '<td>' + esc(b.caller_phone) + '</td>' +
-        '<td>' + esc(b.reason) + '</td>' +
-        '<td>' + esc((b.created_at || '').slice(0, 10)) + '</td>' +
-        '<td class="actions"><button class="ghost sm" data-unban="' + esc(b.caller_phone) + '">Unban</button></td>' +
+        '<td>' + esc(b.reason || '—') + '</td>' +
+        '<td class="rowsub">' + esc((b.created_at || '').slice(0, 10)) + '</td>' +
+        '<td class="actions"><button class="ghost sm" data-unban="' + esc(b.caller_phone) + '">Unblock</button></td>' +
       '</tr>';
     });
     return h + '</tbody></table>';
   }
-
   function loadBanned() {
-    $('bannedWrap').innerHTML = '<div class="muted" style="margin-top:10px">Loading…</div>';
     api('/banned').then(function (res) {
       if (res.status !== 200) { $('bannedWrap').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || 'Error') + '</div>'; return; }
       $('bannedWrap').innerHTML = bannedHtml(res.body.banned || []);
     });
   }
-
-  function banNumber() {
+  function banNumber(phone, reason) {
+    var body = { caller_phone: phone };
+    if (reason) body.reason = reason;
+    return api('/banned', 'POST', body).then(function (res) {
+      if (res.status === 201) { toast('Number blocked', 'ok'); loadBanned(); return true; }
+      toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
+      return false;
+    }).catch(function () { toast('Network error', 'err'); return false; });
+  }
+  function banFromForm() {
     $('banErr').textContent = '';
     var phone = $('f_ban_phone').value.trim();
     if (!phone) { $('banErr').textContent = 'Enter a phone number.'; return; }
-    var body = { caller_phone: phone };
-    var reason = $('f_ban_reason').value.trim();
-    if (reason) body.reason = reason;
     $('banBtn').disabled = true;
-    api('/banned', 'POST', body).then(function (res) {
+    banNumber(phone, $('f_ban_reason').value.trim()).then(function (ok) {
       $('banBtn').disabled = false;
-      if (res.status === 201) {
-        toast('Number banned', 'ok');
-        $('f_ban_phone').value = ''; $('f_ban_reason').value = '';
-        loadBanned();
-      } else {
-        $('banErr').textContent = (res.body && res.body.error) || ('Error ' + res.status);
-      }
-    }).catch(function () { $('banBtn').disabled = false; $('banErr').textContent = 'Network error.'; });
+      if (ok) { $('f_ban_phone').value = ''; $('f_ban_reason').value = ''; }
+    });
   }
-
   function unbanNumber(phone) {
     api('/banned/' + encodeURIComponent(phone), 'DELETE').then(function (res) {
-      if (res.status === 200) { toast('Unbanned', 'ok'); loadBanned(); }
+      if (res.status === 200) { toast('Unblocked', 'ok'); loadBanned(); }
       else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
     });
   }
 
-  // Wire up
+  function loadAll() {
+    // Health first so the shops table can show per-shop status pills on first paint.
+    loadHealth();
+    api('/health').then(function (res) { if (res.status === 200) healthCache = res.body; loadClients(); }).catch(loadClients);
+    loadBanned();
+  }
+
+  // ---- Wire up -----------------------------------------------------------
   $('connect').addEventListener('click', connect);
   $('token').addEventListener('keydown', function (e) { if (e.key === 'Enter') connect(); });
   $('logout').addEventListener('click', function () { localStorage.removeItem(KEY); show('login'); });
   $('refresh').addEventListener('click', loadClients);
+  $('refreshHealth').addEventListener('click', function () { loadHealth(); loadClients(); });
+  $('refreshBanned').addEventListener('click', loadBanned);
   $('create').addEventListener('click', createClient);
+  $('banBtn').addEventListener('click', banFromForm);
+
   $('tableWrap').addEventListener('click', function (e) {
     var btn = e.target.closest('button[data-act]');
     if (!btn) return;
-    var id = btn.getAttribute('data-id');
-    var act = btn.getAttribute('data-act');
+    var id = btn.getAttribute('data-id'), act = btn.getAttribute('data-act');
     if (act === 'link') openLinkModal(id);
-    else if (act === 'test') testSms(id);
+    else if (act === 'check') openCheck(id);
     else if (act === 'activateNum') activateNumber(id);
     else if (act === 'retryNum') retryProvision(id);
     else toggleActive(id, btn.getAttribute('data-active') === '1');
   });
+  $('failedWrap').addEventListener('click', function (e) {
+    var rb = e.target.closest('button[data-resend]');
+    if (rb) { resendLead(rb.getAttribute('data-resend'), rb); return; }
+    var bb = e.target.closest('button[data-banphone]');
+    if (bb) { bb.disabled = true; banNumber(bb.getAttribute('data-banphone'), 'heavy caller'); }
+  });
+  $('bannedWrap').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-unban]');
+    if (btn) unbanNumber(btn.getAttribute('data-unban'));
+  });
+
   $('modalCancel').addEventListener('click', closeModal);
   $('modalClose').addEventListener('click', closeModal);
   $('modalGen').addEventListener('click', generateLink);
@@ -463,14 +760,7 @@
   $('m_send').addEventListener('click', sendLink);
   $('m_email').addEventListener('keydown', function (e) { if (e.key === 'Enter') generateLink(); });
   $('overlay').addEventListener('click', function (e) { if (e.target === $('overlay')) closeModal(); });
-
-  $('refreshHealth').addEventListener('click', loadHealth);
-  $('refreshBanned').addEventListener('click', loadBanned);
-  $('banBtn').addEventListener('click', banNumber);
-  $('bannedWrap').addEventListener('click', function (e) {
-    var btn = e.target.closest('button[data-unban]');
-    if (btn) unbanNumber(btn.getAttribute('data-unban'));
-  });
+  $('checkOverlay').addEventListener('click', function (e) { if (e.target === $('checkOverlay')) closeCheck(); });
 
   // Boot
   if (token()) { show('app'); loadAll(); } else { show('login'); }
