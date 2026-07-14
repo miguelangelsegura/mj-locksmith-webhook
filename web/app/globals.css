@@ -23,6 +23,15 @@
   --color-line: #e8eaf6;
   --color-emerald: #10b981;
   --color-emerald-50: #e7f8f1;
+  /* Per-section accent variety (Calio-style) — used for eyebrows, stat bars, tints. */
+  --color-sky: #2f9bff;
+  --color-sky-50: #e8f4ff;
+  --color-violet: #8b5cf6;
+  --color-violet-50: #f1ecff;
+  --color-pink: #ff5c8a;
+  --color-pink-50: #ffe9f0;
+  --color-danger: #ef4444;
+  --color-danger-50: #fdeaea;
 }
 
 html { scroll-behavior: smooth; }
@@ -161,23 +170,67 @@ body {
   animation: textShimmer 4s linear infinite;
 }
 
-/* Integrations marquee — a slow horizontal scroll of the "integrates with" strip */
-@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.animate-marquee { animation: marquee 26s linear infinite; }
-.marquee-mask { -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-
 /* Numbered step badge + connector line for "How It Works" */
 @keyframes popIn { from { opacity:0; transform: scale(.8); } to { opacity:1; transform:none; } }
 .animate-pop { animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both; }
 
+/* Tiny uppercase section label (Calio-style eyebrow). */
+.eyebrow {
+  display: inline-block;
+  font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--color-brand);
+}
+
+/* Custom range slider — smooth, with a brand-gradient fill up to --pct (set inline). */
+.slider {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 8px; border-radius: 999px; outline: none; cursor: pointer;
+  background: linear-gradient(90deg,
+    var(--color-brand) 0%, var(--color-brand-600) var(--pct, 50%),
+    var(--color-line) var(--pct, 50%), var(--color-line) 100%);
+  transition: background .08s linear;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--color-brand);
+  box-shadow: 0 3px 10px rgba(91, 91, 245, .45);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.slider::-webkit-slider-thumb:hover { transform: scale(1.12); }
+.slider:active::-webkit-slider-thumb { transform: scale(1.18); box-shadow: 0 4px 16px rgba(91, 91, 245, .6); }
+.slider::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--color-brand);
+  box-shadow: 0 3px 10px rgba(91, 91, 245, .45);
+}
+.slider::-moz-range-track { height: 8px; border-radius: 999px; background: transparent; }
+
+/* Hero: a "job text" card sliding onto the screen. */
+@keyframes textDrop {
+  0% { opacity: 0; transform: translateY(-14px) scale(.96); }
+  60% { opacity: 1; transform: translateY(2px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-textdrop { animation: textDrop .7s cubic-bezier(.22, 1, .36, 1) both; }
+
+/* Hero: incoming-call ring badge. */
+@keyframes ringWobble {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-12deg); } 40% { transform: rotate(12deg); }
+  60% { transform: rotate(-8deg); } 80% { transform: rotate(8deg); }
+}
+.animate-ring { animation: ringWobble 1.6s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .animate-textdrop, .animate-ring { animation: none; }
   .reveal, .reveal.lift { opacity: 1; transform: none; transition: none; }
   .lift { transition: none; }
   .lift:hover { transform: none; }
   .navlink::after { transition: none; }
   .animate-floaty, .animate-aura, .animate-ringpulse, .animate-dot,
   .caret::after, .voicebars span, .animate-pointer, .animate-slideup,
-  .animate-glow, .text-shimmer, .animate-marquee, .animate-pop { animation: none; }
+  .animate-glow, .text-shimmer, .animate-pop { animation: none; }
   .text-shimmer { -webkit-text-fill-color: var(--color-brand); color: var(--color-brand); }
 }
