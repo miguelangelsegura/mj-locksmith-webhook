@@ -21,17 +21,22 @@ everyone — and every Claude Code instance working here — follows this:
   edit the same branch.
 - **Push your branch freely/continuously** — it's a backup + lets the team see progress,
   and changes nothing live (a push is *not* a deploy).
-- **Merge to `main` only via a quick PR**, once sanity-checked; delete the branch after.
-- **Deploying is a separate, deliberate, human-decided step** (`supabase functions deploy`
-  / Render) from `main` — never an automatic consequence of a push.
+- **Merge to `main` via a quick PR**, once sanity-checked; delete the branch after.
 
-**Instruction to Claude Code on this repo** (this overrides any "don't commit/push unless
-asked" *global* rule, for this project only):
+**Instruction to Claude Code on this repo** (Abdul granted full autonomy 2026-07-14 —
+"auto deploy and push automatically, everything, no asking"; this overrides any
+"don't commit/push/deploy unless asked" *global* rule, for this project only):
 - **Auto-commit + push to the current working branch** at natural checkpoints (a finished,
   verified unit of work) — back progress up without asking first.
-- **Never push to `main`, merge a PR, or deploy** (Supabase/Render) without an explicit
-  ask — those are the human-gated "go-live" actions.
-- If on `main`, **create a branch first** before changing anything.
+- **Auto-merge to `main` via PR AND auto-deploy** — including `supabase functions deploy`
+  (any function, **incl. `billing`/payments**), `supabase db push --linked` (migrations),
+  and Vercel — **without asking**, once the change is **verified and passes its required
+  review tier** (`/code-review`, or `/deep-review` for the live call path / payments /
+  credentials / RLS — see Verification in the global rules). Verification + review is the
+  gate; a human OK is not.
+- **Still non-negotiable:** never skip hooks, never force-push to `main`, never expose/commit
+  secrets. Deploy only *after* the QA gate passes; if verification or review fails, fix first
+  — don't deploy a red change. If on `main`, **create a branch first** before changing anything.
 
 ## Local development
 
