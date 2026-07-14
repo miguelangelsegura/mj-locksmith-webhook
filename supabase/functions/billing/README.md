@@ -16,7 +16,10 @@ automatically.
 | GET | `/onboarding/:token/pay` | token | post-sign redirect → creates Stripe Checkout, 302s to Stripe |
 | GET | `/onboarding/:token/done` | none | confirmation page |
 | POST | `/webhooks/signwell` | SignWell HMAC | contract signed → store PDF, mark signed |
-| POST | `/webhooks/stripe` | Stripe signature | paid / lapsed → set `subscription_status` |
+| POST | `/webhooks/stripe` | Stripe signature | paid / lapsed → set `subscription_status`; on paid, **auto-provisions a number** (see below) |
+| GET | `/welcome-info/:token` | token | read-only `{business_name, inbound_number, provision_status}` for the `/welcome` page |
+| POST | `/provision/:id/activate` | `x-admin-token` | operator's one-click Activate: `provision_status` staged → active |
+| POST | `/provision/:id/retry` | `x-admin-token` | re-run provisioning for a client stuck in `error` (idempotent, never re-buys) |
 
 `active = (contract_status == 'signed') AND (subscription_status == 'active')`,
 recomputed by both webhooks. Enforcement: service is kept during `past_due` (Stripe
@@ -40,6 +43,33 @@ is smart-retrying the card); revoked only on `canceled` / `unpaid` / subscriptio
 | `SIGNWELL_TEST_MODE` | `"true"` (default) creates non-binding test documents; set `"false"` for production |
 | `RESEND_API_KEY` + `OPS_EMAIL` | "new paying customer — provision now" alert; if unset, the alert just logs |
 | `OPS_FROM_EMAIL` | optional verified sender (default `onboarding@dispango.com`) |
+
+### Provisioning secrets (Phase 2 — auto-buy a number on payment)
+
+> ⚠️ **ACTION REQUIRED to turn provisioning ON.** The code is deployed but **stays OFF**
+> (falls back to the manual "provision now" email) until **all** of the following are set
+> on the `billing` function. Set them, redeploy is not needed (secrets are read at call
+> time), and the next paid checkout auto-provisions. This is the plug-and-play switch.
+
+| Secret | What |
+|---|---|
+| `VAPI_PRIVATE_KEY` | Vapi REST bearer (from `.env.local`). Used to register the number with Vapi. |
+| `VAPI_ASSISTANT_ID` | the **shared** Vapi assistant id written to every provisioned client's row |
+| `VAPI_SECRET` | billing needs its **own** copy (same value as the webhook's) to build the number's `server.url` `?token=` |
+| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` | the live Twilio account that owns the numbers (same account the webhook texts from) |
+| `TWILIO_NUMBER_COUNTRY` | optional, default `CA`. Country to buy numbers in; area code is matched to the shop's phone. |
+| `PROVISIONING_ENABLED` | optional master kill-switch — set to `false` to force-disable even when configured |
+
+**What it does** (`provisioning.ts`, called from `checkout.session.completed` after
+`recomputeActive`, reusing the `stripe_events` idempotency claim so it never double-runs):
+buys a Twilio number → registers it with Vapi as a **dynamic/server-routed** number
+(`server.url` → vapi-webhook `?token`, `fallbackDestination` = the shop's real phone, **no
+static `assistantId`**) → writes `inbound_number` + `vapi_assistant_id` + `fallback_number`
+and sets **`provision_status='staged'`** (NOT live). It **never** touches `clients.active`
+(owned solely by `recomputeActive`). Idempotent + partial-failure safe: never re-buys once
+`inbound_number` is set. The operator taps **Activate** (admin-ui / `POST /provision/:id/activate`)
+to flip `staged → active`; the vapi-webhook only routes calls for `active`/`none`
+(`ROUTABLE_PROVISION`), so a staged number forwards to the shop's own phone until confirmed.
 
 ## One-time setup
 
