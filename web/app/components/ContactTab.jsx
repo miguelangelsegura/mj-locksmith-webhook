@@ -22,10 +22,12 @@ export default function ContactTab({ email, phone, bookHref }) {
               <svg viewBox="0 0 20 20" className="h-4 w-4 text-brand" fill="none"><rect x="2.5" y="4" width="15" height="12" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M3 5l7 5 7-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
               {email}
             </a>
-            <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="flex items-center gap-2 rounded-xl border border-line px-4 py-3 text-sm font-medium text-ink transition-colors hover:border-brand">
-              <svg viewBox="0 0 20 20" className="h-4 w-4 text-brand" fill="none"><path d="M5 3h3l1.5 4-2 1.5a10 10 0 0 0 4 4l1.5-2 4 1.5v3a1 1 0 0 1-1.1 1A14 14 0 0 1 4 4.1 1 1 0 0 1 5 3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
-              {phone}
-            </a>
+            {phone && (
+              <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="flex items-center gap-2 rounded-xl border border-line px-4 py-3 text-sm font-medium text-ink transition-colors hover:border-brand">
+                <svg viewBox="0 0 20 20" className="h-4 w-4 text-brand" fill="none"><path d="M5 3h3l1.5 4-2 1.5a10 10 0 0 0 4 4l1.5-2 4 1.5v3a1 1 0 0 1-1.1 1A14 14 0 0 1 4 4.1 1 1 0 0 1 5 3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
+                {phone}
+              </a>
+            )}
           </div>
         </div>
       )}

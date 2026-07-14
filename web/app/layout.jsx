@@ -21,6 +21,12 @@ export const metadata = {
     locale: "en_CA",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Dispango — AI Receptionist for the Canadian Trades Industry",
+    description:
+      "Answers every call, captures the job, and texts you the lead in seconds — 24/7. Flat $199/mo. Built in Canada.",
+  },
 };
 
 export const viewport = {

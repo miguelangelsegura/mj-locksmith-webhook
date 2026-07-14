@@ -6,15 +6,18 @@ import Calculator from "./components/Calculator";
 import ContactTab from "./components/ContactTab";
 
 const CONFIG = {
-  book: "https://cal.com/REPLACE/dispango-demo", // Cal.com free booking link
-  portal: "https://billing.stripe.com/p/login/REPLACE", // Stripe customer portal (Sign In)
-  getStarted: "/get-started", // self-onboarding form (Sprint B)
-  demoLine: "", // live call-in demo number — turned on after the rate-limit failsafe (Sprint C)
-  sampleAudio: "", // URL to a recorded sample call; the player renders only when this is set
+  // Ready values.
+  getStarted: "/get-started", // self-onboarding form (working conversion path)
   email: "hello@dispango.com",
-  phone: "(000) 000-0000",
   legalName: "Jam Works Inc.",
-  address: "REPLACE — registered mailing address, City, ON, Canada",
+  // Tracked TODOs — left empty on purpose so nothing broken ships. Every UI that
+  // reads one of these degrades gracefully when it's blank (see helpers below).
+  book: "", // TODO(Phase 7): real Cal.com booking link. Demo CTAs fall back to getStarted until set.
+  portal: "", // TODO(Phase 4): customer dashboard/login. "Sign In" is hidden until set.
+  demoLine: "", // TODO(Phase 3): live call-in demo number. Call-in tile shows "launching shortly" until set.
+  sampleAudio: "", // TODO: URL to a recorded sample call. The audio player renders only when set.
+  phone: "", // TODO(Phase 7): public business contact line. Phone contact points are hidden until set.
+  address: "", // TODO(Phase 7): registered mailing address. Footer/Terms/Privacy omit it until set.
 };
 const PRICE = 199;
 
@@ -35,6 +38,18 @@ function useReveal() {
     const failsafe = setTimeout(() => els.forEach((el) => el.classList.add("in")), 2500);
     return () => { io.disconnect(); clearTimeout(failsafe); };
   }, []);
+}
+
+/* Adds a subtle shadow to the sticky header once the page is scrolled. */
+function useScrolled(threshold = 8) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > threshold);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [threshold]);
+  return scrolled;
 }
 
 /* Counts up to `to` once scrolled into view (respects reduced-motion). */
@@ -82,17 +97,17 @@ function Logo() {
 }
 
 function Btn({ children, href = "#book", variant = "primary", className = "" }) {
-  const base = "inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-transform duration-100 hover:-translate-y-0.5";
+  const base = "group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-[transform,box-shadow,background-color,border-color] duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0";
   const styles = {
-    primary: "bg-brand text-white shadow-lg shadow-brand/30 hover:bg-brand-600",
-    ghost: "border border-line bg-white text-ink hover:border-brand",
-    light: "bg-white text-ink hover:bg-indigo-50",
+    primary: "bg-brand text-white shadow-lg shadow-brand/30 hover:bg-brand-600 hover:shadow-xl hover:shadow-brand/40",
+    ghost: "border border-line bg-white text-ink hover:border-brand hover:shadow-md hover:shadow-brand/10",
+    light: "bg-white text-ink shadow-lg shadow-black/10 hover:bg-indigo-50 hover:shadow-xl",
   };
   return <a href={href} className={`${base} ${styles[variant]} ${className}`}>{children}</a>;
 }
 
 function Arrow() {
-  return <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" aria-hidden="true"><path d="M4 10h11m0 0-4-4m4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+  return <svg viewBox="0 0 20 20" className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" fill="none" aria-hidden="true"><path d="M4 10h11m0 0-4-4m4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
 function Tick({ className = "text-emerald" }) {
@@ -176,23 +191,28 @@ function Cell({ v }) {
 
 export default function Page() {
   useReveal();
-  const book = () => CONFIG.book;
+  const scrolled = useScrolled();
+  // Demo/booking CTAs fall back to the working self-serve flow until a real
+  // Cal.com link is set (CONFIG.book, Phase 7).
+  const book = () => CONFIG.book || CONFIG.getStarted;
 
   return (
     <main id="top" className="text-body">
       {/* NAV */}
-      <header className="sticky top-0 z-50 border-b border-line/70 bg-white/80 backdrop-blur-md">
+      <header className={`nav-bar sticky top-0 z-50 border-b border-line/70 backdrop-blur-md ${scrolled ? "nav-scrolled" : "bg-white/80"}`}>
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Logo />
+          <a href="#top" aria-label="Dispango — back to top" className="rounded-lg"><Logo /></a>
           <nav className="hidden items-center gap-7 text-sm font-medium text-ink lg:flex">
-            <a href="#how" className="hover:text-brand">How It Works</a>
-            <a href="#industries" className="hover:text-brand">Industries</a>
-            <a href="#integrations" className="hover:text-brand">Integrations</a>
-            <a href="#pricing" className="hover:text-brand">Pricing</a>
-            <a href="#faq" className="hover:text-brand">FAQ</a>
+            <a href="#how" className="navlink hover:text-brand">How It Works</a>
+            <a href="#industries" className="navlink hover:text-brand">Industries</a>
+            <a href="#integrations" className="navlink hover:text-brand">Integrations</a>
+            <a href="#pricing" className="navlink hover:text-brand">Pricing</a>
+            <a href="#faq" className="navlink hover:text-brand">FAQ</a>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3">
-            <a href={CONFIG.portal} className="hidden text-sm font-semibold text-ink hover:text-brand sm:inline">Sign In</a>
+            {CONFIG.portal && (
+              <a href={CONFIG.portal} className="navlink hidden text-sm font-semibold text-ink hover:text-brand sm:inline">Sign In</a>
+            )}
             <Btn href={CONFIG.getStarted}>Get Started <Arrow /></Btn>
           </div>
         </div>
@@ -231,7 +251,7 @@ export default function Page() {
         <p className="reveal mx-auto mt-3 max-w-xl text-center">Eight things a voicemail — or a $3,000-a-month receptionist — simply can&apos;t do.</p>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {USPS.map((u, i) => (
-            <div key={u.h} className={`reveal rounded-2xl border border-line bg-white p-6 transition-transform hover:-translate-y-1 ${i === 0 ? "animate-glow" : ""}`}>
+            <div key={u.h} style={{ transitionDelay: `${(i % 4) * 70}ms` }} className={`reveal lift rounded-2xl border border-line bg-white p-6 ${i === 0 ? "animate-glow" : ""}`}>
               <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${TINTS[u.tint]}`}>
                 <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none"><path d="M5 10l3.5 3.5L15 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </div>
@@ -251,7 +271,7 @@ export default function Page() {
             {/* connector line (desktop) */}
             <div className="pointer-events-none absolute left-0 right-0 top-5 hidden h-px bg-gradient-to-r from-transparent via-brand/30 to-transparent md:block" />
             {STEPS.map((s, i) => (
-              <div key={s.h} className="reveal relative text-center">
+              <div key={s.h} style={{ transitionDelay: `${i * 90}ms` }} className="reveal relative text-center">
                 <div className="animate-pop mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-brand text-base font-extrabold text-white shadow-lg shadow-brand/30 ring-4 ring-soft">{i + 1}</div>
                 <h3 className="mt-5 font-bold text-ink">{s.h}</h3>
                 <p className="mt-2 text-sm">{s.p}</p>
@@ -267,7 +287,7 @@ export default function Page() {
         <p className="reveal mx-auto mt-3 max-w-lg text-center">Watch a live call come in above — or hear it and try it for yourself.</p>
         <div className="reveal mt-10 grid gap-5 sm:grid-cols-2">
           {/* Call-in tile */}
-          <div className="rounded-3xl border border-line bg-white p-8 text-center shadow-xl shadow-ink/5">
+          <div className="lift rounded-3xl border border-line bg-white p-8 text-center shadow-xl shadow-ink/5">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-brand">
               <svg viewBox="0 0 20 20" className="h-6 w-6" fill="none"><path d="M5 3h3l1.5 4-2 1.5a10 10 0 0 0 4 4l1.5-2 4 1.5v3a1 1 0 0 1-1.1 1A14 14 0 0 1 4 4.1 1 1 0 0 1 5 3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
             </div>
@@ -282,7 +302,7 @@ export default function Page() {
             )}
           </div>
           {/* Sample audio tile */}
-          <div className="rounded-3xl border border-line bg-white p-8 text-center shadow-xl shadow-ink/5">
+          <div className="lift rounded-3xl border border-line bg-white p-8 text-center shadow-xl shadow-ink/5">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-warm-50 text-warm">
               <svg viewBox="0 0 20 20" className="h-6 w-6" fill="none"><path d="M7 6l6 4-6 4V6Z" fill="currentColor" /></svg>
             </div>
@@ -303,8 +323,8 @@ export default function Page() {
           <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">Built for Every Trade</h2>
           <p className="reveal mx-auto mt-3 max-w-lg text-center">One receptionist, tuned to how your trade takes a call.</p>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {INDUSTRIES.map((c) => (
-              <div key={c.h} className="reveal rounded-2xl bg-white p-6 ring-1 ring-line transition-transform hover:-translate-y-1">
+            {INDUSTRIES.map((c, i) => (
+              <div key={c.h} style={{ transitionDelay: `${(i % 4) * 70}ms` }} className="reveal lift rounded-2xl border border-line bg-white p-6">
                 <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${TINTS[c.tint]}`}>
                   <svg viewBox="0 0 20 20" className="h-6 w-6" fill="none"><path d={IND_ICON[c.icon]} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </div>
@@ -390,8 +410,8 @@ export default function Page() {
               { h: "We Build Your Integration", p: "Don't see your software? We'll connect it. Tell us the tool and we'll make it fit." },
               { h: "Custom Reporting & Analysis", p: "Want call trends, lead sources or after-hours volume? We'll run the analysis for your shop." },
               { h: "Same-Day Support", p: "A real person, same day. No ticket queues, no offshore call centre." },
-            ].map((c) => (
-              <div key={c.h} className="reveal rounded-2xl border border-line bg-white p-6">
+            ].map((c, i) => (
+              <div key={c.h} style={{ transitionDelay: `${i * 80}ms` }} className="reveal lift rounded-2xl border border-line bg-white p-6">
                 <h3 className="font-bold text-ink">{c.h}</h3>
                 <p className="mt-2 text-sm">{c.p}</p>
               </div>
@@ -443,19 +463,21 @@ export default function Page() {
       <section id="contact" className="mx-auto max-w-4xl px-5 py-20">
         <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">Let&apos;s Talk</h2>
         <p className="reveal mx-auto mt-3 max-w-lg text-center">Questions, custom setups, or a live walkthrough — reach a real person the same day.</p>
-        <div className="reveal mx-auto mt-10 grid max-w-2xl gap-4 sm:grid-cols-3">
-          <a href={book()} className="rounded-2xl border border-line bg-white p-6 text-center transition-transform hover:-translate-y-1">
+        <div className={`reveal mx-auto mt-10 grid max-w-2xl gap-4 ${CONFIG.phone ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+          <a href={book()} className="lift rounded-2xl border border-line bg-white p-6 text-center">
             <p className="font-bold text-ink">Book a Demo</p>
             <p className="mt-1 text-sm">See it live in 15 minutes.</p>
           </a>
-          <a href={`mailto:${CONFIG.email}`} className="rounded-2xl border border-line bg-white p-6 text-center transition-transform hover:-translate-y-1">
+          <a href={`mailto:${CONFIG.email}`} className="lift rounded-2xl border border-line bg-white p-6 text-center">
             <p className="font-bold text-ink">Email Us</p>
             <p className="mt-1 break-words text-sm text-brand">{CONFIG.email}</p>
           </a>
-          <a href={`tel:${CONFIG.phone.replace(/[^\d+]/g, "")}`} className="rounded-2xl border border-line bg-white p-6 text-center transition-transform hover:-translate-y-1">
-            <p className="font-bold text-ink">Call Us</p>
-            <p className="mt-1 text-sm text-brand">{CONFIG.phone}</p>
-          </a>
+          {CONFIG.phone && (
+            <a href={`tel:${CONFIG.phone.replace(/[^\d+]/g, "")}`} className="lift rounded-2xl border border-line bg-white p-6 text-center">
+              <p className="font-bold text-ink">Call Us</p>
+              <p className="mt-1 text-sm text-brand">{CONFIG.phone}</p>
+            </a>
+          )}
         </div>
       </section>
 
@@ -466,7 +488,7 @@ export default function Page() {
           <p className="mx-auto mt-3 max-w-lg text-white/70">Get set up today and let Dispango answer your very next call.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Btn href={CONFIG.getStarted} variant="light">Get Started <Arrow /></Btn>
-            <a href={book()} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 hover:bg-white/10">Book a Demo</a>
+            <a href={book()} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition-[transform,background-color] duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 active:translate-y-0">Book a Demo</a>
           </div>
         </div>
       </section>
@@ -477,16 +499,16 @@ export default function Page() {
           <div>
             <Logo />
             <p className="mt-3 max-w-xs text-sm text-muted">AI receptionist for the Canadian trades industry. Answers every call, texts you the lead.</p>
-            <p className="mt-4 text-xs text-muted">{CONFIG.legalName}<br />{CONFIG.address}</p>
+            <p className="mt-4 text-xs text-muted">{CONFIG.legalName}{CONFIG.address && <><br />{CONFIG.address}</>}</p>
           </div>
           <div className="flex flex-col gap-2 text-sm md:items-end">
-            <a href="#how" className="hover:text-brand">How It Works</a>
-            <a href="#pricing" className="hover:text-brand">Pricing</a>
-            <a href="#faq" className="hover:text-brand">FAQ</a>
-            <a href="#contact" className="hover:text-brand">Contact</a>
-            <a href="/terms" className="hover:text-brand">Terms</a>
-            <a href="/privacy" className="hover:text-brand">Privacy</a>
-            <a href={`mailto:${CONFIG.email}`} className="hover:text-brand">{CONFIG.email}</a>
+            <a href="#how" className="w-fit hover:text-brand">How It Works</a>
+            <a href="#pricing" className="w-fit hover:text-brand">Pricing</a>
+            <a href="#faq" className="w-fit hover:text-brand">FAQ</a>
+            <a href="#contact" className="w-fit hover:text-brand">Contact</a>
+            <a href="/terms" className="w-fit hover:text-brand">Terms</a>
+            <a href="/privacy" className="w-fit hover:text-brand">Privacy</a>
+            <a href={`mailto:${CONFIG.email}`} className="w-fit hover:text-brand">{CONFIG.email}</a>
           </div>
         </div>
         <p className="pb-8 text-center text-xs text-muted">© {new Date().getFullYear()} {CONFIG.legalName}. Dispango is a product of {CONFIG.legalName}. All rights reserved.</p>
