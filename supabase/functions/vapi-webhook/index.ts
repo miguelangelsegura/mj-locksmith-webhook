@@ -29,6 +29,21 @@ const NON_LEAD_OUTCOMES = new Set(["wrong_number", "spam", "info_only"]);
 // phone) instead of the AI answering. 'none' = legacy/manual rows (always live).
 const ROUTABLE_PROVISION = ["active", "none"];
 
+// Public "call our AI" demo line. When DEMO_NUMBER is set, calls arriving on it are
+// handled as a demo: the shared assistant answers as a clearly-labelled demo persona
+// with a tight per-call cap, the per-caller rate limit/ban still apply, and the call
+// is NOT persisted or dispatched as a lead (so demo calls are never mistaken for real
+// jobs). Inert when DEMO_NUMBER is unset (e.g. local dev).
+const DEMO_NUMBER = normalizePhone(Deno.env.get("DEMO_NUMBER"));
+const DEMO_ASSISTANT_ID = Deno.env.get("VAPI_ASSISTANT_ID") ?? null;
+const DEMO_BUSINESS_NAME = "Dispango Demo";
+const DEMO_AGENT_NAME = "Riley";
+const DEMO_MAX_DURATION_SECONDS = 180;
+
+function isDemoNumber(inbound: string | null): boolean {
+  return !!DEMO_NUMBER && inbound === DEMO_NUMBER;
+}
+
 function constantTimeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
@@ -362,7 +377,46 @@ function greetingLocation(addr: string | null): string | null {
   return addr.replace(/^\s*\d[\w-]*\s+/, "").trim() || null;
 }
 
+// Demo line: answer as the clearly-labelled demo persona with a tight per-call cap.
+// Ban + per-caller rate limit still apply (a public number with no cap is an open
+// door to draining the balance). Fails open on a DB error like the main path — the
+// short maxDuration cap still bounds the cost.
+async function handleDemoRequest(phone: string | null): Promise<Response> {
+  const demoVars = {
+    caller_name: "", caller_memory: "",
+    business_name: DEMO_BUSINESS_NAME, agent_name: DEMO_AGENT_NAME,
+  };
+  if (!DEMO_ASSISTANT_ID) {
+    console.log("[vapi] demo call but VAPI_ASSISTANT_ID unset — cannot route");
+    return Response.json({ error: "Our demo line is not available right now." });
+  }
+  try {
+    const [banned, limited] = await Promise.all([isBanned(phone), isRateLimited(phone)]);
+    if (banned) {
+      console.log(`[vapi] demo blocked banned caller phone=${phone}`);
+      return Response.json({ error: "Sorry, we can't take your call." });
+    }
+    if (limited) {
+      console.log(`[vapi] demo rate-limited phone=${phone}`);
+      return Response.json({ error: "The demo line is busy right now — please try again later." });
+    }
+  } catch (e) {
+    console.log(`[vapi] demo gate error (failing open): ${e}`);
+  }
+  console.log(`[vapi] demo call phone=${phone}`);
+  return Response.json({
+    assistantId: DEMO_ASSISTANT_ID,
+    assistantOverrides: {
+      variableValues: demoVars,
+      maxDurationSeconds: DEMO_MAX_DURATION_SECONDS,
+    },
+  });
+}
+
 async function handleAssistantRequest(payload: any): Promise<Response> {
+  if (isDemoNumber(extractInboundNumber(payload))) {
+    return await handleDemoRequest(extractCallerPhone(payload));
+  }
   const { assistantId, businessName, agentName } = await resolveClientContext(payload);
   const baseVars = {
     caller_name: "", caller_memory: "",
@@ -434,8 +488,8 @@ async function persistCall(payload: any): Promise<void> {
   const call = msg?.call ?? {};
   const callId = call?.id;
   const assistantId = call?.assistantId;
+  const inboundNumber = extractInboundNumber(payload);
   try {
-    const inboundNumber = extractInboundNumber(payload);
     const clientId = await lookupClientByInbound(inboundNumber) ?? await lookupClientId(assistantId);
     if (!clientId) {
       console.log(`[vapi] unknown client inbound=${inboundNumber} assistantId=${assistantId} call=${callId} — skipping insert`);
@@ -447,6 +501,14 @@ async function persistCall(payload: any): Promise<void> {
     const { error } = await supabase.from("calls").upsert(row, { onConflict: "vapi_call_id" });
     if (error) throw new Error(error.message);
     console.log(`[vapi] persisted call=${callId} client=${clientId}`);
+    // Demo line: the call IS persisted (so the per-caller rate limit — which counts
+    // rows in `calls` — actually sees demo traffic and can trip) but is NEVER
+    // dispatched as a lead. The demo number resolves to the dedicated "Dispango Demo"
+    // client row, so even without this skip no real shop would be texted.
+    if (isDemoNumber(inboundNumber)) {
+      console.log(`[vapi] demo call=${callId} — persisted, skipping lead SMS`);
+      return;
+    }
     await sendDispatchSms(clientId, callId, row);
   } catch (e) {
     console.log(`[vapi] persistence failed call=${callId}: ${e}`);
