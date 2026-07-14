@@ -19,6 +19,7 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import Stripe from "npm:stripe";
+import { provisionForClient, provisioningEnabled } from "./provisioning.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -61,7 +62,7 @@ function donePageUrl(token: string): string {
   // Prefer the branded success page on our own site; fall back to the plain
   // in-function /done route when PUBLIC_SITE_URL isn't set.
   return PUBLIC_SITE_URL
-    ? `${PUBLIC_SITE_URL}/welcome`
+    ? `${PUBLIC_SITE_URL}/welcome?token=${encodeURIComponent(token)}`
     : `${PUBLIC_BASE_URL}/billing/onboarding/${token}/done`;
 }
 
@@ -569,6 +570,56 @@ function onboardingDone(): Response {
   );
 }
 
+// Tokenized read for the /welcome page. The onboarding token is a bearer secret
+// the payer already holds (it gates /pay), so we return just the public-facing
+// provisioning state — enough to show them their assigned number. No secrets leave.
+async function welcomeInfo(token: string): Promise<Response> {
+  if (!supabase) return json({ error: "service unavailable" }, 503);
+  const { data } = await supabase
+    .from("clients")
+    .select("business_name, inbound_number, fallback_number, provision_status")
+    .eq("onboarding_token", token).limit(1);
+  const c = data?.[0];
+  if (!c) return json({ error: "not found" }, 404);
+  return json({
+    business_name: c.business_name ?? null,
+    inbound_number: c.inbound_number ?? null,
+    fallback_number: c.fallback_number ?? null,
+    provision_status: c.provision_status ?? "none",
+  });
+}
+
+// Operator's one-click Activate: staged → active. NEVER touches clients.active
+// (owned solely by recomputeActive). Only advances a genuinely staged row.
+async function activateProvision(id: string): Promise<Response> {
+  if (!supabase) return json({ error: "supabase not configured" }, 503);
+  const { data } = await supabase.from("clients").select("provision_status").eq("id", id).limit(1);
+  const c = data?.[0];
+  if (!c) return json({ error: "client not found" }, 404);
+  if (c.provision_status === "active") return json({ activated: true, already: true });
+  if (c.provision_status !== "staged") {
+    return json({ error: `client is '${c.provision_status}', not 'staged' — nothing to activate` }, 409);
+  }
+  const { error } = await supabase.from("clients")
+    .update({ provision_status: "active" }).eq("id", id).eq("provision_status", "staged");
+  if (error) return json({ error: error.message }, 400);
+  console.log(`[billing] provisioning activated client=${id}`);
+  return json({ activated: true });
+}
+
+// Re-run provisioning for a client stuck in 'error' (or to resume a partial run).
+// Idempotent + partial-failure safe inside provisionForClient (won't re-buy).
+async function retryProvision(id: string): Promise<Response> {
+  if (!supabase) return json({ error: "supabase not configured" }, 503);
+  const gate = provisioningEnabled();
+  if (!gate.ok) return json({ error: `provisioning disabled: ${gate.reason}` }, 503);
+  const { data } = await supabase.from("clients").select("*").eq("id", id).limit(1);
+  const client = data?.[0];
+  if (!client) return json({ error: "client not found" }, 404);
+  const result = await provisionForClient(supabase, client, { notify: notifyOps });
+  return json({ result }, result.status === "error" ? 502 : 200);
+}
+
 // --- Webhooks -------------------------------------------------------------
 
 async function handleSignwellWebhook(rawBody: string): Promise<Response> {
@@ -695,11 +746,24 @@ async function handleStripeEvent(event: any): Promise<void> {
       plan: "flat_monthly",
     }).eq("id", clientId);
     await recomputeActive(clientId);
-    const { data } = await supabase.from("clients").select("business_name").eq("id", clientId).limit(1);
-    await notifyOps(
-      "New paying customer — provision now",
-      `${data?.[0]?.business_name ?? clientId} signed + paid. Set up their Twilio number + Vapi wiring.`,
-    );
+    // Buy + wire a number automatically, then stage it for one-click Activate.
+    // This runs at-most-once per checkout: the stripe_events claim above already
+    // guards against webhook replays, and provisionForClient additionally refuses
+    // to re-buy when inbound_number is set. It never throws — a failure records a
+    // retryable 'error' state and alerts ops. If provisioning isn't configured,
+    // fall back to the manual "provision now" email so nothing is silently dropped.
+    const { data } = await supabase.from("clients").select("*").eq("id", clientId).limit(1);
+    const client = data?.[0];
+    if (client && provisioningEnabled().ok) {
+      const result = await provisionForClient(supabase, client, { notify: notifyOps });
+      console.log(`[billing] provisioning client=${clientId} → ${result.status}`);
+    } else {
+      await notifyOps(
+        "New paying customer — provision now",
+        `${client?.business_name ?? clientId} signed + paid. Set up their Twilio number + Vapi wiring` +
+          ` (auto-provisioning is off: ${provisioningEnabled().reason ?? "no client row"}).`,
+      );
+    }
     return;
   }
 
@@ -788,6 +852,10 @@ Deno.serve(async (req) => {
     const doneMatch = path.match(/^\/onboarding\/([^/]+)\/done$/);
     if (req.method === "GET" && doneMatch) return onboardingDone();
 
+    // Public tokenized read for the /welcome page (token is the auth).
+    const welcomeMatch = path.match(/^\/welcome-info\/([^/]+)$/);
+    if (req.method === "GET" && welcomeMatch) return await welcomeInfo(welcomeMatch[1]);
+
     // Public self-serve signup (no admin token; guarded by honeypot + rate limit).
     if (req.method === "POST" && path === "/signup") {
       let signupBody: Record<string, unknown>;
@@ -824,6 +892,18 @@ Deno.serve(async (req) => {
         return json({ error: "unauthorized" }, 401);
       }
       return await sendOnboardingLink(await req.json());
+    }
+
+    // Admin-token provisioning controls (activate / retry).
+    const activateMatch = path.match(/^\/provision\/([^/]+)\/activate$/);
+    const retryMatch = path.match(/^\/provision\/([^/]+)\/retry$/);
+    if (req.method === "POST" && (activateMatch || retryMatch)) {
+      if (!ADMIN_API_TOKEN) return json({ error: "admin API not configured" }, 503);
+      if (!constantTimeEqual(req.headers.get("x-admin-token") ?? "", ADMIN_API_TOKEN)) {
+        console.log("[billing] rejected: bad/missing admin token");
+        return json({ error: "unauthorized" }, 401);
+      }
+      return activateMatch ? await activateProvision(activateMatch[1]) : await retryProvision(retryMatch![1]);
     }
 
     return json({ error: "not found" }, 404);

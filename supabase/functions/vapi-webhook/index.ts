@@ -23,6 +23,11 @@ const SMS_STALE_AFTER_MS = 60 * 60 * 1000;
 const PHONE_RE = /^\+\d{10,15}$/;
 const DEFAULT_TZ = "America/Edmonton";
 const NON_LEAD_OUTCOMES = new Set(["wrong_number", "spam", "info_only"]);
+// A number only routes live calls in these provisioning states. 'staged' (robot
+// prepared it, operator hasn't confirmed) and 'error' (partial wiring) are held
+// back so the call falls through to Vapi's fallbackDestination (the shop's real
+// phone) instead of the AI answering. 'none' = legacy/manual rows (always live).
+const ROUTABLE_PROVISION = ["active", "none"];
 
 function constantTimeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -236,7 +241,8 @@ async function sendDispatchSms(clientId: string, callId: string, row: Record<str
 async function lookupClientByInbound(number: string | null): Promise<string | null> {
   if (!number || !supabase) return null;
   const { data } = await supabase
-    .from("clients").select("id").eq("inbound_number", number).eq("active", true).limit(1);
+    .from("clients").select("id").eq("inbound_number", number).eq("active", true)
+    .in("provision_status", ROUTABLE_PROVISION).limit(1);
   return data?.[0]?.id ?? null;
 }
 
@@ -289,9 +295,18 @@ async function resolveClientContext(
     const inbound = extractInboundNumber(payload);
     if (inbound) {
       const { data } = await supabase
-        .from("clients").select("vapi_assistant_id, business_name, agent_name")
+        .from("clients").select("vapi_assistant_id, business_name, agent_name, provision_status")
         .eq("inbound_number", inbound).eq("active", true).limit(1);
-      row = data?.[0] ?? null;
+      const cand = data?.[0] ?? null;
+      // A number we KNOW but haven't activated (staged/error) must not answer — and
+      // must NOT fall through to the "first active client" default below (that would
+      // answer as a random shop). Return no assistant so Vapi uses the number's
+      // fallbackDestination (forwards to the shop's real phone).
+      if (cand && !ROUTABLE_PROVISION.includes(cand.provision_status)) {
+        console.log(`[vapi] inbound=${inbound} is provision_status=${cand.provision_status}, not live — no assistant`);
+        return { assistantId: null, businessName: "", agentName: "" };
+      }
+      row = cand;
     }
     if (!row) {
       const { data } = await supabase
