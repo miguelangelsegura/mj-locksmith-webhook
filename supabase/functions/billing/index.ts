@@ -47,6 +47,7 @@ const SIGNWELL_TEMPLATE_ID = Deno.env.get("SIGNWELL_TEMPLATE_ID");
 const SIGNWELL_WEBHOOK_ID = Deno.env.get("SIGNWELL_WEBHOOK_ID");
 if (!SIGNWELL_API_KEY) console.log("[startup] SIGNWELL_API_KEY not set — e-sign disabled");
 
+const TURNSTILE_SECRET_KEY = Deno.env.get("TURNSTILE_SECRET_KEY");
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const OPS_EMAIL = Deno.env.get("OPS_EMAIL");
 const OPS_FROM_EMAIL = Deno.env.get("OPS_FROM_EMAIL") || "onboarding@dispango.com";
@@ -416,6 +417,29 @@ function clientIp(req: Request): string {
   return fwd.split(",")[0].trim() || "unknown";
 }
 
+// Verify a Cloudflare Turnstile (free CAPTCHA) token against siteverify. Only
+// called when TURNSTILE_SECRET_KEY is set. Fails closed: any network/parse error
+// returns false, so a Cloudflare outage blocks signups rather than waving them
+// through.
+async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
+  try {
+    const form = new URLSearchParams();
+    form.set("secret", TURNSTILE_SECRET_KEY!);
+    form.set("response", token);
+    if (ip && ip !== "unknown") form.set("remoteip", ip);
+    const resp = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: form,
+    });
+    const data = await resp.json();
+    return data?.success === true;
+  } catch (e) {
+    console.log(`[signup] turnstile verify error: ${e}`);
+    return false;
+  }
+}
+
 async function handleSignup(req: Request, body: Record<string, unknown>): Promise<Response> {
   if (!supabase) return json({ error: "service unavailable" }, 503);
   if (!SIGNWELL_API_KEY || !SIGNWELL_TEMPLATE_ID || !PUBLIC_BASE_URL) {
@@ -432,6 +456,17 @@ async function handleSignup(req: Request, body: Record<string, unknown>): Promis
   if (rateLimited(ip)) {
     console.log(`[signup] rate limited ip=${ip}`);
     return json({ error: "too many attempts — please try again later" }, 429);
+  }
+
+  // Cloudflare Turnstile: enforced only when the secret is configured, so signups
+  // keep working until the key + frontend site key are provisioned. Once on, a
+  // missing/invalid token is rejected here — before any SignWell doc or DB write.
+  if (TURNSTILE_SECRET_KEY) {
+    const turnstileToken = String(body.turnstile_token ?? "").trim();
+    if (!turnstileToken || !(await verifyTurnstile(turnstileToken, ip))) {
+      console.log(`[signup] turnstile failed ip=${ip} hasToken=${!!turnstileToken}`);
+      return json({ error: "Verification failed — please refresh and try again." }, 403);
+    }
   }
 
   const businessName = String(body.business_name ?? "").trim().slice(0, 200);

@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // Supabase billing Edge Function base. Set NEXT_PUBLIC_BILLING_URL in Vercel;
 // the placeholder keeps the build green until it's configured.
 const BILLING_URL =
   process.env.NEXT_PUBLIC_BILLING_URL || "https://REPLACE.supabase.co/functions/v1/billing";
+
+// Cloudflare Turnstile (free CAPTCHA) site key. When unset, the widget is not
+// rendered and the backend skips verification — signups keep working until the
+// key + server-side TURNSTILE_SECRET_KEY are provisioned.
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
 const TRADES = ["Locksmith", "Plumber", "HVAC", "Electrician", "Contractor", "Garage Doors", "Roofer", "Other"];
 const VOICES = ["No preference", "Elliot", "Ava", "Cole", "Harper"];
@@ -33,8 +38,27 @@ export default function GetStarted() {
   const [form, setForm] = useState({ business_name: "", contact_email: "", phone: "", trade: TRADES[0], voice: VOICES[0], phone_type: LINE_TYPES[0], company_url: "" });
   const [status, setStatus] = useState("idle"); // idle | submitting | error
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  // Load the Turnstile script once and expose the token callbacks it fires.
+  // The widget div below auto-renders when the script loads.
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return;
+    window.onTurnstileSuccess = (t) => setTurnstileToken(t);
+    window.onTurnstileExpired = () => setTurnstileToken("");
+    const s = document.createElement("script");
+    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    s.async = true;
+    s.defer = true;
+    document.head.appendChild(s);
+    return () => {
+      s.remove();
+      delete window.onTurnstileSuccess;
+      delete window.onTurnstileExpired;
+    };
+  }, []);
 
   async function submit(e) {
     e.preventDefault();
@@ -44,7 +68,7 @@ export default function GetStarted() {
       const res = await fetch(`${BILLING_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, turnstile_token: turnstileToken }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.onboarding_url) {
@@ -53,10 +77,21 @@ export default function GetStarted() {
       }
       setError(data.error || "Something went wrong. Please try again or email hello@dispango.com.");
       setStatus("error");
+      resetTurnstile();
     } catch {
       setError("Couldn't reach the server. Please check your connection and try again.");
       setStatus("error");
+      resetTurnstile();
     }
+  }
+
+  // Turnstile tokens are single-use. After a failed submit the token we sent is
+  // spent, so re-challenge and clear it — otherwise a retry reuses the dead token
+  // and gets rejected forever.
+  function resetTurnstile() {
+    if (!TURNSTILE_SITE_KEY) return;
+    setTurnstileToken("");
+    window.turnstile?.reset();
   }
 
   return (
@@ -115,11 +150,20 @@ export default function GetStarted() {
             className="absolute left-[-9999px] h-0 w-0 opacity-0" aria-hidden="true"
           />
 
+          {TURNSTILE_SITE_KEY && (
+            <div
+              className="cf-turnstile"
+              data-sitekey={TURNSTILE_SITE_KEY}
+              data-callback="onTurnstileSuccess"
+              data-expired-callback="onTurnstileExpired"
+            />
+          )}
+
           {status === "error" && <p className="rounded-xl bg-warm-50 px-4 py-3 text-sm text-warm">{error}</p>}
 
           <button
             type="submit"
-            disabled={status === "submitting"}
+            disabled={status === "submitting" || (TURNSTILE_SITE_KEY && !turnstileToken)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-brand/30 transition-transform hover:-translate-y-0.5 disabled:opacity-60"
           >
             {status === "submitting" ? "Setting up…" : "Continue to sign & start trial"}
