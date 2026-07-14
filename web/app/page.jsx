@@ -12,7 +12,7 @@ const CONFIG = {
   legalName: "Jam Works Inc.",
   // Tracked TODOs — left empty on purpose so nothing broken ships. Every UI that
   // reads one of these degrades gracefully when it's blank (see helpers below).
-  book: "", // TODO(Phase 7): real Cal.com booking link. Demo CTAs fall back to getStarted until set.
+  book: "https://cal.com/abdul-zxafqn/30min", // live Cal.com 30-min demo booking link
   portal: "", // TODO(Phase 4): customer dashboard/login. "Sign In" is hidden until set.
   demoLine: "", // TODO(Phase 3): live call-in demo number. Call-in tile shows "launching shortly" until set.
   sampleAudio: "", // TODO: URL to a recorded sample call. The audio player renders only when set.
@@ -114,16 +114,12 @@ function Tick({ className = "text-emerald" }) {
   return <svg viewBox="0 0 20 20" className={`h-4 w-4 ${className}`} fill="none"><path d="M5 10l3.5 3.5L15 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
-/* Each USP appears exactly ONCE, on its own card — no repeated claims across the page. */
+/* Word-light: four punchy claims, each a 2–4 word promise + one short line. */
 const USPS = [
-  { h: "Answers Every Call at Once", p: "Unlimited calls, all at the same time. No busy signal, nobody stuck on hold.", tint: "brand" },
-  { h: "It Never Sleeps", p: "Nights, weekends, holidays, mid-job — 24/7/365, every call gets picked up.", tint: "warm" },
-  { h: "The Full Job, Texted in Seconds", p: "Name, number, address, problem and urgency — on your phone before you're off the ladder.", tint: "emerald" },
-  { h: "Remembers Repeat Callers", p: "Greets your regulars by name and recalls what they called about last time.", tint: "amber" },
-  { h: "Speaks in Your Shop's Name", p: "Trained on your business, hours and service area — never a generic script.", tint: "brand" },
-  { h: "Blocks Spam & Robocalls", p: "Wrong numbers and junk never reach you. Only real jobs land on your phone.", tint: "warm" },
-  { h: "Keep Your Own Number", p: "Forward your existing line — callers dial the exact number they always have.", tint: "emerald" },
-  { h: "Canadian Data, PIPEDA-Safe", p: "Built in Canada. Your callers' details stay private and compliant.", tint: "amber" },
+  { h: "Answers everyone at once", p: "Unlimited calls, same second. No hold, no busy signal.", tint: "brand" },
+  { h: "Never off the clock", p: "Nights, weekends, mid-job — 24/7/365.", tint: "sky" },
+  { h: "Texts you the whole job", p: "Name, address, problem, urgency — in seconds.", tint: "emerald" },
+  { h: "Kills spam & robocalls", p: "Only real jobs ever reach your phone.", tint: "violet" },
 ];
 
 const TINTS = {
@@ -131,6 +127,15 @@ const TINTS = {
   warm: "bg-warm-50 text-warm",
   emerald: "bg-emerald-50 text-emerald",
   amber: "bg-warm-50 text-warm-amber",
+  sky: "bg-sky-50 text-sky",
+  violet: "bg-violet-50 text-violet",
+  pink: "bg-pink-50 text-pink",
+};
+
+/* Literal class strings so Tailwind's scanner generates them (no dynamic concat). */
+const DOT = {
+  brand: "bg-brand", warm: "bg-warm", emerald: "bg-emerald", amber: "bg-warm-amber",
+  sky: "bg-sky", violet: "bg-violet", pink: "bg-pink",
 };
 
 const STEPS = [
@@ -162,16 +167,27 @@ const INDUSTRIES = [
   { h: "& Every Trade", p: "If your business lives on the phone, Dispango fits.", icon: "more", tint: "amber" },
 ];
 
-const INTEGRATIONS = ["Jobber", "Housecall Pro", "ServiceTitan", "QuickBooks", "Google Calendar", "Zapier", "Slack", "HubSpot"];
+/* Integrations wall, grouped by category (Calio-style). Brand-colored chips.
+   Aspirational: availability varies / we build the connection on request. */
+const INTEGRATIONS = [
+  { cat: "Field service", tint: "brand", tools: [{ n: "Jobber", c: "#2FA84F" }, { n: "Housecall Pro", c: "#1F6FEB" }, { n: "ServiceTitan", c: "#2E5BFF" }] },
+  { cat: "Accounting", tint: "emerald", tools: [{ n: "QuickBooks", c: "#2CA01C" }, { n: "Xero", c: "#13B5EA" }, { n: "FreshBooks", c: "#0075DD" }] },
+  { cat: "Scheduling", tint: "sky", tools: [{ n: "Google Calendar", c: "#4285F4" }, { n: "Calendly", c: "#006BFF" }] },
+  { cat: "Automation", tint: "warm", tools: [{ n: "Zapier", c: "#FF4F00" }, { n: "Make", c: "#6D00CC" }] },
+  { cat: "Comms & CRM", tint: "violet", tools: [{ n: "Slack", c: "#4A154B" }, { n: "HubSpot", c: "#FF7A59" }, { n: "Gmail", c: "#EA4335" }] },
+];
 
+/* Dispango vs. a human receptionist. Last row is the honest concession where a
+   human still wins — kept in on purpose (a trust device, Calio-style). */
 const COMPARE = [
-  ["Answers 24/7, instantly", true, "limited", false],
-  ["Takes every call at once", true, false, false],
-  ["Captures the full job", true, "limited", false],
-  ["Texts you the lead in seconds", true, "limited", false],
-  ["Keeps your own number", true, "limited", true],
-  ["Monthly cost", `$${PRICE}`, "$1,500+", "$0"],
-  ["Blocks spam & robocalls", true, "limited", false],
+  { dim: "Monthly cost", us: `$${PRICE}/mo flat`, them: "$3,000–5,500/mo, fully loaded" },
+  { dim: "Answers every call", us: "Always, instantly", them: "Misses calls when busy or away" },
+  { dim: "Calls at the same time", us: "Unlimited, all at once", them: "One caller at a time" },
+  { dim: "Available", us: "24/7/365 — holidays too", them: "Business hours, ~5 days a week" },
+  { dim: "Time to go live", us: "Same day", them: "Weeks to hire and train" },
+  { dim: "Texts you the job", us: "In seconds, every time", them: "Manual, easy to forget" },
+  { dim: "Sick days & turnover", us: "Never sick, never quits", them: "Time off, turnover, rehiring" },
+  { dim: "Complex, emotional calls", us: "Hands it straight to you", them: "A real human still wins here", concede: true },
 ];
 
 const FAQ = [
@@ -182,18 +198,10 @@ const FAQ = [
   { q: "What about my callers' data?", a: "It's shared only with you. We follow Canadian privacy law (PIPEDA) — see our privacy policy." },
 ];
 
-function Cell({ v }) {
-  if (v === true) return <Tick className="mx-auto text-emerald" />;
-  if (v === false) return <span className="mx-auto block text-center text-muted">—</span>;
-  if (v === "limited") return <span className="text-xs font-medium text-muted">limited</span>;
-  return <span className="text-sm font-semibold text-ink">{v}</span>;
-}
-
 export default function Page() {
   useReveal();
   const scrolled = useScrolled();
-  // Demo/booking CTAs fall back to the working self-serve flow until a real
-  // Cal.com link is set (CONFIG.book, Phase 7).
+  // Booking CTAs → the live Cal.com link; defensive fallback to self-serve if ever unset.
   const book = () => CONFIG.book || CONFIG.getStarted;
 
   return (
@@ -218,25 +226,25 @@ export default function Page() {
         </div>
       </header>
 
-      {/* HERO */}
+      {/* HERO — "On the tools" */}
       <section className="glow-hero relative overflow-hidden">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 md:grid-cols-2 md:py-24">
           <div className="reveal">
-            <span className="inline-block rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-brand-700">
-              AI Receptionist for the Canadian Trades Industry
+            <span className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-brand-700">
+              <span className="h-1.5 w-1.5 animate-dot rounded-full bg-emerald" /> AI receptionist for the trades
             </span>
-            <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight text-ink md:text-6xl">
-              The Call You Missed Just Became <span className="text-shimmer">Someone Else&apos;s Job.</span>
+            <h1 className="mt-5 text-[2.6rem] font-extrabold leading-[1.02] tracking-tight text-ink md:text-6xl">
+              You&apos;re on the tools.<br /><span className="text-shimmer">Dispango&apos;s on the phone.</span>
             </h1>
             <p className="mt-5 max-w-md text-lg text-body">
-              Dispango answers every call, captures the job, and texts you the lead in seconds — around the clock, even when you&apos;re on the tools.
+              Every call answered, every job captured, texted to you in seconds — 24/7, even when your hands are full.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Btn href={CONFIG.getStarted}>Get Started <Arrow /></Btn>
-              <Btn href="#demo" variant="ghost">See It in Action</Btn>
+              <Btn href={book()} variant="ghost">Book a Demo</Btn>
             </div>
             <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-body">
-              {["Keeps your number", "Live the same day", `Flat $${PRICE}/mo`].map((t) => (
+              {["Keep your number", "Live the same day", `Flat $${PRICE}/mo`].map((t) => (
                 <li key={t} className="flex items-center gap-2"><Tick /> {t}</li>
               ))}
             </ul>
@@ -245,18 +253,18 @@ export default function Page() {
         </div>
       </section>
 
-      {/* USPS — each fact stated once, on its own card */}
+      {/* USPS — four punchy claims, word-light */}
       <section className="mx-auto max-w-6xl px-5 py-20">
-        <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">Why Shops Across Canada Switch</h2>
-        <p className="reveal mx-auto mt-3 max-w-xl text-center">Eight things a voicemail — or a $3,000-a-month receptionist — simply can&apos;t do.</p>
+        <p className="reveal eyebrow text-center">Why shops switch</p>
+        <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Four reasons voicemail can&apos;t compete.</h2>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {USPS.map((u, i) => (
             <div key={u.h} style={{ transitionDelay: `${(i % 4) * 70}ms` }} className={`reveal lift rounded-2xl border border-line bg-white p-6 ${i === 0 ? "animate-glow" : ""}`}>
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${TINTS[u.tint]}`}>
+              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${TINTS[u.tint]}`}>
                 <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none"><path d="M5 10l3.5 3.5L15 6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </div>
-              <h3 className="mt-4 font-bold text-ink">{u.h}</h3>
-              <p className="mt-2 text-sm">{u.p}</p>
+              <h3 className="mt-4 text-lg font-bold text-ink">{u.h}</h3>
+              <p className="mt-1.5 text-sm">{u.p}</p>
             </div>
           ))}
         </div>
@@ -265,8 +273,9 @@ export default function Page() {
       {/* HOW IT WORKS */}
       <section id="how" className="glow-soft">
         <div className="mx-auto max-w-6xl px-5 py-20">
-          <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">How It Works</h2>
-          <p className="reveal mx-auto mt-3 max-w-lg text-center">From ring to lead in four steps. No hardware, no new number, no training.</p>
+          <p className="reveal eyebrow text-center">How it works</p>
+          <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Texted to you before they hang up.</h2>
+          <p className="reveal mx-auto mt-3 max-w-lg text-center">No hardware, no new number, no training. Four steps, seconds long.</p>
           <div className="relative mt-14 grid gap-10 md:grid-cols-4">
             {/* connector line (desktop) */}
             <div className="pointer-events-none absolute left-0 right-0 top-5 hidden h-px bg-gradient-to-r from-transparent via-brand/30 to-transparent md:block" />
@@ -283,8 +292,9 @@ export default function Page() {
 
       {/* SEE IT IN ACTION */}
       <section id="demo" className="mx-auto max-w-4xl px-5 py-20">
-        <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">See It in Action</h2>
-        <p className="reveal mx-auto mt-3 max-w-lg text-center">Watch a live call come in above — or hear it and try it for yourself.</p>
+        <p className="reveal eyebrow text-center">See it in action</p>
+        <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Hear it handle a real call.</h2>
+        <p className="reveal mx-auto mt-3 max-w-lg text-center">Watch the live call above — or ring it yourself and try to trip it up.</p>
         <div className="reveal mt-10 grid gap-5 sm:grid-cols-2">
           {/* Call-in tile */}
           <div className="lift rounded-3xl border border-line bg-white p-8 text-center shadow-xl shadow-ink/5">
@@ -320,7 +330,8 @@ export default function Page() {
       {/* INDUSTRIES */}
       <section id="industries" className="glow-soft">
         <div className="mx-auto max-w-6xl px-5 py-20">
-          <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">Built for Every Trade</h2>
+          <p className="reveal eyebrow text-center">Industries</p>
+          <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Built for the trades that can&apos;t miss a call.</h2>
           <p className="reveal mx-auto mt-3 max-w-lg text-center">One receptionist, tuned to how your trade takes a call.</p>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {INDUSTRIES.map((c, i) => (
@@ -338,8 +349,9 @@ export default function Page() {
 
       {/* COST VS HUMAN — the money shot */}
       <section className="mx-auto max-w-5xl px-5 py-20">
-        <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">Dispango vs a Human Receptionist</h2>
-        <p className="reveal mx-auto mt-3 max-w-lg text-center">Same job answered. One of them takes weekends off and costs fifteen times more.</p>
+        <p className="reveal eyebrow text-center">The math</p>
+        <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Fifteen times cheaper. Never off the clock.</h2>
+        <p className="reveal mx-auto mt-3 max-w-lg text-center">Same job answered — one of them takes weekends off and costs fifteen times more.</p>
         <div className="reveal mx-auto mt-12 max-w-2xl space-y-6">
           <div>
             <div className="mb-2 flex items-center justify-between text-sm font-semibold text-ink"><span>A human receptionist</span><span>$3,000+/mo</span></div>
@@ -351,79 +363,89 @@ export default function Page() {
           </div>
         </div>
         <div className="reveal mx-auto mt-10 grid max-w-2xl gap-3 sm:grid-cols-3">
-          {["Answers 5 calls at once", "Never off sick or on break", "No wages, no HR, no training"].map((t) => (
+          {["Answers unlimited calls at once", "Never off sick or on break", "No wages, no HR, no training"].map((t) => (
             <div key={t} className="flex items-center gap-2 rounded-xl bg-soft px-4 py-3 text-sm font-medium text-ink"><Tick /> {t}</div>
           ))}
         </div>
       </section>
 
-      {/* COMPARE TABLE */}
+      {/* COMPARE — Dispango vs a human receptionist */}
       <section className="glow-soft">
-        <div className="mx-auto max-w-5xl px-5 py-20">
-          <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">The Honest Comparison</h2>
+        <div className="mx-auto max-w-4xl px-5 py-20">
+          <p className="reveal eyebrow text-center">The honest comparison</p>
+          <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Dispango vs. a human receptionist.</h2>
+          <p className="reveal mx-auto mt-3 max-w-lg text-center">The stuff that actually hits your bottom line — and yes, we left in the one row a human still wins.</p>
           <div className="reveal mt-10 overflow-x-auto">
-            <table className="w-full min-w-[620px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-line">
-                  <th className="py-4 text-left font-semibold text-ink">What matters</th>
-                  <th className="px-3 py-4 text-center font-extrabold text-brand">Dispango</th>
-                  <th className="px-3 py-4 text-center font-semibold text-muted">Answering service</th>
-                  <th className="px-3 py-4 text-center font-semibold text-muted">Voicemail</th>
-                </tr>
-              </thead>
-              <tbody>
-                {COMPARE.map((r) => (
-                  <tr key={r[0]} className="border-b border-line/70">
-                    <td className="py-4 text-left text-body">{r[0]}</td>
-                    <td className="px-3 py-4 text-center"><Cell v={r[1]} /></td>
-                    <td className="px-3 py-4 text-center"><Cell v={r[2]} /></td>
-                    <td className="px-3 py-4 text-center"><Cell v={r[3]} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div role="table" aria-label="Dispango vs. a human receptionist" className="min-w-[600px] overflow-hidden rounded-3xl border border-line bg-white shadow-xl shadow-ink/5">
+              {/* header */}
+              <div role="row" className="grid grid-cols-[1.15fr_1fr_1fr] gap-3 border-b border-line bg-soft px-6 py-4 text-sm font-bold">
+                <span role="columnheader" />
+                <span role="columnheader" className="text-center text-brand">Dispango</span>
+                <span role="columnheader" className="text-center text-muted">A human receptionist</span>
+              </div>
+              {COMPARE.map((r) => (
+                <div key={r.dim} role="row" className={`grid grid-cols-[1.15fr_1fr_1fr] items-center gap-3 border-b border-line/60 px-6 py-4 text-sm last:border-0 ${r.concede ? "bg-warm-50/50" : ""}`}>
+                  <span role="rowheader" className="font-semibold text-ink">{r.dim}</span>
+                  <span role="cell" className="flex items-center justify-center gap-1.5 text-center">
+                    {r.concede
+                      ? <span className="text-muted">{r.us}</span>
+                      : <><Tick className="shrink-0 text-emerald" /><span className="font-medium text-ink">{r.us}</span></>}
+                  </span>
+                  <span role="cell" className="flex items-center justify-center gap-1.5 text-center">
+                    {r.concede
+                      ? <><Tick className="shrink-0 text-warm" /><span className="font-semibold text-ink">{r.them}</span></>
+                      : <span className="text-muted">{r.them}</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
+          <p className="reveal mx-auto mt-5 max-w-lg text-center text-sm text-muted">Dispango catches the calls you&apos;re losing today, and hands off the ones that need a human touch.</p>
         </div>
       </section>
 
       {/* CALCULATOR */}
       <section className="mx-auto max-w-5xl px-5 py-20">
-        <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">What Are Missed Calls Costing You?</h2>
-        <p className="reveal mx-auto mt-3 max-w-lg text-center">Your numbers, not ours. Drag the sliders.</p>
+        <p className="reveal eyebrow text-center">Do the math</p>
+        <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">What are missed calls costing you?</h2>
+        <p className="reveal mx-auto mt-3 max-w-lg text-center">Your numbers, not ours. Slide to see what voicemail takes off your books every month.</p>
         <div className="reveal mt-10"><Calculator /></div>
       </section>
 
-      {/* INTEGRATIONS / TALK TO US */}
+      {/* INTEGRATIONS — logo wall by category */}
       <section id="integrations" className="glow-soft">
         <div className="mx-auto max-w-6xl px-5 py-20">
-          <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">Works with the Tools You Already Use</h2>
-          <p className="reveal mx-auto mt-3 max-w-lg text-center">Send captured jobs straight into the software your shop already runs on.</p>
-          <div className="reveal marquee-mask mt-10 overflow-hidden">
-            <div className="flex w-max animate-marquee gap-3">
-              {[...INTEGRATIONS, ...INTEGRATIONS].map((name, i) => (
-                <span key={i} className="whitespace-nowrap rounded-full border border-line bg-white px-5 py-2.5 text-sm font-semibold text-ink">{name}</span>
-              ))}
-            </div>
-          </div>
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {[
-              { h: "We Build Your Integration", p: "Don't see your software? We'll connect it. Tell us the tool and we'll make it fit." },
-              { h: "Custom Reporting & Analysis", p: "Want call trends, lead sources or after-hours volume? We'll run the analysis for your shop." },
-              { h: "Same-Day Support", p: "A real person, same day. No ticket queues, no offshore call centre." },
-            ].map((c, i) => (
-              <div key={c.h} style={{ transitionDelay: `${i * 80}ms` }} className="reveal lift rounded-2xl border border-line bg-white p-6">
-                <h3 className="font-bold text-ink">{c.h}</h3>
-                <p className="mt-2 text-sm">{c.p}</p>
+          <p className="reveal eyebrow text-center">Works with your tools</p>
+          <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Your tools stay. We add the phone.</h2>
+          <p className="reveal mx-auto mt-3 max-w-xl text-center">Dispango sits on top of the software you already run on. No migration, no switching, no disruption — captured jobs land where your shop already works.</p>
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {INTEGRATIONS.map((group, i) => (
+              <div key={group.cat} style={{ transitionDelay: `${(i % 3) * 70}ms` }} className="reveal lift rounded-2xl border border-line bg-white p-6">
+                <div className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${DOT[group.tint]}`} />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted">{group.cat}</h3>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {group.tools.map((t) => (
+                    <span key={t.n} className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3.5 py-2 text-sm font-semibold text-ink">
+                      <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: t.c }} />
+                      {t.n}
+                    </span>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
-          <div className="reveal mt-10 text-center"><Btn href="#contact" variant="ghost">Talk to Us About Your Setup</Btn></div>
+          <p className="reveal mx-auto mt-8 max-w-xl text-center text-sm text-muted">
+            Don&apos;t see your platform? <a href="#contact" className="font-semibold text-brand hover:underline">Tell us what you use</a> — we build the connection on request. Integration availability varies by setup.
+          </p>
         </div>
       </section>
 
       {/* PRICING */}
       <section id="pricing" className="mx-auto max-w-3xl px-5 py-20">
-        <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">One Plan. No Surprises.</h2>
+        <p className="reveal eyebrow text-center">Simple, honest pricing</p>
+        <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">One plan. No surprises.</h2>
         <p className="reveal mx-auto mt-3 max-w-md text-center">Everything below, one flat price, cancel anytime.</p>
         <div className="reveal mt-10 overflow-hidden rounded-3xl border border-line bg-white shadow-2xl shadow-brand/10">
           <div className="glow-dark p-10 text-center text-white">
@@ -447,7 +469,8 @@ export default function Page() {
       {/* FAQ */}
       <section id="faq" className="glow-soft">
         <div className="mx-auto max-w-3xl px-5 py-20">
-          <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">Questions, Answered</h2>
+          <p className="reveal eyebrow text-center">FAQ</p>
+          <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Questions, answered.</h2>
           <div className="reveal mt-10 space-y-3">
             {FAQ.map((f) => (
               <details key={f.q} className="group rounded-2xl border border-line bg-white p-5">
@@ -461,7 +484,8 @@ export default function Page() {
 
       {/* CONTACT */}
       <section id="contact" className="mx-auto max-w-4xl px-5 py-20">
-        <h2 className="reveal text-center text-3xl font-extrabold tracking-tight text-ink md:text-4xl">Let&apos;s Talk</h2>
+        <p className="reveal eyebrow text-center">Contact</p>
+        <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Have questions? Let&apos;s talk.</h2>
         <p className="reveal mx-auto mt-3 max-w-lg text-center">Questions, custom setups, or a live walkthrough — reach a real person the same day.</p>
         <div className={`reveal mx-auto mt-10 grid max-w-2xl gap-4 ${CONFIG.phone ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
           <a href={book()} className="lift rounded-2xl border border-line bg-white p-6 text-center">
@@ -484,8 +508,8 @@ export default function Page() {
       {/* CTA */}
       <section id="book" className="mx-auto max-w-6xl px-5 py-20">
         <div className="glow-dark relative overflow-hidden rounded-3xl px-6 py-16 text-center text-white">
-          <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">Stop Losing Jobs to Voicemail</h2>
-          <p className="mx-auto mt-3 max-w-lg text-white/70">Get set up today and let Dispango answer your very next call.</p>
+          <h2 className="text-3xl font-extrabold tracking-tight md:text-5xl">Your next job is calling right now.</h2>
+          <p className="mx-auto mt-3 max-w-lg text-white/70">Don&apos;t send it to voicemail. Get set up today and let Dispango answer your very next call.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Btn href={CONFIG.getStarted} variant="light">Get Started <Arrow /></Btn>
             <a href={book()} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition-[transform,background-color] duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 active:translate-y-0">Book a Demo</a>
