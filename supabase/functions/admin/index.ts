@@ -20,6 +20,7 @@
 // assistant + server URL) is intentionally NOT here yet — see ADMIN-DASHBOARD-SPEC.md.
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { collectMonitoring } from "../_shared/monitoring.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -183,29 +184,10 @@ async function testSms(id: string): Promise<Response> {
   }
 }
 
-const NON_LEAD_OUTCOMES = new Set(["wrong_number", "spam", "info_only"]);
-
+// Live monitoring summary (unsent leads + abuse burst). Shares the exact query
+// logic with the scheduled heartbeat-monitor via _shared/monitoring.ts.
 async function health(): Promise<Response> {
-  const now = Date.now();
-  const hourAgo = new Date(now - 60 * 60 * 1000).toISOString();
-  const twoMinAgo = new Date(now - 2 * 60 * 1000).toISOString();
-  const { data: unsent } = await supabase!
-    .from("calls").select("vapi_call_id, outcome")
-    .is("notified_at", null).gte("ended_at", hourAgo).lte("ended_at", twoMinAgo);
-  const unsentLeads = (unsent ?? []).filter((c) =>
-    !NON_LEAD_OUTCOMES.has(String(c.outcome ?? "").trim().toLowerCase().replace(/ /g, "_"))
-  ).length;
-  const { data: recent } = await supabase!
-    .from("calls").select("caller_phone").gte("ended_at", hourAgo).not("caller_phone", "is", null);
-  const counts: Record<string, number> = {};
-  for (const r of recent ?? []) counts[r.caller_phone as string] = (counts[r.caller_phone as string] ?? 0) + 1;
-  const abusers = Object.entries(counts).filter(([, n]) => n >= 6).map(([phone, calls]) => ({ phone, calls }));
-  return json({
-    ok: unsentLeads === 0 && abusers.length === 0,
-    callsLastHour: (recent ?? []).length,
-    unsentLeads, abusers,
-    checkedAt: new Date(now).toISOString(),
-  });
+  return json(await collectMonitoring(supabase!));
 }
 
 async function listBanned(): Promise<Response> {

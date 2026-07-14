@@ -8,3 +8,8 @@ verify_jwt = false
 
 [functions.billing]
 verify_jwt = false
+
+# Public endpoint (external cron / uptime pinger hits it); the HEARTBEAT_TOKEN
+# ?token= / x-vapi-secret check inside the function is the auth gate.
+[functions.heartbeat-monitor]
+verify_jwt = false
