@@ -359,11 +359,12 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
   }
   try {
     const phone = extractCallerPhone(payload);
-    if (await isBanned(phone)) {
+    const [banned, limited] = await Promise.all([isBanned(phone), isRateLimited(phone)]);
+    if (banned) {
       console.log(`[vapi] blocked banned caller phone=${phone}`);
       return Response.json({ error: "Sorry, we can't take your call." });
     }
-    if (await isRateLimited(phone)) {
+    if (limited) {
       console.log(`[vapi] rate-limited phone=${phone} (>${RATE_LIMIT_PER_HOUR}/hr or >=${RATE_LIMIT_PER_DAY}/day)`);
       return Response.json({
         error: "We're getting a lot of calls right now — please try again later.",
