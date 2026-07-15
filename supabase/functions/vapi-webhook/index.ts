@@ -467,6 +467,9 @@ async function handleDemoRequest(inbound: string | null, phone: string | null): 
   const demoVars = {
     caller_name: "", caller_memory: "",
     business_name: DEMO_BUSINESS_NAME, agent_name: DEMO_AGENT_NAME,
+    // The demo shares the live assistant/prompt (v13 references these). Supply them
+    // (blank) so Vapi never renders `{{service_area}}` etc. literally on a demo call.
+    service_area: "", services_offered: "", pricing_notes: "",
   };
   if (!DEMO_ASSISTANT_ID) {
     console.log("[vapi] demo call but VAPI_ASSISTANT_ID unset — cannot route");

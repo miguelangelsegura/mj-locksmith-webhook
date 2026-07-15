@@ -233,14 +233,17 @@ async function updateSettings(userId: string, body: Record<string, unknown>): Pr
     patch.avg_job_value = v;
   }
 
-  // Switching TO scheduled needs a fallback number to bounce out-of-hours calls to
-  // — refuse a config that would otherwise silently keep answering 24/7.
-  if (patch.answer_mode === "scheduled") {
+  // A shop in (or moving to) scheduled mode must keep a fallback number to bounce
+  // out-of-hours calls to. Check the EFFECTIVE post-patch state so BOTH switching to
+  // scheduled without a fallback AND clearing the fallback while already scheduled are
+  // caught (either would silently break "ring my phone after hours").
+  if ("answer_mode" in patch || "fallback_number" in patch) {
     const { data: cur } = await supabase!
-      .from("clients").select("fallback_number").eq("auth_uid", userId).limit(1);
-    const effectiveFallback = "fallback_number" in patch ? patch.fallback_number : cur?.[0]?.fallback_number;
-    if (!effectiveFallback) {
-      return json({ error: "Set your shop's phone number (where after-hours calls should ring) before switching to scheduled hours." }, 400);
+      .from("clients").select("answer_mode, fallback_number").eq("auth_uid", userId).limit(1);
+    const effMode = "answer_mode" in patch ? patch.answer_mode : cur?.[0]?.answer_mode;
+    const effFallback = "fallback_number" in patch ? patch.fallback_number : cur?.[0]?.fallback_number;
+    if (effMode === "scheduled" && !effFallback) {
+      return json({ error: "Set your shop's phone number (where after-hours calls should ring) before using scheduled hours." }, 400);
     }
   }
 

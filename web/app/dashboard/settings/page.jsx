@@ -288,7 +288,7 @@ function RoiSection({ profile, setProfile, demo }) {
 
   function onSave() {
     const n = Number(value);
-    if (!Number.isFinite(n) || n < 0) { setValue("150"); return; }
+    if (!Number.isFinite(n) || n < 0 || n > 100000) { setValue("150"); return; }
     save({ avg_job_value: n }, () => setDirty(false));
   }
 
