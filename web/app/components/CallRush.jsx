@@ -127,9 +127,12 @@ export default function CallRush() {
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[1.35fr_1fr]">
-        {/* Callers column */}
+        {/* Callers column — NOTE: no `.reveal` here. Its border class flips on
+            toggle, which makes React rewrite the class attribute and strip the
+            externally-added `.in`, snapping the panel back to opacity:0 forever.
+            The section's `reveal mt-12` wrapper handles the entrance fade. */}
         <div
-          className={`reveal min-w-0 rounded-3xl border p-5 transition-colors sm:p-6 ${
+          className={`min-w-0 rounded-3xl border p-5 transition-colors sm:p-6 ${
             isDispango ? "border-emerald/30 bg-emerald-50/40" : "border-danger/30 bg-danger-50/40"
           }`}
         >
