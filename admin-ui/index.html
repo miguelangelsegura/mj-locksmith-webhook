@@ -676,26 +676,31 @@
     var c=state.clients.filter(function(x){return x.id===id;})[0]||{}; linkId=id;
     var m=$('linkModal');
     m.innerHTML='<div class="drawer-head"><div><h2>Onboarding link</h2><div class="sub">Sign &amp; pay link for '+esc(c.business_name||'this shop')+'</div></div><button class="x" data-lclose>×</button></div>'+
-      '<div class="drawer-body"><div id="lform"><label class="f">Shop contact email</label><input id="lemail" type="email" value="'+esc(c.contact_email||'')+'" placeholder="owner@shop.com"/><div class="err" id="lerr"></div><div class="row" style="margin-top:12px;gap:8px"><button id="lgen">Generate link</button><button class="ghost" data-lclose>Cancel</button></div></div>'+
-      '<div id="lresult" class="hidden"><label class="f">Send this to the shop</label><div class="row" style="gap:8px"><input id="llink" readonly/><button class="sm" id="lcopy">Copy</button></div><p class="muted" style="font-size:12.5px;margin-top:8px">They sign the contract, then pay — the number auto-provisions and you Activate it.</p><div class="row" style="margin-top:10px;gap:8px"><button class="ghost sm" id="lsend">Email it to them</button></div><div id="lsendmsg" style="font-size:12.5px;margin-top:8px;min-height:14px"></div></div></div>';
+      '<div class="drawer-body"><div id="lform"><label class="f">Shop contact email</label><input id="lemail" type="email" value="'+esc(c.contact_email||'')+'" placeholder="owner@shop.com"/><div class="err" id="lerr"></div><div class="row" style="margin-top:12px;gap:8px"><button id="lgen">Send sign &amp; pay link</button><button class="ghost" data-lclose>Cancel</button></div><p class="muted" style="font-size:12.5px;margin-top:8px">We email the link to this address. You can also copy it after.</p></div>'+
+      '<div id="lresult" class="hidden"><div id="lsendmsg" style="font-size:13px;margin-bottom:10px;min-height:16px"></div><label class="f">The link we sent</label><div class="row" style="gap:8px"><input id="llink" readonly/><button class="sm" id="lcopy">Copy</button></div><p class="muted" style="font-size:12.5px;margin-top:8px">They sign the contract, then pay — the number auto-provisions and you Activate it.</p><div class="row" style="margin-top:10px;gap:8px"><button class="ghost sm" id="lsend">Resend email</button></div></div></div>';
     openModal();
   }
   function genLink(){
     var email=$('lemail').value.trim(); if(!email){$('lerr').textContent='Enter their email.';return;}
-    $('lerr').textContent=''; $('lgen').disabled=true;
+    $('lerr').textContent=''; $('lgen').disabled=true; $('lgen').textContent='Sending…';
     api('/onboarding','POST',{client_id:linkId,contact_email:email},BILLING).then(function(res){
-      $('lgen').disabled=false;
-      if(res.status===200&&res.body&&res.body.onboarding_url){ $('llink').value=res.body.onboarding_url; $('lform').className='hidden'; $('lresult').className=''; loadClients(); }
-      else $('lerr').textContent=(res.body&&res.body.error)||('Error '+res.status);
-    }).catch(function(){$('lgen').disabled=false;$('lerr').textContent='Network error.';});
+      if(res.status===200&&res.body&&res.body.onboarding_url){
+        $('llink').value=res.body.onboarding_url; $('lform').className='hidden'; $('lresult').className=''; loadClients();
+        sendLink(true); // one click = generate + email
+      } else {
+        $('lgen').disabled=false; $('lgen').textContent='Send sign & pay link';
+        $('lerr').textContent=(res.body&&res.body.error)||('Error '+res.status);
+      }
+    }).catch(function(){$('lgen').disabled=false;$('lgen').textContent='Send sign & pay link';$('lerr').textContent='Network error.';});
   }
-  function sendLink(){
-    var url=$('llink').value; if(!url) return; var msg=$('lsendmsg'); $('lsend').disabled=true; msg.textContent='Sending…';
+  // auto=true when called right after generating (silent toast); false on a manual Resend.
+  function sendLink(auto){
+    var url=$('llink').value; if(!url) return; var msg=$('lsendmsg'); $('lsend').disabled=true; msg.textContent='Emailing the shop…'; msg.style.color='var(--muted)';
     api('/onboarding/send','POST',{client_id:linkId,onboarding_url:url},BILLING).then(function(res){
       $('lsend').disabled=false;
-      if(res.status===200&&res.body&&res.body.sent){ msg.textContent='✓ Sent to '+res.body.to; msg.style.color='var(--ok)'; toast('Email sent','ok'); }
-      else { msg.textContent=(res.body&&res.body.error)||'Error'; msg.style.color='var(--bad)'; }
-    });
+      if(res.status===200&&res.body&&res.body.sent){ msg.textContent='✓ Emailed to '+res.body.to; msg.style.color='var(--ok)'; toast('Email sent','ok'); }
+      else { msg.textContent=((res.body&&res.body.error)||'Email failed')+' — copy the link below and send it manually.'; msg.style.color='var(--bad)'; if(!auto) toast('Email failed','err'); }
+    }).catch(function(){$('lsend').disabled=false;msg.textContent='Email failed — copy the link below and send it manually.';msg.style.color='var(--bad)';});
   }
 
   /* ---------- add shop modal ---------- */

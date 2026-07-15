@@ -39,6 +39,8 @@ const DEMO_ASSISTANT_ID = Deno.env.get("VAPI_ASSISTANT_ID") ?? null;
 const DEMO_BUSINESS_NAME = "Dispango Demo";
 const DEMO_AGENT_NAME = "Riley";
 const DEMO_MAX_DURATION_SECONDS = 180;
+// Persona name used when a shop has no custom agent_name — matches the live TTS voice.
+const DEFAULT_AGENT_NAME = "Elliot";
 
 function isDemoNumber(inbound: string | null): boolean {
   return !!DEMO_NUMBER && inbound === DEMO_NUMBER;
@@ -282,12 +284,17 @@ async function lookupClientId(assistantId: unknown): Promise<string | null> {
   return data?.[0]?.id ?? null;
 }
 
-async function lookupCallerMemory(phone: string | null) {
-  if (!phone || !supabase) return null;
+// Returning-caller memory is scoped to the SHOP (client_id), never global by phone
+// alone: if the same person has called two shops on the platform, shop B must not
+// greet them with what they told shop A. No clientId → no memory (treat as a new
+// caller) rather than risk a cross-tenant leak.
+async function lookupCallerMemory(phone: string | null, clientId: string | null) {
+  if (!phone || !clientId || !supabase) return null;
   const { data } = await supabase
     .from("calls")
     .select("caller_name, door_type, damage_description, service_address, summary, ended_at")
     .eq("caller_phone", phone)
+    .eq("client_id", clientId)
     .not("ended_at", "is", null)
     .order("ended_at", { ascending: false })
     .limit(20);
@@ -317,14 +324,14 @@ async function lookupCallerMemory(phone: string | null) {
 
 async function resolveClientContext(
   payload: any,
-): Promise<{ assistantId: string | null; businessName: string; agentName: string }> {
+): Promise<{ assistantId: string | null; clientId: string | null; businessName: string; agentName: string }> {
   const envId = Deno.env.get("VAPI_ASSISTANT_ID");
   let row: any = null;
   if (supabase) {
     const inbound = extractInboundNumber(payload);
     if (inbound) {
       const { data } = await supabase
-        .from("clients").select("vapi_assistant_id, business_name, agent_name, provision_status")
+        .from("clients").select("id, vapi_assistant_id, business_name, agent_name, provision_status")
         .eq("inbound_number", inbound).eq("active", true).limit(1);
       const cand = data?.[0] ?? null;
       // A number we KNOW but haven't activated (staged/error) must not answer — and
@@ -333,21 +340,26 @@ async function resolveClientContext(
       // fallbackDestination (forwards to the shop's real phone).
       if (cand && !ROUTABLE_PROVISION.includes(cand.provision_status)) {
         console.log(`[vapi] inbound=${inbound} is provision_status=${cand.provision_status}, not live — no assistant`);
-        return { assistantId: null, businessName: "", agentName: "" };
+        return { assistantId: null, clientId: null, businessName: "", agentName: "" };
       }
       row = cand;
     }
     if (!row) {
       const { data } = await supabase
-        .from("clients").select("vapi_assistant_id, business_name, agent_name")
+        .from("clients").select("id, vapi_assistant_id, business_name, agent_name")
         .eq("active", true).limit(1);
       row = data?.[0] ?? null;
     }
   }
+  // Persona name the agent introduces itself with. Falls back to the TTS voice name
+  // ("Elliot") so the prompt's {{agent_name}} is never blank when the operator adds a
+  // shop with only a business name — the business name still drives who the shop IS.
+  const agentName = (row?.agent_name ?? "").trim() || DEFAULT_AGENT_NAME;
   return {
     assistantId: envId ?? row?.vapi_assistant_id ?? null,
+    clientId: row?.id ?? null,
     businessName: row?.business_name ?? "",
-    agentName: row?.agent_name ?? "",
+    agentName,
   };
 }
 
@@ -448,7 +460,7 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
   if (isDemoNumber(inbound)) {
     return await handleDemoRequest(inbound, extractCallerPhone(payload));
   }
-  const { assistantId, businessName, agentName } = await resolveClientContext(payload);
+  const { assistantId, clientId, businessName, agentName } = await resolveClientContext(payload);
   const baseVars = {
     caller_name: "", caller_memory: "",
     business_name: businessName, agent_name: agentName,
@@ -470,7 +482,7 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
         error: "We're getting a lot of calls right now — please try again later.",
       });
     }
-    const mem = await lookupCallerMemory(phone);
+    const mem = await lookupCallerMemory(phone, clientId);
     if (!mem) {
       console.log(`[vapi] assistant-request: new caller phone=${phone}`);
       return Response.json({ assistantId, assistantOverrides: { variableValues: baseVars } });
