@@ -16,7 +16,7 @@ const CONFIG = {
   // Tracked TODOs — left empty on purpose so nothing broken ships. Every UI that
   // reads one of these degrades gracefully when it's blank (see helpers below).
   book: "https://cal.com/abdul-zxafqn/30min", // live Cal.com 30-min demo booking link
-  portal: "", // TODO(Phase 4): customer dashboard/login. "Sign In" is hidden until set.
+  portal: "/login", // Phase 4: customer dashboard login. "Sign In" links here.
   demoLine: "+1 (651) 551-9855", // live call-in demo number (Phase 3). tel: link strips to digits; webhook handles it as the "Dispango Demo" persona with tight caps and no lead SMS.
   sampleAudio: "", // TODO: URL to a recorded sample call. The audio player renders only when set.
   phone: "", // TODO(Phase 7): public business contact line. Phone contact points are hidden until set.

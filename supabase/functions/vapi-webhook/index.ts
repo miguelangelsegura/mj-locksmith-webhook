@@ -315,16 +315,39 @@ async function lookupCallerMemory(phone: string | null) {
   };
 }
 
-async function resolveClientContext(
-  payload: any,
-): Promise<{ assistantId: string | null; businessName: string; agentName: string }> {
+type ClientContext = {
+  assistantId: string | null;
+  businessName: string;
+  agentName: string;
+  answerMode: string | null;
+  businessHours: unknown;
+  timezone: string;
+  fallbackNumber: string | null;
+};
+
+const CLIENT_CONTEXT_COLS =
+  "vapi_assistant_id, business_name, agent_name, provision_status, answer_mode, business_hours, timezone, fallback_number";
+
+function contextFrom(envId: string | undefined, row: any): ClientContext {
+  return {
+    assistantId: envId ?? row?.vapi_assistant_id ?? null,
+    businessName: row?.business_name ?? "",
+    agentName: row?.agent_name ?? "",
+    answerMode: row?.answer_mode ?? null,
+    businessHours: row?.business_hours ?? null,
+    timezone: row?.timezone || DEFAULT_TZ,
+    fallbackNumber: normalizePhone(row?.fallback_number),
+  };
+}
+
+async function resolveClientContext(payload: any): Promise<ClientContext> {
   const envId = Deno.env.get("VAPI_ASSISTANT_ID");
   let row: any = null;
   if (supabase) {
     const inbound = extractInboundNumber(payload);
     if (inbound) {
       const { data } = await supabase
-        .from("clients").select("vapi_assistant_id, business_name, agent_name, provision_status")
+        .from("clients").select(CLIENT_CONTEXT_COLS)
         .eq("inbound_number", inbound).eq("active", true).limit(1);
       const cand = data?.[0] ?? null;
       // A number we KNOW but haven't activated (staged/error) must not answer — and
@@ -333,22 +356,47 @@ async function resolveClientContext(
       // fallbackDestination (forwards to the shop's real phone).
       if (cand && !ROUTABLE_PROVISION.includes(cand.provision_status)) {
         console.log(`[vapi] inbound=${inbound} is provision_status=${cand.provision_status}, not live — no assistant`);
-        return { assistantId: null, businessName: "", agentName: "" };
+        return contextFrom(undefined, null);
       }
       row = cand;
     }
     if (!row) {
       const { data } = await supabase
-        .from("clients").select("vapi_assistant_id, business_name, agent_name")
+        .from("clients").select(CLIENT_CONTEXT_COLS)
         .eq("active", true).limit(1);
       row = data?.[0] ?? null;
     }
   }
-  return {
-    assistantId: envId ?? row?.vapi_assistant_id ?? null,
-    businessName: row?.business_name ?? "",
-    agentName: row?.agent_name ?? "",
-  };
+  return contextFrom(envId, row);
+}
+
+const HOURS_DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+
+// Is `now` inside the shop's configured weekly hours, evaluated in the shop's
+// timezone? Used only for answer_mode='scheduled'. Any malformed config returns
+// true (fail toward the AI answering — never silently drop/forward a call because
+// the schedule JSON was bad).
+function withinBusinessHours(businessHours: unknown, tz: string): boolean {
+  if (!businessHours || typeof businessHours !== "object") return true;
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz, weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(new Date());
+    const wd = parts.find((p) => p.type === "weekday")?.value ?? "";
+    const dayKey = HOURS_DAY_KEYS[["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(wd)] ?? null;
+    if (!dayKey) return true;
+    const day = (businessHours as Record<string, any>)[dayKey];
+    if (!day || typeof day !== "object") return true;
+    if (!day.on) return false;
+    let hour = parseInt(parts.find((p) => p.type === "hour")?.value ?? "0", 10) % 24;
+    const minute = parts.find((p) => p.type === "minute")?.value ?? "00";
+    const nowHhmm = `${String(hour).padStart(2, "0")}:${minute}`;
+    const open = typeof day.open === "string" ? day.open : "00:00";
+    const close = typeof day.close === "string" ? day.close : "23:59";
+    return nowHhmm >= open && nowHhmm < close;
+  } catch {
+    return true;
+  }
 }
 
 const RATE_LIMIT_PER_HOUR = 5;
@@ -448,7 +496,8 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
   if (isDemoNumber(inbound)) {
     return await handleDemoRequest(inbound, extractCallerPhone(payload));
   }
-  const { assistantId, businessName, agentName } = await resolveClientContext(payload);
+  const { assistantId, businessName, agentName, answerMode, businessHours, timezone, fallbackNumber } =
+    await resolveClientContext(payload);
   const baseVars = {
     caller_name: "", caller_memory: "",
     business_name: businessName, agent_name: agentName,
@@ -469,6 +518,19 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
       return Response.json({
         error: "We're getting a lot of calls right now — please try again later.",
       });
+    }
+    // Business-hours window: when a shop chooses 'scheduled', the AI answers only
+    // inside its configured hours; outside them the call forwards to the shop's own
+    // phone (Vapi `destination` — forwards immediately, ignoring assistantId). Any
+    // non-scheduled mode = 24/7 AI (unchanged behavior). We only bounce when we
+    // actually have a fallback number to send them to; otherwise the AI answers so
+    // a call is never dropped.
+    if (answerMode === "scheduled" && !withinBusinessHours(businessHours, timezone)) {
+      if (fallbackNumber) {
+        console.log(`[vapi] out-of-hours (tz=${timezone}) — forwarding to shop ${fallbackNumber}`);
+        return Response.json({ destination: { type: "number", number: fallbackNumber, message: "" } });
+      }
+      console.log(`[vapi] out-of-hours but no fallback_number — AI answering instead of dropping`);
     }
     const mem = await lookupCallerMemory(phone);
     if (!mem) {
