@@ -261,6 +261,20 @@ async function lookupClientByInbound(number: string | null): Promise<string | nu
   return data?.[0]?.id ?? null;
 }
 
+// Resolve a client by inbound number IGNORING the `active` flag. Used only to
+// attribute a demo call at persist time: the admin off-switch can flip the demo
+// row inactive mid-call, and an in-flight call still fires an end-of-call-report.
+// Matching by inbound number (which is unique to the demo row) keeps that report
+// attributed to the demo client instead of falling through to
+// lookupClientId(assistantId) — where the shared VAPI_ASSISTANT_ID is also held by
+// a real client row, which would mis-attribute the call and text them a fake lead.
+async function lookupClientByInboundAnyState(number: string | null): Promise<string | null> {
+  if (!number || !supabase) return null;
+  const { data } = await supabase
+    .from("clients").select("id").eq("inbound_number", number).limit(1);
+  return data?.[0]?.id ?? null;
+}
+
 async function lookupClientId(assistantId: unknown): Promise<string | null> {
   if (!assistantId || !supabase) return null;
   const { data } = await supabase
@@ -378,16 +392,32 @@ function greetingLocation(addr: string | null): string | null {
 }
 
 // Demo line: answer as the clearly-labelled demo persona with a tight per-call cap.
-// Ban + per-caller rate limit still apply (a public number with no cap is an open
-// door to draining the balance). Fails open on a DB error like the main path — the
-// short maxDuration cap still bounds the cost.
-async function handleDemoRequest(phone: string | null): Promise<Response> {
+// Gated by an admin on/off switch (the demo row's `active` flag) first, then the
+// ban + per-caller rate limit (a public number with no cap is an open door to
+// draining the balance). The ban/rate-limit gate fails OPEN on a DB error like the
+// main path — the short maxDuration cap still bounds the cost — but the on/off
+// switch fails CLOSED (see below).
+async function handleDemoRequest(inbound: string | null, phone: string | null): Promise<Response> {
   const demoVars = {
     caller_name: "", caller_memory: "",
     business_name: DEMO_BUSINESS_NAME, agent_name: DEMO_AGENT_NAME,
   };
   if (!DEMO_ASSISTANT_ID) {
     console.log("[vapi] demo call but VAPI_ASSISTANT_ID unset — cannot route");
+    return Response.json({ error: "Our demo line is not available right now." });
+  }
+  // Off-switch: the demo line only answers while its "Dispango Demo" client row is
+  // active — toggle it with the Active switch on that row in the admin portal.
+  // When disabled we return no assistant, so the call never spins up Vapi's AI and
+  // burns no minutes. Unlike the main call path this fails CLOSED on a DB error:
+  // the whole point of the switch is cost control, so "unsure → stay off" is safer.
+  try {
+    if (!(await lookupClientByInbound(inbound))) {
+      console.log(`[vapi] demo line disabled (row inactive) inbound=${inbound}`);
+      return Response.json({ error: "Our demo line is not available right now." });
+    }
+  } catch (e) {
+    console.log(`[vapi] demo enable-check error (blocking): ${e}`);
     return Response.json({ error: "Our demo line is not available right now." });
   }
   try {
@@ -414,8 +444,9 @@ async function handleDemoRequest(phone: string | null): Promise<Response> {
 }
 
 async function handleAssistantRequest(payload: any): Promise<Response> {
-  if (isDemoNumber(extractInboundNumber(payload))) {
-    return await handleDemoRequest(extractCallerPhone(payload));
+  const inbound = extractInboundNumber(payload);
+  if (isDemoNumber(inbound)) {
+    return await handleDemoRequest(inbound, extractCallerPhone(payload));
   }
   const { assistantId, businessName, agentName } = await resolveClientContext(payload);
   const baseVars = {
@@ -489,8 +520,16 @@ async function persistCall(payload: any): Promise<void> {
   const callId = call?.id;
   const assistantId = call?.assistantId;
   const inboundNumber = extractInboundNumber(payload);
+  const isDemo = isDemoNumber(inboundNumber);
   try {
-    const clientId = await lookupClientByInbound(inboundNumber) ?? await lookupClientId(assistantId);
+    // Demo calls resolve the demo row by inbound number regardless of `active`, and
+    // must NEVER fall through to lookupClientId(assistantId): the admin off-switch can
+    // flip the demo row inactive mid-call, and the shared VAPI_ASSISTANT_ID is also
+    // held by a real client row — that fallback would text an in-flight demo call to
+    // a real shop as a fake lead.
+    const clientId = isDemo
+      ? await lookupClientByInboundAnyState(inboundNumber)
+      : (await lookupClientByInbound(inboundNumber) ?? await lookupClientId(assistantId));
     if (!clientId) {
       console.log(`[vapi] unknown client inbound=${inboundNumber} assistantId=${assistantId} call=${callId} — skipping insert`);
       return;
@@ -505,7 +544,7 @@ async function persistCall(payload: any): Promise<void> {
     // rows in `calls` — actually sees demo traffic and can trip) but is NEVER
     // dispatched as a lead. The demo number resolves to the dedicated "Dispango Demo"
     // client row, so even without this skip no real shop would be texted.
-    if (isDemoNumber(inboundNumber)) {
+    if (isDemo) {
       console.log(`[vapi] demo call=${callId} — persisted, skipping lead SMS`);
       return;
     }
