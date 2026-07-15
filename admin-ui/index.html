@@ -474,8 +474,8 @@
     api('/clients/'+id,'PATCH',{active:want}).then(function(res){
       el.classList.remove('busy');
       if(res.status===200){ x.active=want; toast(want?'Turned on':'Turned off','ok'); loadHealth(); }
-      else { el.classList.toggle('on',!want); el.querySelector('.lbl').textContent=!want?'On':'Off'; toast((res.body&&res.body.error)||'Error','err'); }
-    }).catch(function(){ el.classList.remove('busy'); el.classList.toggle('on',x.active); el.querySelector('.lbl').textContent=x.active?'On':'Off'; toast('Network error','err'); });
+      else { el.classList.toggle('on',!want); el.querySelector('.lbl').textContent=!want?'On':'Off'; el.setAttribute('aria-checked',!want); toast((res.body&&res.body.error)||'Error','err'); }
+    }).catch(function(){ el.classList.remove('busy'); el.classList.toggle('on',x.active); el.querySelector('.lbl').textContent=x.active?'On':'Off'; el.setAttribute('aria-checked',x.active); toast('Network error','err'); });
   }
 
   /* ---------- shop drawer ---------- */
@@ -569,8 +569,11 @@
 
   /* ================= CALLS ================= */
   function renderCalls(c,a){
-    var outcomes=['','lead','wrong_number','spam','info_only'];
-    var chips='<div class="chips">'+outcomes.map(function(o){return '<span class="chip'+(state.callFilter===o?' on':'')+'" data-filter="'+o+'">'+(o?titleCase(o):'All')+'</span>';}).join('')+'</div>';
+    // Build the filter chips from the outcomes actually present — `outcome` is a
+    // free-text field with no fixed enum, so hardcoding values would dead-end.
+    var present={}; state.calls.forEach(function(k){ if(k.outcome) present[k.outcome]=1; });
+    var outcomes=[''].concat(Object.keys(present).sort());
+    var chips='<div class="chips">'+outcomes.map(function(o){return '<span class="chip'+(state.callFilter===o?' on':'')+'" data-filter="'+esc(o)+'">'+(o?esc(titleCase(o)):'All')+'</span>';}).join('')+'</div>';
     var q=state.callQuery.toLowerCase();
     var list=state.calls.filter(function(k){
       if(state.callFilter&&(k.outcome||'')!==state.callFilter) return false;
