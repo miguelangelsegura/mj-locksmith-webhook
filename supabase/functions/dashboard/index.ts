@@ -106,6 +106,11 @@ async function authUser(req: Request): Promise<{ id: string; email: string | nul
 // when its contact_email matches the CONFIRMED auth email and it isn't already
 // linked — so a login can bind to exactly one shop, and only the shop whose email
 // the user has proven they control.
+//
+// SECURITY INVARIANT: this relies on Supabase Auth "Confirm email" being ON for the
+// project — that's what makes email_confirmed_at trustworthy. If confirmations are
+// OFF, Supabase auto-confirms every signup and a stranger could claim a shop using
+// its published contact email. Keep confirmations ON. (Verified at deploy.)
 async function resolveClient(user: { id: string; email: string | null; confirmed: boolean }) {
   // Already linked?
   const { data: linked } = await supabase!
@@ -283,6 +288,12 @@ Deno.serve(async (req) => {
       return await updateSettings(user.id, await req.json());
     }
     if (req.method === "POST" && path === "/test-text") {
+      // Gate to a LINKED shop: without this, any self-signed-up account (signup is
+      // open to any email) could POST arbitrary numbers and burn Twilio credit /
+      // harass numbers under our sender ID. resolveClient succeeds only for a
+      // confirmed email that matches an onboarded client row.
+      const { client } = await resolveClient(user);
+      if (!client) return json({ error: "no shop linked to this account" }, 403);
       return await testText(await req.json());
     }
     return json({ error: "not found" }, 404);
