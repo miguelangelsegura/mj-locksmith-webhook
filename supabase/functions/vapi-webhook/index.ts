@@ -279,6 +279,13 @@ async function lookupClientByInboundAnyState(number: string | null): Promise<str
 
 async function lookupClientId(assistantId: unknown): Promise<string | null> {
   if (!assistantId || !supabase) return null;
+  // The shared VAPI_ASSISTANT_ID answers for EVERY shop (per-shop identity is injected
+  // per call via assistantOverrides), yet it's stored as ONE legacy client's
+  // vapi_assistant_id. Resolving by it would misattribute every call that didn't match
+  // an inbound number to that single shop, so the shared id can't identify a tenant —
+  // only a genuinely per-client assistant id can. Refuse it and let the caller skip
+  // the insert rather than file the call (and text a lead) under the wrong shop.
+  if (DEMO_ASSISTANT_ID && assistantId === DEMO_ASSISTANT_ID) return null;
   const { data } = await supabase
     .from("clients").select("id").eq("vapi_assistant_id", assistantId).eq("active", true).limit(1);
   return data?.[0]?.id ?? null;
@@ -368,21 +375,25 @@ async function resolveClientContext(payload: any): Promise<ClientContext> {
         .from("clients").select(CLIENT_CONTEXT_COLS)
         .eq("inbound_number", inbound).eq("active", true).limit(1);
       const cand = data?.[0] ?? null;
-      // A number we KNOW but haven't activated (staged/error) must not answer — and
-      // must NOT fall through to the "first active client" default below (that would
-      // answer as a random shop). Return no assistant so Vapi uses the number's
-      // fallbackDestination (forwards to the shop's real phone).
+      // A number we KNOW but haven't activated (staged/error) must not answer as a
+      // random shop. Return no assistant so Vapi uses the number's fallbackDestination
+      // (forwards to the shop's real phone) rather than impersonating a tenant.
       if (cand && !ROUTABLE_PROVISION.includes(cand.provision_status)) {
         console.log(`[vapi] inbound=${inbound} is provision_status=${cand.provision_status}, not live — no assistant`);
         return contextFrom(undefined, null);
       }
       row = cand;
     }
+    // Multi-tenant safety: NEVER fall back to an arbitrary "first active client".
+    // If we can't positively identify the shop this call is for (no inbound number
+    // on the payload, or the number isn't a live client), guessing the oldest active
+    // shop made every unresolved call answer as — and load the returning-caller
+    // memory of — that shop (a cross-tenant history leak). Resolve to no client/
+    // assistant so Vapi forwards the call to the number's fallbackDestination
+    // instead of impersonating a tenant and surfacing its data.
     if (!row) {
-      const { data } = await supabase
-        .from("clients").select(CLIENT_CONTEXT_COLS)
-        .eq("active", true).limit(1);
-      row = data?.[0] ?? null;
+      console.log(`[vapi] assistant-request: inbound=${inbound ?? "none"} matched no live client — no assistant (won't guess a tenant)`);
+      return contextFrom(undefined, null);
     }
   }
   return contextFrom(envId, row);
