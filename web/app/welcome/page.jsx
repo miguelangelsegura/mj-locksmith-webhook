@@ -173,6 +173,11 @@ export default function Welcome() {
         <p className="animate-slideup mt-6 text-sm text-body" style={{ animationDelay: ".3s" }}>
           Want us to set it up with you? <a className="font-semibold text-brand hover:underline" href="mailto:hello@dispango.com">hello@dispango.com</a> — done in 5 minutes.
         </p>
+
+        <footer className="mt-12 flex justify-center gap-5 text-xs text-muted">
+          <a href="/terms" className="hover:text-brand">Terms</a>
+          <a href="/privacy" className="hover:text-brand">Privacy</a>
+        </footer>
       </section>
     </main>
   );

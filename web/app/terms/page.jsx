@@ -216,6 +216,11 @@ export default function Terms() {
           {CONFIG.address}
         </p>
       </Section>
+
+      <footer className="mt-12 flex gap-5 border-t border-line pt-6 text-xs text-muted">
+        <a href="/" className="hover:text-brand">Home</a>
+        <a href="/privacy" className="hover:text-brand">Privacy Policy</a>
+      </footer>
     </main>
   );
 }

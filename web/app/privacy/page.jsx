@@ -216,6 +216,11 @@ export default function Privacy() {
           <a className="text-brand hover:underline" href={`mailto:${CONFIG.email}`}>{CONFIG.email}</a>
         </p>
       </Section>
+
+      <footer className="mt-12 flex gap-5 border-t border-line pt-6 text-xs text-muted">
+        <a href="/" className="hover:text-brand">Home</a>
+        <a href="/terms" className="hover:text-brand">Terms of Service</a>
+      </footer>
     </main>
   );
 }

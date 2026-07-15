@@ -590,13 +590,17 @@ async function handleAssistantRequest(payload: any): Promise<Response> {
           : "";
     const business = businessName || "our shop";
     const agent = agentName || "the team";
+    // Every greeting folds in the recording + AI disclosure ("your AI assistant, on a
+    // recorded line") up front — it's the notice that makes recording consent valid
+    // (caller continues = implied consent) and satisfies bot-disclosure law. Keep it in
+    // every branch; new callers get the same disclosure via the assistant's firstMessage.
     const greeting = name
       ? (about
-        ? `Hi ${name}, it's ${agent} at ${business} — is this the same situation with ${about}, or did something new come up?`
-        : `Hi ${name}, welcome back to ${business} — it's ${agent}. What's going on today?`)
+        ? `Hi ${name}, it's ${agent} at ${business}, your AI assistant on a recorded line — is this the same situation with ${about}, or did something new come up?`
+        : `Hi ${name}, welcome back to ${business} — it's ${agent}, your AI assistant, on a recorded line. What's going on today?`)
       : (about
-        ? `Welcome back to ${business} — this is ${agent}. Is this the same situation with ${about}, or something new?`
-        : `Welcome back to ${business} — this is ${agent}. What's going on today?`);
+        ? `Welcome back to ${business} — this is ${agent}, your AI assistant, on a recorded line. Is this the same situation with ${about}, or something new?`
+        : `Welcome back to ${business} — this is ${agent}, your AI assistant, on a recorded line. What's going on today?`);
     console.log(`[vapi] assistant-request: returning caller phone=${phone} name=${name}`);
     return Response.json({
       assistantId,
