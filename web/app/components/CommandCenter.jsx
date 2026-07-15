@@ -118,9 +118,15 @@ function Leads() {
         ))}
       </div>
       <div className="rounded-2xl border border-line bg-soft p-4">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-bold text-ink">{l.name}</p>
-          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${URG[l.urg]}`}>{l.urg}</span>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-sm font-bold text-ink">{l.name}</p>
+            <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted">
+              <svg viewBox="0 0 20 20" className="h-3 w-3" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.4" /><path d="M10 6.5V10l2.5 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              Captured {l.time}
+            </p>
+          </div>
+          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${URG[l.urg]}`}>{l.urg}</span>
         </div>
         <dl className="mt-3 space-y-1.5 text-xs">
           <div className="flex gap-2"><dt className="w-16 shrink-0 text-muted">Trade</dt><dd className="font-medium text-ink">{l.trade}</dd></div>
@@ -190,56 +196,119 @@ function Logs() {
 }
 
 function Analytics() {
-  const bars = [
-    { l: "Mon", v: 62 }, { l: "Tue", v: 78 }, { l: "Wed", v: 54 },
-    { l: "Thu", v: 90 }, { l: "Fri", v: 100 }, { l: "Sat", v: 41 }, { l: "Sun", v: 28 },
+  const hours = [
+    { l: "6a", v: 24 }, { l: "9a", v: 52 }, { l: "12p", v: 70 },
+    { l: "3p", v: 88 }, { l: "6p", v: 61 },
+    { l: "9p", v: 55, night: true }, { l: "12a", v: 40, night: true }, { l: "3a", v: 22, night: true },
+  ];
+  const tiles = [
+    { n: 34, l: "After-hours jobs caught", sub: "nights & weekends — would've hit voicemail", tint: "text-sky" },
+    { n: 248, l: "Calls answered", sub: "0 missed · 100% picked up", tint: "text-brand" },
+    { n: 6, suf: "s", l: "Avg. time to text you", sub: "from hang-up to your phone", tint: "text-violet" },
+    { pre: "$", n: 2800, suf: "/mo", l: "Saved vs. a receptionist", sub: "no wages, no HR, no sick days", tint: "text-emerald" },
   ];
   return (
-    <div className="animate-slideup space-y-5">
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { p: "$", n: 14200, l: "Est. saved", tint: "text-emerald" },
-          { p: "", n: 96, s: "%", l: "Calls answered", tint: "text-brand" },
-          { p: "", n: 38, s: "%", l: "After-hours", tint: "text-sky" },
-        ].map((s) => (
-          <div key={s.l} className="rounded-2xl border border-line bg-white p-4">
-            <p className={`text-2xl font-extrabold tabular-nums ${s.tint}`}>{s.p}<Counter to={s.n} />{s.s}</p>
-            <p className="mt-0.5 text-xs text-muted">{s.l}</p>
+    <div className="animate-slideup space-y-4">
+      {/* ROI hero — jobs captured + their $ value */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-2xl border border-emerald/30 bg-emerald-50/60 p-4">
+          <p className="text-xs font-semibold text-emerald">Jobs captured this month</p>
+          <Counter to={91} className="mt-1 block text-3xl font-extrabold tabular-nums text-emerald" />
+          <p className="mt-0.5 text-xs text-muted">real jobs booked, not voicemails</p>
+        </div>
+        <div className="glow-dark rounded-2xl p-4 text-white">
+          <p className="text-xs font-semibold text-indigo-100">Est. value of those jobs</p>
+          <p className="mt-1 text-3xl font-extrabold tabular-nums">$<Counter to={28400} /></p>
+          <p className="mt-0.5 text-xs text-white/70">captured revenue · $199/mo pays for itself</p>
+        </div>
+      </div>
+
+      {/* Owner-value stat tiles */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {tiles.map((t) => (
+          <div key={t.l} className="rounded-2xl border border-line bg-white p-4">
+            <p className={`text-2xl font-extrabold tabular-nums ${t.tint}`}>{t.pre}<Counter to={t.n} />{t.suf}</p>
+            <p className="mt-1 text-xs font-semibold text-ink">{t.l}</p>
+            <p className="mt-0.5 text-[11px] leading-snug text-muted">{t.sub}</p>
           </div>
         ))}
       </div>
+
+      {/* Busiest call times — after-hours highlighted */}
       <div className="rounded-2xl border border-line bg-white p-4">
-        <p className="mb-3 text-xs font-bold uppercase tracking-wider text-muted">Calls answered · this week</p>
-        <div className="flex h-28 items-end gap-2">
-          {bars.map((b) => (
-            <div key={b.l} className="flex-1 rounded-t-md bg-gradient-to-t from-brand to-brand-600" style={{ height: `${b.v}%` }} />
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted">Busiest call times</p>
+          <span className="flex items-center gap-1.5 text-[10px] font-semibold text-sky"><span className="h-2 w-2 rounded-sm bg-sky" />After-hours</span>
+        </div>
+        <div className="flex h-28 items-end gap-1.5">
+          {hours.map((b) => (
+            <div
+              key={b.l}
+              className={`flex-1 rounded-t-md ${b.night ? "bg-sky" : "bg-gradient-to-t from-brand to-brand-600"}`}
+              style={{ height: `${b.v}%` }}
+            />
           ))}
         </div>
-        <div className="mt-1.5 flex gap-2">
-          {bars.map((b) => (
-            <span key={b.l} className="flex-1 text-center text-[10px] text-muted">{b.l}</span>
+        <div className="mt-1.5 flex gap-1.5">
+          {hours.map((b) => (
+            <span key={b.l} className={`flex-1 text-center text-[10px] tabular-nums ${b.night ? "font-semibold text-sky" : "text-muted"}`}>{b.l}</span>
           ))}
         </div>
+        <p className="mt-3 text-[11px] text-muted">The evening &amp; overnight rush is exactly when a shop is off the clock — and when Dispango still answers.</p>
       </div>
     </div>
   );
 }
 
-function StubSms() {
-  const items = [
-    { to: "You (owner)", body: "🔑 New job — LOCKOUT (urgent) · 412 Bloor W", time: "2m ago" },
-    { to: "You (owner)", body: "🔧 New job — BURST PIPE · 88 Queen St E", time: "18m ago" },
-    { to: "Caller", body: "You're all set — someone will call you in minutes.", time: "18m ago" },
-  ];
+function DeliveredTick() {
   return (
-    <div className="animate-slideup space-y-2">
-      {items.map((m, i) => (
-        <div key={i} className="rounded-xl border border-line bg-white px-3 py-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-ink">{m.to}</span>
-            <span className="text-[10px] text-muted">{m.time}</span>
+    <svg viewBox="0 0 22 20" className="h-3.5 w-3.5 shrink-0 text-emerald" fill="none" aria-hidden="true">
+      <path d="M3 11l3 3 6-7M10 14l1 1 7-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+const SMS_TEXTS = [
+  { emoji: "🔑", trade: "Locksmith", job: "Locked out — no spare", addr: "88 Queen St E", urg: "Urgent", time: "2m ago", reply: true },
+  { emoji: "🔧", trade: "Plumbing", job: "Burst pipe — kitchen", addr: "412 Bloor W, Unit 3", urg: "Urgent", time: "18m ago", reply: true },
+  { emoji: "🔥", trade: "HVAC", job: "No heat — furnace dead", addr: "17 Maple Ave", urg: "High", time: "1h ago", reply: true },
+  { emoji: "⚡", trade: "Electrical", job: "Panel sparking", addr: "9 Dundas St W", urg: "Urgent", time: "3h ago", reply: false },
+];
+
+function Sms() {
+  return (
+    <div className="animate-slideup space-y-3">
+      <p className="text-xs text-muted">The paper trail of every text Dispango sends — the job alert to <span className="font-semibold text-ink">you</span>, and the confirmation to your <span className="font-semibold text-ink">caller</span>.</p>
+      {SMS_TEXTS.map((t, i) => (
+        <div key={i} className="overflow-hidden rounded-2xl border border-line bg-white">
+          {/* Job alert texted to the owner */}
+          <div className="p-3.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold text-white">
+                <svg viewBox="0 0 20 20" className="h-3 w-3" fill="none"><path d="M4 4h12v9H7l-3 3V4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>
+                To you
+              </span>
+              <span className="flex shrink-0 items-center gap-1 text-[10px] text-muted"><DeliveredTick />Delivered · {t.time}</span>
+            </div>
+            <p className="mt-2 text-sm font-semibold text-ink">{t.emoji} New {t.trade} job — {t.job}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
+              <span className="min-w-0 truncate">{t.addr}</span>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${URG[t.urg]}`}>{t.urg}</span>
+            </div>
           </div>
-          <p className="mt-0.5 text-xs text-body">{m.body}</p>
+          {/* Auto-reply texted to the caller */}
+          {t.reply && (
+            <div className="border-t border-line bg-soft px-3.5 py-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full border border-line bg-white px-2 py-0.5 text-[10px] font-bold text-body">
+                  <svg viewBox="0 0 20 20" className="h-3 w-3" fill="none"><path d="M5 4h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H8l-3 3v-3H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>
+                  To caller
+                </span>
+                <span className="flex shrink-0 items-center gap-1 text-[10px] text-muted"><DeliveredTick />Delivered</span>
+              </div>
+              <p className="mt-1.5 text-xs italic text-body">&ldquo;You&apos;re all set — someone will call you in minutes.&rdquo;</p>
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -283,7 +352,7 @@ function StubSettings() {
 }
 
 const PANELS = {
-  overview: Overview, leads: Leads, logs: Logs, sms: StubSms,
+  overview: Overview, leads: Leads, logs: Logs, sms: Sms,
   analytics: Analytics, billing: StubBilling, settings: StubSettings,
 };
 

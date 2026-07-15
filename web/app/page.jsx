@@ -160,14 +160,14 @@ const IND_ICON = {
   more: "M5 10h.01M10 10h.01M15 10h.01",
 };
 const INDUSTRIES = [
-  { h: "Locksmiths", p: "Lockouts logged with address and urgency, day or night.", icon: "lock", tint: "brand" },
-  { h: "Plumbers", p: "Burst pipes and floods triaged the second they call.", icon: "drop", tint: "emerald" },
-  { h: "HVAC", p: "No-heat and no-cool calls captured and sent to you fast.", icon: "flame", tint: "warm" },
-  { h: "Electricians", p: "Every service call caught, even after hours.", icon: "bolt", tint: "amber" },
-  { h: "Contractors", p: "Quote requests captured while you're on site.", icon: "hammer", tint: "brand" },
-  { h: "Garage Doors", p: "Stuck-door emergencies routed to you instantly.", icon: "garage", tint: "emerald" },
-  { h: "Roofers", p: "Storm-damage leads booked before the competition calls back.", icon: "roof", tint: "warm" },
-  { h: "& Every Trade", p: "If your business lives on the phone, Dispango fits.", icon: "more", tint: "amber" },
+  { h: "Locksmiths", p: "Lockouts don't wait. Miss the call and they dial the next locksmith — you won't.", icon: "lock", tint: "brand" },
+  { h: "Plumbers", p: "A burst pipe at 11pm won't leave a voicemail. Dispango answers it, address and all.", icon: "drop", tint: "emerald" },
+  { h: "HVAC", p: "No heat, no patience. Every no-heat and no-cool call caught, day or night.", icon: "flame", tint: "warm" },
+  { h: "Electricians", p: "Sparks and panic don't leave messages. The address is logged before they call the next guy.", icon: "bolt", tint: "amber" },
+  { h: "Contractors", p: "Quote requests captured while you're on site and hands-full.", icon: "hammer", tint: "brand" },
+  { h: "Garage Doors", p: "Under a torsion spring you can't touch the phone. Dispango can.", icon: "garage", tint: "emerald" },
+  { h: "Roofers", p: "Storm hits and every roofer's phone rings at once — yours is the one that gets answered.", icon: "roof", tint: "warm" },
+  { h: "& Every Trade", p: "If your work makes it impossible to grab the phone, Dispango grabs it for you.", icon: "more", tint: "amber" },
 ];
 
 /* Integrations wall, grouped by category (Calio-style). Brand-colored chips.
@@ -253,6 +253,24 @@ export default function Page() {
             </ul>
           </div>
           <div className="reveal"><PhoneCall /></div>
+        </div>
+      </section>
+
+      {/* STAT STRIP — research-grounded pain, near-zero words */}
+      <section className="border-y border-line bg-soft">
+        <div className="mx-auto grid max-w-5xl gap-6 px-5 py-10 sm:grid-cols-3">
+          {[
+            { n: 67, suf: "%", t: "of callers won't leave a voicemail — they just dial the next name." },
+            { n: 78, suf: "%", t: "of jobs go to the business that answers first." },
+            { n: null, big: "24/7", t: "Dispango answers every call. You never miss the first ring." },
+          ].map((s, i) => (
+            <div key={i} style={{ transitionDelay: `${i * 80}ms` }} className="reveal text-center sm:text-left">
+              <p className="text-4xl font-extrabold tracking-tight text-brand md:text-5xl">
+                {s.big ? s.big : <><CountUp to={s.n} />{s.suf}</>}
+              </p>
+              <p className="mt-1.5 text-sm text-body">{s.t}</p>
+            </div>
+          ))}
         </div>
       </section>
 

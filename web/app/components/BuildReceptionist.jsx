@@ -11,7 +11,7 @@ const TRADES = {
     shop: "Rapid Lock & Key",
     greetingTail: "Are you locked out right now?",
     captures: ["Location & unit", "Lock type", "How urgent", "Callback number"],
-    rules: ["Flag active lockouts as URGENT", "Always confirm the callback number", "After-hours = surcharge quoted"],
+    rules: ["Flag active lockouts as URGENT", "Always confirm the callback number", "Quote the after-hours call-out rate up front"],
     lead: { icon: "🔑", title: "New job — LOCKOUT (urgent)", lines: ["412 Bloor W, Unit 3", "Deadbolt, no spare key", "Callback 647-555-0198"], secs: 6 },
   },
   plumber: {
@@ -62,16 +62,18 @@ const TRADES = {
 };
 const TRADE_ORDER = ["locksmith", "plumber", "hvac", "electrician", "garage", "roofer"];
 
+// Mirrors the voices offered on the signup form; "Elliot" is Dispango's live
+// Vapi voice today. (Confirm the full roster against the Vapi dashboard.)
 const VOICES = [
+  { id: "Elliot", tone: "professional" },
   { id: "Ava", tone: "warm" },
   { id: "Cole", tone: "calm" },
   { id: "Harper", tone: "friendly" },
-  { id: "Elliot", tone: "pro" },
 ];
 
 export default function BuildReceptionist() {
   const [trade, setTrade] = useState("locksmith");
-  const [voice, setVoice] = useState("Ava");
+  const [voice, setVoice] = useState("Elliot");
   const rootRef = useRef(null);
   const touched = useRef(false); // true once the visitor picks anything
   const timers = useRef([]);
@@ -99,7 +101,7 @@ export default function BuildReceptionist() {
         timers.current = [
           setTimeout(() => { if (!touched.current) setVoice("Cole"); }, 900),
           setTimeout(() => { if (!touched.current) setTrade("plumber"); }, 1700),
-          setTimeout(() => { if (!touched.current) { setTrade("locksmith"); setVoice("Ava"); } }, 2900),
+          setTimeout(() => { if (!touched.current) { setTrade("locksmith"); setVoice("Elliot"); } }, 2900),
         ];
       });
     }, { threshold: 0.35 });
