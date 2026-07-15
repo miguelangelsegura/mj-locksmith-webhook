@@ -13,3 +13,9 @@ verify_jwt = false
 # ?token= / x-vapi-secret check inside the function is the auth gate.
 [functions.heartbeat-monitor]
 verify_jwt = false
+
+# Customer dashboard API. verify_jwt = false because the function validates the
+# caller's Supabase JWT itself (auth.getUser) so it can read the user off the token
+# and scope every write to that user's own shop row.
+[functions.dashboard]
+verify_jwt = false
