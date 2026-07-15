@@ -302,7 +302,7 @@ async function health(): Promise<Response> {
   const twoMinAgo = new Date(now - 2 * 60 * 1000).toISOString();
   const dayAgo = new Date(now - 24 * 60 * 60 * 1000).toISOString();
 
-  const [clientsRes, unsentRes, recentRes, hbRes] = await Promise.all([
+  const [clientsRes, unsentRes, recentRes, hbRes, services] = await Promise.all([
     supabase!.from("clients").select(
       "id, business_name, dispatch_phone, inbound_number, active, provision_status, provision_error",
     ),
@@ -313,6 +313,7 @@ async function health(): Promise<Response> {
     supabase!.from("calls").select("client_id, ended_at, notified_at, outcome")
       .gte("ended_at", dayAgo),
     supabase!.from("ops_heartbeat").select("last_run_at, last_ok, last_problems").eq("id", 1).limit(1),
+    collectServices(),
   ]);
 
   const clients = clientsRes.data ?? [];
@@ -367,6 +368,7 @@ async function health(): Promise<Response> {
     ...summary,
     failedLeads,
     perClient,
+    services,
     heartbeat: hb
       ? { lastRunAt: hb.last_run_at, ok: hb.last_ok, problems: hb.last_problems }
       : { lastRunAt: null, ok: null, problems: null },
@@ -611,6 +613,170 @@ async function resendSms(callId: string, force: boolean): Promise<Response> {
   }
 }
 
+// --- Calls / leads inspection ---------------------------------------------
+
+const CALL_LIST_FIELDS =
+  "vapi_call_id, client_id, caller_phone, caller_name, outcome, urgency, door_type, damage_description, service_address, ended_at, duration_seconds, notified_at";
+
+function jobLabel(row: Record<string, any>): string | null {
+  const door = row.door_type ? String(row.door_type).replace(/_/g, " ") : null;
+  return [door, row.damage_description].filter(Boolean).join(" — ") || null;
+}
+
+// Recent calls/leads, newest first. Optional ?client_id, ?outcome, ?limit.
+// The support/debugging lifeline — see what a caller actually said and whether
+// the lead texted out. Returns light rows; full transcript is in the detail route.
+async function getCalls(params: URLSearchParams): Promise<Response> {
+  const clientId = params.get("client_id");
+  const outcome = params.get("outcome");
+  let limit = Number(params.get("limit") ?? "60");
+  if (!Number.isFinite(limit) || limit <= 0) limit = 60;
+  limit = Math.min(limit, 200);
+
+  let q = supabase!.from("calls").select(CALL_LIST_FIELDS)
+    .not("ended_at", "is", null).order("ended_at", { ascending: false }).limit(limit);
+  if (clientId) q = q.eq("client_id", clientId);
+  if (outcome) q = q.eq("outcome", outcome);
+  const { data, error } = await q;
+  if (error) return json({ error: error.message }, 400);
+
+  const ids = [...new Set((data ?? []).map((r) => r.client_id).filter(Boolean))];
+  const nameById: Record<string, string> = {};
+  if (ids.length) {
+    const { data: cs } = await supabase!.from("clients").select("id, business_name").in("id", ids);
+    for (const c of cs ?? []) nameById[c.id] = c.business_name;
+  }
+  const calls = (data ?? []).map((r) => ({
+    ...r, business_name: nameById[r.client_id] ?? null, job: jobLabel(r),
+  }));
+  return json({ calls });
+}
+
+// One call in full: structured fields, transcript, recording link, delivery.
+async function getCallDetail(callId: string): Promise<Response> {
+  const { data } = await supabase!.from("calls").select("*").eq("vapi_call_id", callId).limit(1);
+  const row = data?.[0];
+  if (!row) return json({ error: "call not found" }, 404);
+  // Recording link lives in the stored Vapi end-of-call payload, not its own column.
+  const artifact = row.raw_payload?.message?.artifact ?? {};
+  const recordingUrl = artifact.recordingUrl ?? artifact.stereoRecordingUrl ?? artifact.recording?.stereoUrl ?? null;
+  let business_name: string | null = null, dispatch_phone: string | null = null;
+  if (row.client_id) {
+    const { data: c } = await supabase!.from("clients").select("business_name, dispatch_phone").eq("id", row.client_id).limit(1);
+    business_name = c?.[0]?.business_name ?? null;
+    dispatch_phone = c?.[0]?.dispatch_phone ?? null;
+  }
+  const { raw_payload: _drop, ...rest } = row; // raw payload is large — omit
+  return json({ call: { ...rest, business_name, dispatch_phone, recordingUrl, job: jobLabel(row) } });
+}
+
+// --- Analytics (the ROI story) --------------------------------------------
+
+// The shop-local hour of a timestamp (0–23), for the after-hours count.
+function localHour(iso: string, tz: string): number | null {
+  const d = parseIso(iso);
+  if (!d) return null;
+  const h = new Intl.DateTimeFormat("en-US", { hour: "numeric", hour12: false, timeZone: tz }).format(d);
+  const n = parseInt(h, 10);
+  return Number.isFinite(n) ? (n === 24 ? 0 : n) : null;
+}
+
+// Rolling 7-day metrics: volume, leads captured, conversion, after-hours catches
+// (the product's actual pitch), avg duration, outcome mix, and a daily series.
+async function getAnalytics(): Promise<Response> {
+  const now = Date.now();
+  const weekAgo = new Date(now - 7 * 24 * 3600 * 1000).toISOString();
+  const dayStart = new Date(now - 24 * 3600 * 1000).toISOString();
+
+  const [callsRes, clientsRes] = await Promise.all([
+    supabase!.from("calls").select("client_id, outcome, ended_at, duration_seconds, notified_at").gte("ended_at", weekAgo),
+    supabase!.from("clients").select("id, timezone"),
+  ]);
+  const tzById: Record<string, string> = {};
+  for (const c of clientsRes.data ?? []) tzById[c.id] = c.timezone || DEFAULT_TZ;
+
+  const rows = callsRes.data ?? [];
+  const isLead = (o: unknown) =>
+    !NON_LEAD_OUTCOMES.has(String(o ?? "").trim().toLowerCase().replace(/ /g, "_"));
+
+  let leads = 0, afterHours = 0, durSum = 0, durN = 0, today = 0, leadsToday = 0;
+  const outcomeMix: Record<string, number> = {};
+  const dayKeys: string[] = [];
+  for (let i = 6; i >= 0; i--) dayKeys.push(new Date(now - i * 24 * 3600 * 1000).toISOString().slice(0, 10));
+  const daily: Record<string, number> = Object.fromEntries(dayKeys.map((k) => [k, 0]));
+
+  for (const r of rows) {
+    const lead = isLead(r.outcome);
+    if (lead) leads++;
+    const oc = String(r.outcome ?? "unknown").trim().toLowerCase().replace(/ /g, "_") || "unknown";
+    outcomeMix[oc] = (outcomeMix[oc] ?? 0) + 1;
+    if (typeof r.duration_seconds === "number") { durSum += r.duration_seconds; durN++; }
+    const dk = String(r.ended_at ?? "").slice(0, 10);
+    if (dk in daily) daily[dk]++;
+    if (r.ended_at && r.ended_at >= dayStart) { today++; if (lead) leadsToday++; }
+    if (lead) {
+      const h = localHour(r.ended_at, tzById[r.client_id] ?? DEFAULT_TZ);
+      if (h !== null && (h < 8 || h >= 18)) afterHours++;
+    }
+  }
+  const total = rows.length;
+  return json({
+    windowDays: 7,
+    totalCalls: total,
+    leads,
+    conversion: total ? Math.round((leads / total) * 100) : 0,
+    afterHours,
+    callsToday: today,
+    leadsToday,
+    avgDurationSec: durN ? Math.round(durSum / durN) : null,
+    outcomeMix,
+    daily: dayKeys.map((k) => ({ day: k, calls: daily[k] })),
+  });
+}
+
+// --- Service / dependency board -------------------------------------------
+
+// Twilio account balance — a dead-simple GET that answers "will our texts even
+// send?" (an empty Twilio account silently fails every dispatch SMS).
+async function twilioBalance(): Promise<{ configured: boolean; ok: boolean; balance: number | null; currency: string | null; low: boolean }> {
+  if (!twilioReady) return { configured: false, ok: false, balance: null, currency: null, low: false };
+  try {
+    const resp = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Balance.json`, {
+      headers: { Authorization: "Basic " + btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`) },
+    });
+    if (!resp.ok) return { configured: true, ok: false, balance: null, currency: null, low: false };
+    const d = await resp.json();
+    const bal = Number(d.balance);
+    const min = Number(Deno.env.get("TWILIO_BALANCE_MIN") ?? "10");
+    return { configured: true, ok: true, balance: isNaN(bal) ? null : bal, currency: d.currency ?? "USD", low: !isNaN(bal) && bal < min };
+  } catch {
+    return { configured: true, ok: false, balance: null, currency: null, low: false };
+  }
+}
+
+// "Is anything upstream broken right now?" — one board over the services a call
+// depends on, so the operator checks dependencies before chasing symptoms.
+async function collectServices(): Promise<Record<string, unknown>> {
+  const [twilio, webhookUp] = await Promise.all([
+    twilioBalance(),
+    (async () => {
+      if (!WEBHOOK_BASE) return null;
+      try {
+        const r = await fetch(WEBHOOK_BASE, { method: "GET" });
+        return r.ok;
+      } catch { return false; }
+    })(),
+  ]);
+  return {
+    twilio,
+    // Vapi exposes no balance via the private key — surface only whether we can
+    // inspect it at all (the test-call/repair tools need VAPI_PRIVATE_KEY).
+    vapi: { configured: !!VAPI_PRIVATE_KEY },
+    webhook: { up: webhookUp },
+    database: { up: true }, // if this endpoint answered, our Supabase queries worked
+  };
+}
+
 async function listBanned(): Promise<Response> {
   const { data, error } = await supabase!
     .from("banned_callers").select("*").order("created_at", { ascending: false });
@@ -692,6 +858,18 @@ Deno.serve(async (req) => {
     if (req.method === "POST" && resendMatch) {
       const force = new URL(req.url).searchParams.get("force") === "1";
       return await resendSms(decodeURIComponent(resendMatch[1]), force);
+    }
+
+    if (req.method === "GET" && path === "/calls") {
+      return await getCalls(new URL(req.url).searchParams);
+    }
+    const callDetailMatch = path.match(/^\/calls\/([^/]+)$/);
+    if (req.method === "GET" && callDetailMatch) {
+      return await getCallDetail(decodeURIComponent(callDetailMatch[1]));
+    }
+
+    if (req.method === "GET" && path === "/analytics") {
+      return await getAnalytics();
     }
 
     const itemMatch = path.match(/^\/clients\/([^/]+)$/);

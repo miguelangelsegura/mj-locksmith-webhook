@@ -6,764 +6,798 @@
 <title>Dispango — Operator Console</title>
 <style>
   :root {
-    --bg:#f7f8fe; --card:#ffffff; --soft:#f3f4fd; --line:#e8eaf6; --line-strong:#dcdff0;
-    --ink:#0d1220; --body:#4b5468; --muted:#8a93a6;
-    --brand:#5b5bf5; --brand-600:#4a45ec; --brand-700:#3a34c9; --brand-50:#eef0ff;
-    --warm:#ff7a4d; --amber:#ffb020;
-    --ok:#10b981; --ok-50:#e7f8f1; --danger:#ef4444; --danger-50:#fdeaea;
-    --sky:#2f9bff; --sky-50:#e8f4ff; --amber-50:#fff6e5;
-    --shadow:0 1px 2px rgba(13,18,32,.04), 0 6px 24px rgba(13,18,32,.05);
-    --shadow-lg:0 12px 48px rgba(13,18,32,.14);
+    /* neutrals */
+    --gray-25:#fcfcfd; --gray-50:#f7f8fa; --gray-100:#eef0f3; --gray-150:#e8ebef;
+    --gray-200:#e2e5ea; --gray-300:#c9ced6; --gray-400:#9aa1ad; --gray-500:#6b7280;
+    --gray-600:#525865; --gray-700:#374151; --gray-900:#111318;
+    /* brand + status */
+    --accent:#5b5bf5; --accent-hover:#4949e0; --accent-tint:#eeeeff; --secondary:#ff7a4d;
+    --ok:#15803d; --ok-bg:#ecfdf3; --info:#2563eb; --info-bg:#eff6ff;
+    --warn:#b45309; --warn-bg:#fffbeb; --bad:#b91c1c; --bad-bg:#fef2f2;
+    /* elevation */
+    --sh-sm:0 1px 2px rgba(16,24,40,.05);
+    --sh-md:0 4px 8px -2px rgba(16,24,40,.08),0 2px 4px -2px rgba(16,24,40,.04);
+    --sh-lg:0 12px 24px -6px rgba(16,24,40,.14),0 4px 8px -4px rgba(16,24,40,.06);
+    --r-sm:6px; --r-md:10px; --r-lg:14px; --r-pill:999px;
+    /* motion */
+    --ease-out:cubic-bezier(.16,1,.3,1); --ease-in:cubic-bezier(.4,0,1,1);
+    --d-fast:150ms; --d-base:200ms; --d-med:250ms;
   }
   * { box-sizing:border-box; }
-  html, body { overflow-x:hidden; }
+  html,body { height:100%; }
   body {
-    margin:0; background:var(--bg); color:var(--ink);
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", sans-serif;
-    -webkit-font-smoothing:antialiased; line-height:1.5;
+    margin:0; background:var(--gray-50); color:var(--gray-900);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:14px; line-height:20px; -webkit-font-smoothing:antialiased;
   }
-  .wrap { max-width:1060px; margin:0 auto; padding:26px 20px 96px; }
-  a { color:var(--brand-600); }
+  .mono { font-family:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",monospace; }
+  .tnum { font-variant-numeric:tabular-nums; }
+  ::selection { background:var(--accent-tint); }
 
-  /* Header */
-  .top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; }
-  .brand { display:flex; align-items:center; gap:11px; }
-  .logo { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--brand),var(--warm)); box-shadow:0 4px 14px rgba(91,91,245,.35); }
-  h1 { font-size:19px; margin:0; letter-spacing:-.01em; }
-  .sub { color:var(--muted); font-size:12.5px; margin-top:1px; }
+  /* ---------- shell ---------- */
+  .app { display:grid; grid-template-columns:232px 1fr; min-height:100vh; }
+  .side {
+    background:#fff; border-right:1px solid var(--gray-200); padding:18px 14px;
+    display:flex; flex-direction:column; gap:4px; position:sticky; top:0; height:100vh;
+  }
+  .brand { display:flex; align-items:center; gap:10px; padding:6px 8px 16px; }
+  .logo { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--secondary)); box-shadow:0 3px 10px rgba(91,91,245,.32); flex:none; }
+  .brand b { font-size:14.5px; letter-spacing:-.01em; }
+  .brand small { display:block; color:var(--gray-500); font-size:11px; margin-top:1px; }
+  .nav { display:flex; flex-direction:column; gap:2px; }
+  .nav a {
+    display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px;
+    color:var(--gray-600); font-weight:500; font-size:13.5px; cursor:pointer; text-decoration:none;
+    transition:background var(--d-fast) var(--ease-out),color var(--d-fast) var(--ease-out); user-select:none;
+  }
+  .nav a:hover { background:var(--gray-100); color:var(--gray-900); }
+  .nav a.on { background:var(--accent-tint); color:var(--accent-hover); font-weight:600; }
+  .nav a .ic { width:17px; height:17px; flex:none; }
+  .nav a .badge { margin-left:auto; background:var(--bad); color:#fff; font-size:10.5px; font-weight:700; min-width:17px; height:17px; border-radius:9px; display:grid; place-items:center; padding:0 5px; }
+  .side-foot { margin-top:auto; display:flex; flex-direction:column; gap:2px; padding-top:12px; border-top:1px solid var(--gray-150); }
 
-  /* Cards */
-  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-top:16px; box-shadow:var(--shadow); }
-  .card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-  .card-title { font-size:15.5px; font-weight:700; letter-spacing:-.01em; display:flex; align-items:center; gap:8px; }
-  .help { color:var(--muted); font-size:12.5px; margin-top:3px; max-width:62ch; }
+  .main { min-width:0; display:flex; flex-direction:column; }
+  .topbar { position:sticky; top:0; z-index:5; background:rgba(247,248,250,.86); backdrop-filter:blur(8px); border-bottom:1px solid var(--gray-200); padding:14px 26px; display:flex; align-items:center; gap:14px; }
+  .topbar h1 { font-size:17px; margin:0; letter-spacing:-.01em; font-weight:600; }
+  .topbar .spacer { flex:1; }
+  .content { padding:24px 26px 80px; max-width:1160px; width:100%; }
+  .view { animation:fadeUp var(--d-med) var(--ease-out); }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 
-  /* Buttons */
-  button { cursor:pointer; border:none; border-radius:10px; padding:9px 15px; font-size:13px; font-weight:650; color:#fff; background:var(--brand); transition:filter .15s, transform .05s, background .15s; font-family:inherit; }
-  button:hover { filter:brightness(1.06); }
-  button:active { transform:translateY(1px); }
-  button.ghost { background:var(--soft); color:var(--ink); border:1px solid var(--line-strong); font-weight:600; }
-  button.ghost:hover { background:#eceeffe0; filter:none; }
-  button.sm { padding:6px 11px; font-size:12px; border-radius:8px; }
-  button.ok { background:var(--ok); }
-  button.warm { background:var(--warm); }
-  button.danger { background:var(--danger); }
-  button.link { background:none; color:var(--brand-600); padding:0; font-weight:650; border-radius:0; }
-  button.link:hover { text-decoration:underline; filter:none; }
-  button:disabled { opacity:.5; cursor:default; }
+  /* ---------- buttons ---------- */
+  button { font-family:inherit; cursor:pointer; border:none; border-radius:var(--r-sm); padding:8px 13px; font-size:13px; font-weight:600; color:#fff; background:var(--accent); transition:background var(--d-fast) var(--ease-out),transform 100ms var(--ease-out),box-shadow var(--d-fast); }
+  button:hover { background:var(--accent-hover); }
+  button:active { transform:scale(.98); }
+  button:focus-visible { outline:none; box-shadow:0 0 0 3px var(--accent-tint); }
+  button.ghost { background:#fff; color:var(--gray-700); border:1px solid var(--gray-200); box-shadow:var(--sh-sm); }
+  button.ghost:hover { background:var(--gray-50); border-color:var(--gray-300); }
+  button.sm { padding:5px 10px; font-size:12px; }
+  button.ok { background:var(--ok); } button.ok:hover { filter:brightness(1.08); }
+  button.warm { background:var(--secondary); } button.warm:hover { filter:brightness(1.06); }
+  button.danger { background:var(--bad); } button.danger:hover { filter:brightness(1.08); }
+  button:disabled { opacity:.5; cursor:default; transform:none; }
+  .linkbtn { background:none; color:var(--accent-hover); padding:0; font-weight:600; }
+  .linkbtn:hover { background:none; text-decoration:underline; }
 
-  /* Inputs */
-  label { display:block; font-size:12px; font-weight:600; color:var(--body); margin:12px 0 5px; }
-  label .hint { font-weight:400; color:var(--muted); }
-  input, select { width:100%; padding:10px 12px; background:#fff; border:1px solid var(--line-strong); border-radius:10px; color:var(--ink); font-size:14px; font-family:inherit; }
-  input:focus, select:focus { outline:none; border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-50); }
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:2px 16px; }
+  /* ---------- toggle switch ---------- */
+  .switch { display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
+  .switch .track { width:38px; height:22px; border-radius:var(--r-pill); background:var(--gray-300); position:relative; transition:background var(--d-base) var(--ease-out); flex:none; }
+  .switch .knob { position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:var(--sh-sm); transition:transform var(--d-base) var(--ease-out); }
+  .switch.on .track { background:var(--ok); }
+  .switch.on .knob { transform:translateX(16px); }
+  .switch.busy .track { opacity:.6; }
+  .switch .lbl { font-size:12px; font-weight:600; color:var(--gray-500); min-width:22px; }
+  .switch.on .lbl { color:var(--ok); }
 
-  /* Tables */
-  table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13.5px; }
-  th, td { text-align:left; padding:11px 12px; border-bottom:1px solid var(--line); vertical-align:middle; }
-  th { color:var(--muted); font-weight:650; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
-  tr:last-child td { border-bottom:none; }
-  td.actions { text-align:right; white-space:nowrap; }
-  td.actions button { margin-left:6px; }
+  /* ---------- cards / layout ---------- */
+  .card { background:#fff; border:1px solid var(--gray-200); border-radius:var(--r-md); box-shadow:var(--sh-sm); }
+  .card.pad { padding:18px; }
+  .sec-title { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--gray-500); margin:0 0 2px; }
+  .muted { color:var(--gray-500); }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .row { display:flex; align-items:center; gap:10px; }
+  .between { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .stack { display:flex; flex-direction:column; gap:16px; }
 
-  /* Pills */
-  .pill { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:650; padding:3px 9px; border-radius:999px; white-space:nowrap; }
-  .pill.on   { background:var(--ok-50); color:#0a7d5a; }
-  .pill.off  { background:var(--soft); color:var(--muted); }
-  .pill.info { background:var(--sky-50); color:#1877cc; }
-  .pill.warn { background:var(--amber-50); color:#a86a00; }
-  .pill.bad  { background:var(--danger-50); color:#c0332c; }
-  .dot { width:7px; height:7px; border-radius:50%; background:currentColor; display:inline-block; }
+  /* ---------- banner ---------- */
+  .banner { display:flex; align-items:center; gap:13px; border-radius:var(--r-md); padding:15px 17px; border:1px solid var(--gray-200); background:#fff; box-shadow:var(--sh-sm); }
+  .banner.good { background:linear-gradient(110deg,var(--ok-bg),#fff 70%); border-color:#c7ecdd; }
+  .banner.bad { background:linear-gradient(110deg,var(--bad-bg),#fff 70%); border-color:#f3cfce; }
+  .banner .ic { width:40px; height:40px; border-radius:10px; display:grid; place-items:center; font-size:20px; flex:none; font-weight:700; }
+  .banner.good .ic { background:#d6f4e8; color:var(--ok); } .banner.bad .ic { background:#f9d8d5; color:var(--bad); }
+  .banner b { font-size:15px; letter-spacing:-.01em; }
+  .banner .bsub { color:var(--gray-600); font-size:12.5px; margin-top:1px; }
 
-  /* Status banner */
-  .banner { display:flex; align-items:center; gap:14px; border-radius:16px; padding:18px 20px; margin-top:16px; border:1px solid var(--line); }
-  .banner.good { background:linear-gradient(120deg,var(--ok-50),#f4fbf8); border-color:#c7ecdd; }
-  .banner.bad  { background:linear-gradient(120deg,var(--danger-50),#fff4f3); border-color:#f4cdca; }
-  .banner .ic { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:22px; flex:none; }
-  .banner.good .ic { background:#d6f4e8; }
-  .banner.bad  .ic { background:#f9d8d5; }
-  .banner b { font-size:16px; letter-spacing:-.01em; }
-  .banner .bsub { color:var(--body); font-size:13px; margin-top:1px; }
+  /* ---------- KPI tiles ---------- */
+  .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .tile { background:#fff; border:1px solid var(--gray-200); border-radius:var(--r-md); padding:15px 16px; box-shadow:var(--sh-sm); transition:box-shadow var(--d-base) var(--ease-out),transform var(--d-base) var(--ease-out); }
+  .tile:hover { box-shadow:var(--sh-md); transform:translateY(-1px); }
+  .tile .k { font-size:11px; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:var(--gray-500); }
+  .tile .v { font-size:29px; font-weight:600; letter-spacing:-.02em; margin-top:6px; line-height:1; }
+  .tile .m { font-size:12px; color:var(--gray-500); margin-top:5px; }
+  .tile.alert { border-color:#f3cfce; }
+  .tile.alert .v { color:var(--bad); }
+  .spark { margin-top:8px; height:26px; width:100%; display:block; }
 
-  /* Stat tiles */
-  .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px; }
-  .tile { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 15px; box-shadow:var(--shadow); }
-  .tile .k { font-size:11px; font-weight:650; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
-  .tile .v { font-size:26px; font-weight:800; letter-spacing:-.02em; margin-top:5px; }
-  .tile .m { font-size:11.5px; color:var(--muted); margin-top:2px; }
-  .tile.alert { border-color:#f4cdca; background:linear-gradient(160deg,#fff6f5,#fff); }
-  .tile.alert .v { color:var(--danger); }
+  /* ---------- service board ---------- */
+  .svc { display:flex; align-items:center; gap:11px; padding:11px 2px; border-bottom:1px solid var(--gray-100); }
+  .svc:last-child { border-bottom:none; }
+  .svc .nm { font-weight:600; font-size:13px; }
+  .svc .ds { color:var(--gray-500); font-size:12px; }
+  .dot { width:8px; height:8px; border-radius:50%; flex:none; }
+  .dot.g { background:var(--ok); box-shadow:0 0 0 3px var(--ok-bg); }
+  .dot.y { background:var(--warn); box-shadow:0 0 0 3px var(--warn-bg); }
+  .dot.r { background:var(--bad); box-shadow:0 0 0 3px var(--bad-bg); }
+  .dot.n { background:var(--gray-400); box-shadow:0 0 0 3px var(--gray-100); }
+  .dot.pulse { animation:pulse 2s var(--ease-out) infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.45;} }
 
-  /* Checklist (drill-down) */
-  .check { display:flex; gap:11px; padding:11px 0; border-bottom:1px solid var(--line); }
-  .check:last-child { border-bottom:none; }
-  .check .ci { width:22px; height:22px; border-radius:50%; flex:none; display:grid; place-items:center; font-size:13px; font-weight:800; color:#fff; margin-top:1px; }
-  .ci.pass { background:var(--ok); } .ci.fail { background:var(--danger); } .ci.skip { background:var(--muted); }
-  .check .cl { font-weight:650; font-size:13.5px; }
-  .check .cd { color:var(--body); font-size:12.5px; margin-top:2px; }
+  /* ---------- pills ---------- */
+  .pill { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:var(--r-pill); white-space:nowrap; }
+  .pill.ok { background:var(--ok-bg); color:var(--ok); }
+  .pill.info { background:var(--info-bg); color:var(--info); }
+  .pill.warn { background:var(--warn-bg); color:var(--warn); }
+  .pill.bad { background:var(--bad-bg); color:var(--bad); }
+  .pill.off { background:var(--gray-100); color:var(--gray-500); }
 
-  /* Modal */
-  .overlay { position:fixed; inset:0; background:rgba(13,18,32,.42); backdrop-filter:blur(2px); display:flex; align-items:flex-start; justify-content:center; padding:40px 18px; z-index:20; overflow-y:auto; }
-  .overlay.hidden { display:none; }
-  .modal { background:var(--card); border-radius:18px; padding:24px; max-width:560px; width:100%; box-shadow:var(--shadow-lg); animation:pop .16s ease-out; }
-  @keyframes pop { from { opacity:0; transform:translateY(8px) scale(.98); } to { opacity:1; transform:none; } }
-  .modal h3 { margin:0 0 3px; font-size:17px; letter-spacing:-.01em; }
-  .modal-actions { display:flex; gap:9px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap; }
-  .linkbox { display:flex; gap:8px; margin-top:10px; }
-  .linkbox input { font-size:13px; }
+  /* ---------- tables ---------- */
+  .tbl-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  thead th { position:sticky; top:0; background:#fff; text-align:left; padding:9px 14px; font-size:10.5px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--gray-500); border-bottom:1px solid var(--gray-200); white-space:nowrap; }
+  tbody td { padding:11px 14px; border-bottom:1px solid var(--gray-100); vertical-align:middle; }
+  tbody tr { transition:background var(--d-fast) var(--ease-out); }
+  tbody tr.clickable { cursor:pointer; }
+  tbody tr:hover { background:var(--gray-50); }
+  tbody tr:last-child td { border-bottom:none; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  td.act { text-align:right; white-space:nowrap; }
+  td.act button { margin-left:6px; }
+  .rowsub { color:var(--gray-500); font-size:11.5px; }
+  .trunc { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rowenter { animation:rowIn var(--d-base) var(--ease-out) both; }
+  @keyframes rowIn { from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:none;} }
 
-  /* Toast */
-  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(10px); background:var(--ink); color:#fff; padding:12px 18px; border-radius:12px; font-size:13.5px; font-weight:550; max-width:90%; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:40; box-shadow:var(--shadow-lg); }
+  /* ---------- inputs ---------- */
+  label.f { display:block; font-size:12px; font-weight:600; color:var(--gray-700); margin:12px 0 5px; }
+  label.f .h { font-weight:400; color:var(--gray-400); }
+  input,select,textarea { width:100%; font-family:inherit; font-size:13.5px; padding:9px 11px; background:#fff; border:1px solid var(--gray-300); border-radius:var(--r-sm); color:var(--gray-900); }
+  input:focus,select:focus,textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-tint); }
+  .search { position:relative; }
+  .search input { padding-left:32px; }
+  .search svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--gray-400); }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { font-size:12px; font-weight:600; padding:5px 11px; border-radius:var(--r-pill); background:#fff; border:1px solid var(--gray-200); color:var(--gray-600); cursor:pointer; transition:all var(--d-fast) var(--ease-out); }
+  .chip:hover { border-color:var(--gray-300); }
+  .chip.on { background:var(--accent-tint); border-color:transparent; color:var(--accent-hover); }
+
+  /* ---------- drawer ---------- */
+  .scrim { position:fixed; inset:0; background:rgba(16,24,40,.42); opacity:0; pointer-events:none; transition:opacity var(--d-base) var(--ease-out); z-index:20; }
+  .scrim.show { opacity:1; pointer-events:auto; }
+  .drawer { position:fixed; top:0; right:0; height:100vh; width:min(560px,94vw); background:var(--gray-50); box-shadow:var(--sh-lg); transform:translateX(100%); transition:transform var(--d-med) var(--ease-out); z-index:21; display:flex; flex-direction:column; }
+  .drawer.show { transform:none; }
+  .drawer-head { padding:18px 22px; border-bottom:1px solid var(--gray-200); background:#fff; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .drawer-head h2 { margin:0; font-size:18px; letter-spacing:-.01em; }
+  .drawer-head .sub { color:var(--gray-500); font-size:12.5px; margin-top:2px; }
+  .x { background:none; color:var(--gray-500); padding:4px; border-radius:var(--r-sm); font-size:18px; line-height:1; }
+  .x:hover { background:var(--gray-100); color:var(--gray-900); }
+  .drawer-body { padding:20px 22px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:18px; }
+  .field { display:flex; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid var(--gray-100); font-size:13px; }
+  .field:last-child { border-bottom:none; }
+  .field .lab { color:var(--gray-500); }
+  .field .val { font-weight:500; text-align:right; }
+
+  /* ---------- stepper ---------- */
+  .stepper { display:flex; align-items:flex-start; gap:0; }
+  .step { flex:1; text-align:center; position:relative; }
+  .step .bub { width:24px; height:24px; border-radius:50%; margin:0 auto; display:grid; place-items:center; font-size:12px; font-weight:700; background:var(--gray-200); color:var(--gray-500); position:relative; z-index:1; transition:all var(--d-base) var(--ease-out); }
+  .step.done .bub { background:var(--ok); color:#fff; }
+  .step.cur .bub { background:var(--accent); color:#fff; box-shadow:0 0 0 4px var(--accent-tint); }
+  .step .cap { font-size:10.5px; margin-top:6px; color:var(--gray-500); font-weight:600; }
+  .step.done .cap,.step.cur .cap { color:var(--gray-900); }
+  .step:not(:last-child)::after { content:""; position:absolute; top:12px; left:50%; width:100%; height:2px; background:var(--gray-200); z-index:0; }
+  .step.done:not(:last-child)::after { background:var(--ok); }
+
+  /* ---------- checklist (test-call) ---------- */
+  .chk { display:flex; gap:11px; padding:10px 0; border-bottom:1px solid var(--gray-100); }
+  .chk:last-child { border-bottom:none; }
+  .chk .ci { width:21px; height:21px; border-radius:50%; flex:none; display:grid; place-items:center; font-size:12px; font-weight:800; color:#fff; margin-top:1px; }
+  .ci.pass { background:var(--ok); } .ci.fail { background:var(--bad); } .ci.skip { background:var(--gray-400); }
+  .chk .cl { font-weight:600; font-size:13px; }
+  .chk .cd { color:var(--gray-600); font-size:12px; margin-top:2px; }
+
+  /* transcript */
+  .tx { background:#fff; border:1px solid var(--gray-200); border-radius:var(--r-sm); padding:12px 14px; max-height:280px; overflow-y:auto; font-size:12.5px; line-height:1.6; white-space:pre-wrap; }
+  .tx .role { font-weight:700; }
+
+  /* ---------- skeleton ---------- */
+  .sk { background:linear-gradient(90deg,var(--gray-100) 25%,var(--gray-200) 37%,var(--gray-100) 63%); background-size:400% 100%; animation:shimmer 1.4s ease-in-out infinite; border-radius:var(--r-sm); }
+  @keyframes shimmer { 0%{background-position:100% 50%;} 100%{background-position:0 50%;} }
+  .sk-row { height:14px; margin:10px 0; }
+
+  /* ---------- empty ---------- */
+  .empty { text-align:center; padding:34px 20px; color:var(--gray-500); }
+  .empty .e-ic { font-size:26px; margin-bottom:8px; opacity:.7; }
+  .empty .e-t { font-weight:600; color:var(--gray-700); }
+
+  /* ---------- toast ---------- */
+  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(12px); background:var(--gray-900); color:#fff; padding:11px 17px; border-radius:var(--r-md); font-size:13px; font-weight:500; opacity:0; transition:opacity var(--d-base) var(--ease-out),transform var(--d-base) var(--ease-out); pointer-events:none; z-index:40; box-shadow:var(--sh-lg); max-width:90vw; }
   .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-  .toast.err { background:#7f1d1d; }
-  .toast.ok { background:#065f46; }
+  .toast.err { background:#7f1d1d; } .toast.ok { background:#065f46; }
 
-  .muted { color:var(--muted); font-size:13px; }
-  .err { color:var(--danger); font-size:12.5px; margin-top:8px; min-height:14px; font-weight:550; }
-  .hidden { display:none; }
-  .spin { display:inline-block; width:14px; height:14px; border:2px solid var(--line-strong); border-top-color:var(--brand); border-radius:50%; animation:sp .7s linear infinite; vertical-align:-2px; }
+  .spin { display:inline-block; width:14px; height:14px; border:2px solid var(--gray-200); border-top-color:var(--accent); border-radius:50%; animation:sp .7s linear infinite; vertical-align:-2px; }
   @keyframes sp { to { transform:rotate(360deg); } }
-  .rowsub { color:var(--muted); font-size:11.5px; }
+  .hidden { display:none !important; }
+  .err { color:var(--bad); font-size:12.5px; margin-top:8px; min-height:14px; font-weight:500; }
 
-  @media (max-width:720px) {
+  /* ---------- login ---------- */
+  .login-wrap { min-height:100vh; display:grid; place-items:center; padding:20px; }
+  .login { width:100%; max-width:400px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  }
+  @media (max-width:860px) {
+    .app { grid-template-columns:1fr; }
+    .side { position:fixed; bottom:0; top:auto; left:0; right:0; height:auto; flex-direction:row; border-right:none; border-top:1px solid var(--gray-200); padding:8px 10px; z-index:15; gap:2px; }
+    .brand,.side-foot { display:none; }
+    .nav { flex-direction:row; width:100%; justify-content:space-around; }
+    .nav a { flex-direction:column; gap:3px; font-size:10.5px; padding:6px 8px; }
+    .nav a .ic { width:20px; height:20px; }
+    .content { padding:18px 16px 96px; }
+    .topbar { padding:12px 16px; }
     .tiles { grid-template-columns:repeat(2,1fr); }
-    .grid { grid-template-columns:1fr; }
-    table, thead, tbody, th, td, tr { display:block; }
-    thead { display:none; }
-    tr { border:1px solid var(--line); border-radius:12px; padding:8px 4px; margin-top:10px; }
-    td { border:none; padding:5px 12px; }
-    td.actions { text-align:left; padding-top:8px; }
-    td.actions button { margin:4px 6px 0 0; }
+    .grid2 { grid-template-columns:1fr; }
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <div class="brand">
-      <div class="logo"></div>
-      <div>
-        <h1>Dispango — Operator Console</h1>
-        <div class="sub">Onboard shops, watch the system, fix problems</div>
-      </div>
-    </div>
-    <button id="logout" class="ghost hidden">Log out</button>
-  </div>
 
-  <!-- Token screen -->
-  <div id="login" class="card hidden" style="max-width:440px; margin-top:40px;">
-    <div class="card-title">Sign in</div>
-    <div class="help">Paste your operator token. It's stored only in this browser and used to talk to the admin API — nothing is saved on a server.</div>
-    <label>Operator token</label>
-    <input id="token" type="password" placeholder="ADMIN_API_TOKEN" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+<!-- LOGIN -->
+<div id="login" class="login-wrap hidden">
+  <div class="login card pad">
+    <div class="row" style="margin-bottom:4px"><div class="logo"></div><b style="font-size:16px">Operator Console</b></div>
+    <p class="muted" style="font-size:13px;margin:6px 0 0">Enter your operator token. Stored only in this browser — no secrets on the page.</p>
+    <label class="f">Operator token</label>
+    <input id="token" type="password" placeholder="ADMIN_API_TOKEN" autocomplete="off" autocapitalize="off" spellcheck="false" />
     <div class="err" id="loginErr"></div>
-    <div style="margin-top:14px"><button id="connect">Sign in</button></div>
-  </div>
-
-  <!-- App -->
-  <div id="app" class="hidden">
-
-    <!-- OVERVIEW / MONITORING -->
-    <div class="card-head" style="margin-top:6px">
-      <div>
-        <div class="card-title">System health</div>
-        <div class="help">A live read of whether calls are being answered and leads are being texted. Refreshes when you load the page.</div>
-      </div>
-      <button id="refreshHealth" class="ghost sm">Refresh</button>
-    </div>
-    <div id="banner"></div>
-    <div id="tiles" class="tiles"></div>
-
-    <!-- FAILED LEADS -->
-    <div class="card" id="failedCard">
-      <div class="card-title">Leads that didn't text out</div>
-      <div class="help">A caller left a real job but the text to the shop never sent (usually a Twilio hiccup). Hit <b>Resend</b> to deliver it now.</div>
-      <div id="failedWrap"></div>
-    </div>
-
-    <!-- SHOPS -->
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-title">Shops</div>
-          <div class="help">Every locksmith on the system. <b>Check</b> runs a full end-to-end test of a shop's phone routing without placing a real call — the fastest way to catch a broken number.</div>
-        </div>
-        <button id="refresh" class="ghost sm">Refresh</button>
-      </div>
-      <div id="tableWrap"><div class="muted" style="margin-top:10px">Loading…</div></div>
-    </div>
-
-    <!-- ADD SHOP -->
-    <div class="card">
-      <div class="card-title">Add a shop</div>
-      <div class="help">Creates the shop record. It starts <b>inactive</b> — it goes live once the owner signs and pays (or you flip it on manually).</div>
-      <div class="grid" style="margin-top:6px">
-        <div><label>Business name <span class="hint">— shown to callers</span></label><input id="f_business_name" placeholder="Acme Locksmith" /></div>
-        <div><label>Agent name <span class="hint">— the AI's name on calls</span></label><input id="f_agent_name" placeholder="Mike" /></div>
-        <div><label>Vapi assistant ID <span class="hint">— the shared assistant</span></label><input id="f_vapi_assistant_id" /></div>
-        <div><label>Owner phone <span class="hint">— E.164, e.g. +1416…</span></label><input id="f_owner_phone" placeholder="+14165551234" /></div>
-        <div><label>Where leads text to <span class="hint">— dispatch phone, E.164</span></label><input id="f_dispatch_phone" placeholder="+14165551234" /></div>
-        <div><label>Assigned phone number <span class="hint">— optional, E.164</span></label><input id="f_inbound_number" placeholder="+16514444875" /></div>
-      </div>
-      <div class="err" id="createErr"></div>
-      <div style="margin-top:14px"><button id="create">Add shop</button></div>
-    </div>
-
-    <!-- BLOCKED NUMBERS -->
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <div class="card-title">Blocked numbers</div>
-          <div class="help">Callers here are refused before they ever reach the AI — use it to stop a repeat spammer from burning call credits.</div>
-        </div>
-        <button id="refreshBanned" class="ghost sm">Refresh</button>
-      </div>
-      <div id="bannedWrap"><div class="muted" style="margin-top:10px">Loading…</div></div>
-      <div class="grid" style="margin-top:10px">
-        <div><label>Number to block <span class="hint">— E.164</span></label><input id="f_ban_phone" placeholder="+14165551234" /></div>
-        <div><label>Reason <span class="hint">— optional note</span></label><input id="f_ban_reason" placeholder="repeat spammer" /></div>
-      </div>
-      <div class="err" id="banErr"></div>
-      <div style="margin-top:12px"><button id="banBtn" class="danger">Block number</button></div>
-    </div>
+    <div style="margin-top:12px"><button id="connect" style="width:100%">Sign in</button></div>
   </div>
 </div>
 
-<!-- Drill-down / check modal -->
-<div id="checkOverlay" class="overlay hidden">
-  <div class="modal">
-    <h3 id="checkTitle">Checking shop…</h3>
-    <div class="muted" id="checkSub">Testing the full path a real call takes.</div>
-    <div id="checkBody" style="margin-top:14px"></div>
-    <div class="modal-actions" id="checkActions">
-      <button class="ghost" id="checkClose">Close</button>
+<!-- APP -->
+<div id="app" class="app hidden">
+  <aside class="side">
+    <div class="brand"><div class="logo"></div><div><b>Dispango</b><small>Operator Console</small></div></div>
+    <nav class="nav" id="nav">
+      <a data-view="overview" class="on"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Overview</a>
+      <a data-view="shops"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg>Shops<span class="badge hidden" id="shopsBadge"></span></a>
+      <a data-view="calls"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>Calls</a>
+      <a data-view="blocked"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Blocked</a>
+    </nav>
+    <div class="side-foot nav">
+      <a id="refreshAll"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>Refresh</a>
+      <a id="logout"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Log out</a>
     </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <h1 id="viewTitle">Overview</h1>
+      <div class="spacer"></div>
+      <div id="topAction"></div>
+    </div>
+    <div class="content" id="content"></div>
   </div>
 </div>
 
-<!-- Onboarding link modal -->
-<div id="overlay" class="overlay hidden">
-  <div class="modal">
-    <h3>Onboarding link</h3>
-    <div class="muted">Generate a sign &amp; pay link for <b id="modalBiz"></b>, then send it to the shop.</div>
-    <div id="modalForm">
-      <label>Shop contact email</label>
-      <input id="m_email" type="email" placeholder="owner@theirshop.com" autocomplete="off" />
-      <div class="err" id="modalErr"></div>
-      <div class="modal-actions">
-        <button class="ghost" id="modalCancel">Cancel</button>
-        <button id="modalGen">Generate link</button>
-      </div>
-    </div>
-    <div id="modalResult" class="hidden">
-      <label>Send this link to the shop:</label>
-      <div class="linkbox">
-        <input id="m_link" readonly />
-        <button id="m_copy" class="sm">Copy</button>
-        <button id="m_send" class="sm ghost">Email it</button>
-      </div>
-      <div class="muted" style="margin-top:8px">They sign the contract, then pay — and the number activates automatically.</div>
-      <div id="m_sendMsg" style="margin-top:8px;font-size:13px;min-height:16px"></div>
-      <div class="modal-actions">
-        <button class="ghost" id="modalClose">Done</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- drawers -->
+<div id="scrim" class="scrim"></div>
+<div id="shopDrawer" class="drawer"></div>
+<div id="callDrawer" class="drawer"></div>
+
+<!-- onboarding link / add-shop modal -->
+<div id="linkScrim" class="scrim"></div>
+<div id="linkModal" class="drawer" style="left:50%;top:50%;right:auto;height:auto;max-height:88vh;width:min(520px,94vw);transform:translate(-50%,-46%) scale(.98);border-radius:var(--r-lg);overflow:hidden;opacity:0;"></div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-  var API = 'https://yqyvybukyfokyfsjzyso.supabase.co/functions/v1/admin';
-  var BILLING_API = 'https://yqyvybukyfokyfsjzyso.supabase.co/functions/v1/billing';
-  var KEY = 'dispango_admin_token';
-  var $ = function (id) { return document.getElementById(id); };
-  var clientsCache = [];
-  var healthCache = null;
+(function(){
+  var API='https://yqyvybukyfokyfsjzyso.supabase.co/functions/v1/admin';
+  var BILLING='https://yqyvybukyfokyfsjzyso.supabase.co/functions/v1/billing';
+  var SITE_URL='https://dispango.com'; // public marketing site (welcome/routing page lives here)
+  var TKEY='dispango_admin_token';
+  var $=function(id){return document.getElementById(id);};
+  var esc=function(v){return v==null?'':String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
+  var state={ view:'overview', health:null, clients:[], analytics:null, banned:[], calls:[], callFilter:'', shopQuery:'', callQuery:'' };
 
-  function token() { return localStorage.getItem(KEY) || ''; }
-  function esc(v) { return v == null ? '' : String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-  function toast(msg, kind) {
-    var t = $('toast');
-    t.textContent = msg;
-    t.className = 'toast show ' + (kind || '');
-    clearTimeout(t._t);
-    t._t = setTimeout(function(){ t.className = 'toast ' + (kind || ''); }, 3400);
+  function token(){return localStorage.getItem(TKEY)||'';}
+  function api(path,method,body,base){
+    return fetch((base||API)+path,{method:method||'GET',headers:{'x-admin-token':token(),'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined})
+      .then(function(r){return r.json().catch(function(){return{};}).then(function(j){return{status:r.status,body:j};});});
   }
+  var toastT;
+  function toast(msg,kind){var t=$('toast');t.textContent=msg;t.className='toast show '+(kind||'');clearTimeout(toastT);toastT=setTimeout(function(){t.className='toast '+(kind||'');},3200);}
 
-  function api(path, method, body, base) {
-    return fetch((base || API) + path, {
-      method: method || 'GET',
-      headers: { 'x-admin-token': token(), 'Content-Type': 'application/json' },
-      body: body ? JSON.stringify(body) : undefined
-    }).then(function (r) {
-      return r.json().catch(function(){ return {}; }).then(function (j) { return { status: r.status, body: j }; });
-    });
+  /* ---------- helpers ---------- */
+  function relTime(iso){ if(!iso) return '—'; var t=new Date(iso).getTime(); if(isNaN(t)) return '—'; var s=Math.round((Date.now()-t)/1000); if(s<60)return s+'s ago'; if(s<3600)return Math.round(s/60)+'m ago'; if(s<86400)return Math.round(s/3600)+'h ago'; return Math.round(s/86400)+'d ago'; }
+  function dur(sec){ if(sec==null) return '—'; var m=Math.floor(sec/60),s=sec%60; return m+':'+(s<10?'0':'')+s; }
+  function money(n,cur){ if(n==null) return '—'; return (cur==='USD'||!cur?'$':'')+n.toFixed(2)+(cur&&cur!=='USD'?' '+cur:''); }
+  function titleCase(s){ return String(s||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}); }
+
+  function lifecycle(c){
+    var cs=c.contract_status,ss=c.subscription_status,active=!!c.active;
+    if(active&&ss==='active') return {t:'Live',cls:'ok'};
+    if(active&&cs==='none') return {t:'Live',cls:'ok'};
+    if(ss==='past_due') return {t:'Past due',cls:'warn'};
+    if(ss==='unpaid'||ss==='canceled') return {t:'Lapsed',cls:'bad'};
+    if(cs==='declined') return {t:'Declined',cls:'bad'};
+    if(cs==='signed') return {t:'Signed · unpaid',cls:'info'};
+    if(cs==='sent') return {t:'Link sent',cls:'off'};
+    return {t:'New',cls:'off'};
   }
-
-  function show(which) {
-    $('login').className = 'card' + (which === 'login' ? '' : ' hidden');
-    $('login').style.marginTop = '40px';
-    $('app').className = which === 'app' ? '' : 'hidden';
-    $('logout').className = 'ghost' + (which === 'app' ? '' : ' hidden');
-  }
-
-  function connect() {
-    var val = $('token').value.trim();
-    if (!val) { $('loginErr').textContent = 'Enter the token.'; return; }
-    localStorage.setItem(KEY, val);
-    $('loginErr').textContent = 'Checking…';
-    api('/clients').then(function (res) {
-      if (res.status === 200) { $('loginErr').textContent = ''; show('app'); loadAll(); }
-      else if (res.status === 401) { $('loginErr').textContent = 'That token was rejected.'; localStorage.removeItem(KEY); }
-      else { $('loginErr').textContent = (res.body && res.body.error) || ('Error ' + res.status); }
-    }).catch(function(){ $('loginErr').textContent = 'Network error.'; });
-  }
-
-  // ---- Lifecycle / status labels -----------------------------------------
-
-  // Billing lifecycle (signed + paid + active), shown as the shop's headline status.
-  function lifecycle(c) {
-    var cs = c.contract_status, ss = c.subscription_status, active = !!c.active, hasLink = !!c.onboarding_token;
-    if (active && cs === 'signed' && ss === 'active') return { label: 'Live', cls: 'on' };
-    if (active && cs === 'none') return { label: 'Live (legacy)', cls: 'info' };
-    if (ss === 'past_due') return { label: 'Past due', cls: 'warn' };
-    if (ss === 'unpaid' || ss === 'canceled') return { label: 'Lapsed', cls: 'bad' };
-    if (cs === 'declined') return { label: 'Declined', cls: 'bad' };
-    if (cs === 'signed') return { label: 'Signed · unpaid', cls: 'info' };
-    if (cs === 'sent') return { label: 'Link sent', cls: 'off' };
-    if (!hasLink && cs === 'none' && !active) return { label: 'New', cls: 'off' };
-    return { label: '—', cls: 'off' };
-  }
-
-  // Provisioning (robot) state — the phone-number wiring, separate from billing.
-  function provisionPill(c) {
-    var ps = c.provision_status;
-    if (ps === 'staged') return '<span class="pill warn">number staged</span>';
-    if (ps === 'error')  return '<span class="pill bad" title="' + esc(c.provision_error || '') + '">wiring failed</span>';
+  function provNote(c){
+    if(c.provision_status==='staged') return '<span class="pill warn">number staged</span>';
+    if(c.provision_status==='error') return '<span class="pill bad">wiring failed</span>';
     return '';
   }
+  function perClient(id){ var h=state.health; if(!h||!h.perClient) return null; return h.perClient.filter(function(p){return p.id===id;})[0]||null; }
 
-  // ---- Health / monitoring -----------------------------------------------
-
-  function relTime(iso) {
-    if (!iso) return 'never';
-    var t = new Date(iso).getTime();
-    if (isNaN(t)) return 'unknown';
-    var s = Math.round((Date.now() - t) / 1000);
-    if (s < 60) return s + 's ago';
-    if (s < 3600) return Math.round(s/60) + ' min ago';
-    if (s < 86400) return Math.round(s/3600) + ' hr ago';
-    return Math.round(s/86400) + ' d ago';
+  /* ================= ROUTER ================= */
+  var TITLES={overview:'Overview',shops:'Shops',calls:'Calls & leads',blocked:'Blocked numbers'};
+  function go(view){
+    state.view=view;
+    [].forEach.call($('nav').querySelectorAll('a[data-view]'),function(a){a.classList.toggle('on',a.getAttribute('data-view')===view);});
+    $('viewTitle').textContent=TITLES[view];
+    render();
+  }
+  function render(){
+    var c=$('content'), a=$('topAction'); a.innerHTML='';
+    c.className='content view';
+    if(state.view==='overview') return renderOverview(c);
+    if(state.view==='shops') return renderShops(c,a);
+    if(state.view==='calls') return renderCalls(c,a);
+    if(state.view==='blocked') return renderBlocked(c,a);
   }
 
-  function renderHealth(h) {
-    healthCache = h;
-    var failed = (h.failedLeads || []).length;
-    var abusers = h.abusers || [];
-    var problems = failed > 0 || abusers.length > 0;
+  /* ================= OVERVIEW ================= */
+  function renderOverview(c){
+    var h=state.health, an=state.analytics;
+    if(!h){ c.innerHTML=skeletonOverview(); return; }
+    var failed=(h.failedLeads||[]).length, abusers=h.abusers||[];
+    var twlow=h.services&&h.services.twilio&&h.services.twilio.low;
+    var problem=failed>0||abusers.length>0||twlow;
+    var bits=[]; if(failed)bits.push(failed+' lead'+(failed>1?'s':'')+" didn't text out"); if(abusers.length)bits.push(abusers.length+' heavy caller'+(abusers.length>1?'s':'')); if(twlow)bits.push('Twilio balance low');
+    var banner=problem
+      ? '<div class="banner bad"><div class="ic">!</div><div><b>Needs attention</b><div class="bsub">'+esc(bits.join(' · '))+'.</div></div></div>'
+      : '<div class="banner good"><div class="ic">✓</div><div><b>All systems normal</b><div class="bsub">Calls are being answered and leads are texting through.</div></div></div>';
 
-    // Banner
-    var b = $('banner');
-    if (problems) {
-      var bits = [];
-      if (failed) bits.push(failed + ' lead' + (failed>1?'s':'') + ' didn’t text out');
-      if (abusers.length) bits.push(abusers.length + ' number' + (abusers.length>1?'s':'') + ' calling a lot');
-      b.className = 'banner bad';
-      b.innerHTML = '<div class="ic">⚠️</div><div><b>Needs attention</b>' +
-        '<div class="bsub">' + esc(bits.join(' · ')) + '. See the details below.</div></div>';
-    } else {
-      b.className = 'banner good';
-      b.innerHTML = '<div class="ic">✅</div><div><b>Everything’s working</b>' +
-        '<div class="bsub">Calls are being answered and leads are texting through.</div></div>';
-    }
-
-    // Tiles
-    var hb = h.heartbeat || {};
-    var hbLabel = hb.lastRunAt ? relTime(hb.lastRunAt) : 'not set up';
-    var hbStale = hb.lastRunAt && (Date.now() - new Date(hb.lastRunAt).getTime() > 45*60*1000);
-    var tiles = [
-      { k:'Calls (last hour)', v: h.callsLastHour != null ? h.callsLastHour : '—', m:'inbound calls handled' },
-      { k:'Failed lead texts', v: failed, m: failed ? 'need resending' : 'all delivered', alert: failed>0 },
-      { k:'Heavy callers', v: abusers.length, m: abusers.length ? 'possible abuse' : 'nothing unusual', alert: abusers.length>0 },
-      { k:'Watchdog check-in', v: hbLabel, m: hbStale ? 'probe looks stalled' : 'external monitor', alert: hbStale, small:true },
+    var conv=an?an.conversion:null, leads=an?an.leads:null;
+    var tiles=[
+      {k:'Calls today',v:an?an.callsToday:'—',m:'inbound handled'},
+      {k:'Leads (7d)',v:leads==null?'—':leads,m:conv==null?'':conv+'% of calls converted',spark:an?an.daily:null},
+      {k:'After-hours catches',v:an?an.afterHours:'—',m:'jobs caught off-hours (7d)'},
+      {k:'Failed texts',v:failed,m:failed?'need resending':'all delivered',alert:failed>0}
     ];
-    $('tiles').innerHTML = tiles.map(function (t) {
-      return '<div class="tile' + (t.alert ? ' alert' : '') + '">' +
-        '<div class="k">' + esc(t.k) + '</div>' +
-        '<div class="v"' + (t.small ? ' style="font-size:17px"' : '') + '>' + esc(t.v) + '</div>' +
-        '<div class="m">' + esc(t.m) + '</div></div>';
-    }).join('');
+    var tilesHtml='<div class="tiles">'+tiles.map(function(t){
+      return '<div class="tile'+(t.alert?' alert':'')+'"><div class="k">'+esc(t.k)+'</div>'+
+        '<div class="v tnum" data-count="'+(typeof t.v==='number'?t.v:'')+'">'+esc(typeof t.v==='number'?'0':t.v)+'</div>'+
+        (t.spark?sparkline(t.spark):'')+
+        '<div class="m">'+esc(t.m)+'</div></div>';
+    }).join('')+'</div>';
 
-    // Failed leads list
-    renderFailed(h.failedLeads || []);
-    // Abuse callers get folded into the failed card footer for one-click banning.
-    renderAbusers(abusers);
+    c.innerHTML='<div class="stack">'+banner+tilesHtml+'<div class="grid2">'+serviceCard(h)+watchCard(h)+'</div>'+failedCard(h)+abuseCard(h)+'</div>';
+    [].forEach.call(c.querySelectorAll('[data-count]'),function(el){ var n=el.getAttribute('data-count'); if(n!=='') countUp(el,parseInt(n,10)); });
+  }
+  function serviceCard(h){
+    var s=h.services||{}; var t=s.twilio||{}, v=s.vapi||{}, w=s.webhook||{}, db=s.database||{};
+    function row(nm,ds,dotcls){ return '<div class="svc"><span class="dot '+dotcls+'"></span><div style="flex:1"><div class="nm">'+nm+'</div><div class="ds">'+ds+'</div></div></div>'; }
+    var twilioDs = !t.configured?'Not configured':!t.ok?"Couldn't reach Twilio":t.low?('Balance low — '+money(t.balance,t.currency)):('Balance '+money(t.balance,t.currency));
+    var twilioDot = !t.configured?'n':!t.ok?'r':t.low?'y':'g';
+    return '<div class="card pad"><div class="sec-title">Service health</div><div style="margin-top:6px">'+
+      row('Webhook', w.up===false?'Down — calls not reaching us':w.up?'Live &amp; responding':'Unknown', w.up===false?'r':w.up?'g':'n')+
+      row('Twilio (calls &amp; SMS)', twilioDs, twilioDot)+
+      row('Vapi (AI minutes)', v.configured?'Connected · balance via dashboard':'Key not set · balance via dashboard', v.configured?'g':'y')+
+      row('Database', db.up?'Reads &amp; writes OK':'Unknown', db.up?'g':'n')+
+      '</div></div>';
+  }
+  function watchCard(h){
+    var hb=h.heartbeat||{}; var last=hb.lastRunAt; var stale=last&&(Date.now()-new Date(last).getTime()>45*60*1000);
+    var dotcls=!last?'n':stale?'y':'g';
+    return '<div class="card pad"><div class="sec-title">Watchdog</div><div style="margin-top:6px">'+
+      '<div class="svc"><span class="dot '+dotcls+' '+(!stale&&last?'pulse':'')+'"></span><div style="flex:1"><div class="nm">External monitor</div><div class="ds">'+
+        (!last?'Not set up yet':('Last check-in '+relTime(last)+(stale?' — looks stalled':'')))+'</div></div></div>'+
+      '<div class="svc"><span class="dot '+(h.unsentLeads?'r':'g')+'"></span><div style="flex:1"><div class="nm">Lead delivery</div><div class="ds">'+
+        (h.unsentLeads?(h.unsentLeads+' unsent in the last hour'):'All recent leads delivered')+'</div></div></div>'+
+      '<div class="svc"><span class="dot '+((h.abusers&&h.abusers.length)?'y':'g')+'"></span><div style="flex:1"><div class="nm">Abuse</div><div class="ds">'+
+        ((h.abusers&&h.abusers.length)?(h.abusers.length+' heavy caller(s) this hour'):'Nothing unusual')+'</div></div></div>'+
+      '</div></div>';
+  }
+  function failedCard(h){
+    var list=h.failedLeads||[];
+    var inner = list.length? '<div class="tbl-wrap"><table><thead><tr><th>Shop</th><th>Caller</th><th>Job</th><th>When</th><th></th></tr></thead><tbody>'+
+      list.map(function(f,i){return '<tr class="rowenter" style="animation-delay:'+(i*25)+'ms"><td>'+esc(f.business_name||'—')+'</td><td class="mono">'+esc(f.caller_phone||'—')+'</td><td class="trunc">'+esc(f.job||f.outcome||'—')+'</td><td class="rowsub">'+esc(relTime(f.ended_at))+'</td><td class="act"><button class="warm sm" data-resend="'+esc(f.vapi_call_id)+'">Resend</button></td></tr>';}).join('')+
+      '</tbody></table></div>'
+      : '<div class="empty"><div class="e-ic">✓</div><div class="e-t">No failed lead texts</div><div>Every recent lead reached its shop.</div></div>';
+    return '<div class="card"><div class="pad" style="padding-bottom:6px"><div class="sec-title">Leads that didn\'t text out</div></div>'+inner+'</div>';
+  }
+  function abuseCard(h){
+    var list=h.abusers||[]; if(!list.length) return '';
+    return '<div class="card"><div class="pad" style="padding-bottom:6px"><div class="sec-title">Heavy callers this hour</div></div><div class="tbl-wrap"><table><tbody>'+
+      list.map(function(a){return '<tr><td class="mono">'+esc(a.phone)+'</td><td class="rowsub">'+esc(a.calls)+' calls/hr</td><td class="act"><button class="danger sm" data-banphone="'+esc(a.phone)+'">Block</button></td></tr>';}).join('')+
+      '</tbody></table></div></div>';
+  }
+  function sparkline(daily){
+    if(!daily||!daily.length) return '';
+    var vals=daily.map(function(d){return d.calls;}); var max=Math.max.apply(null,vals.concat([1]));
+    var w=140,hh=26,step=w/(vals.length-1||1);
+    var pts=vals.map(function(v,i){return (i*step).toFixed(1)+','+(hh-2-(v/max)*(hh-4)).toFixed(1);}).join(' ');
+    return '<svg class="spark" viewBox="0 0 '+w+' '+hh+'" preserveAspectRatio="none"><polyline points="'+pts+'" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function skeletonOverview(){
+    var tile='<div class="tile"><div class="sk sk-row" style="width:50%"></div><div class="sk" style="height:26px;width:60%;margin:8px 0"></div><div class="sk sk-row" style="width:70%"></div></div>';
+    return '<div class="stack"><div class="banner"><div class="ic"><span class="spin"></span></div><div><b>Loading…</b></div></div>'+
+      '<div class="tiles">'+tile+tile+tile+tile+'</div></div>';
   }
 
-  function renderFailed(list) {
-    var w = $('failedWrap');
-    if (!list.length) { $('failedCard').classList.remove('hidden'); w.innerHTML = '<div class="muted" style="margin-top:8px">✓ No failed lead texts.</div>'; return; }
-    var h = '<table><thead><tr><th>Shop</th><th>Caller</th><th>Job</th><th>When</th><th></th></tr></thead><tbody>';
-    list.forEach(function (f) {
-      h += '<tr>' +
-        '<td>' + esc(f.business_name || '—') + '</td>' +
-        '<td>' + esc(f.caller_phone || 'not captured') + '</td>' +
-        '<td>' + esc(f.job || f.outcome || '—') + '</td>' +
-        '<td class="rowsub">' + esc(relTime(f.ended_at)) + '</td>' +
-        '<td class="actions"><button class="warm sm" data-resend="' + esc(f.vapi_call_id) + '">Resend text</button></td>' +
+  /* ================= SHOPS ================= */
+  function renderShops(c,a){
+    a.innerHTML='<button id="addShop" class="ghost sm">+ Add shop</button>';
+    var q=state.shopQuery.toLowerCase();
+    var list=state.clients.filter(function(x){ if(!q) return true; return (x.business_name||'').toLowerCase().indexOf(q)>=0||(x.inbound_number||'').indexOf(q)>=0||(x.dispatch_phone||'').indexOf(q)>=0; });
+    var rows = list.length? list.map(function(x,i){
+      var lc=lifecycle(x), pc=perClient(x.id);
+      var dotcls=!pc?'n':pc.status==='ok'?'g':pc.status==='bad'?'r':pc.status==='warn'?'y':'n';
+      return '<tr class="clickable rowenter" style="animation-delay:'+Math.min(i*20,120)+'ms" data-shop="'+esc(x.id)+'">'+
+        '<td><div style="font-weight:600">'+esc(x.business_name||'—')+'</div><div class="rowsub">'+esc(x.agent_name||'')+'</div></td>'+
+        '<td class="mono">'+esc(x.inbound_number||'—')+' '+provNote(x)+'</td>'+
+        '<td><span class="pill '+lc.cls+'">'+esc(lc.t)+'</span></td>'+
+        '<td class="num tnum">'+(pc?esc(pc.callsToday):'0')+'</td>'+
+        '<td><span class="dot '+dotcls+'" title="'+esc(pc?pc.note:'')+'"></span></td>'+
+        '<td class="act" data-noopen="1">'+switchHtml(x)+'</td>'+
       '</tr>';
-    });
-    w.innerHTML = h + '</tbody></table>';
+    }).join('') : '<tr><td colspan="6"><div class="empty"><div class="e-ic">🔑</div><div class="e-t">'+(q?'No shops match':'No shops yet')+'</div><div>'+(q?'Try a different search.':'Add your first locksmith.')+'</div></div></td></tr>';
+    c.innerHTML=
+      '<div class="stack"><div class="search" style="max-width:320px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="shopSearch" placeholder="Search shops or numbers" value="'+esc(state.shopQuery)+'"/></div>'+
+      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Shop</th><th>Number</th><th>Status</th><th class="num">Calls today</th><th>Health</th><th style="text-align:right">On / off</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+    var si=$('shopSearch'); if(si){ si.addEventListener('input',function(){ state.shopQuery=si.value; var pos=si.selectionStart; renderShops(c,a); var n=$('shopSearch'); if(n){n.focus(); try{n.setSelectionRange(pos,pos);}catch(e){}} }); }
+  }
+  function switchHtml(x){
+    var on=!!x.active;
+    return '<span class="switch'+(on?' on':'')+'" data-toggle="'+esc(x.id)+'" role="switch" aria-checked="'+on+'"><span class="lbl">'+(on?'On':'Off')+'</span><span class="track"><span class="knob"></span></span></span>';
+  }
+  function toggleActive(id,el){
+    var x=state.clients.filter(function(c){return c.id===id;})[0]; if(!x) return;
+    var want=!x.active;
+    el.classList.add('busy');
+    el.classList.toggle('on',want); el.querySelector('.lbl').textContent=want?'On':'Off'; el.setAttribute('aria-checked',want);
+    api('/clients/'+id,'PATCH',{active:want}).then(function(res){
+      el.classList.remove('busy');
+      if(res.status===200){ x.active=want; toast(want?'Turned on':'Turned off','ok'); loadHealth(); }
+      else { el.classList.toggle('on',!want); el.querySelector('.lbl').textContent=!want?'On':'Off'; toast((res.body&&res.body.error)||'Error','err'); }
+    }).catch(function(){ el.classList.remove('busy'); el.classList.toggle('on',x.active); el.querySelector('.lbl').textContent=x.active?'On':'Off'; toast('Network error','err'); });
   }
 
-  function renderAbusers(list) {
-    if (!list.length) return;
-    var h = '<div style="margin-top:14px"><div class="card-title" style="font-size:13.5px">Heavy callers this hour</div>' +
-      '<div class="help">Ban a number here to stop it before it costs more call credits.</div><table><tbody>';
-    list.forEach(function (a) {
-      h += '<tr><td>' + esc(a.phone) + '</td><td class="rowsub">' + esc(a.calls) + ' calls/hr</td>' +
-        '<td class="actions"><button class="danger sm" data-banphone="' + esc(a.phone) + '">Block</button></td></tr>';
-    });
-    $('failedWrap').innerHTML += h + '</tbody></table></div>';
+  /* ---------- shop drawer ---------- */
+  function onboardStage(c){
+    var steps=['Added','Link sent','Signed','Paid','Number','Live'];
+    var i=0;
+    if(c.onboarding_token||c.contract_status!=='none') i=1;
+    if(c.contract_status==='signed') i=2;
+    if(c.subscription_status==='active') i=3;
+    if(c.inbound_number||c.provision_status==='staged'||c.provision_status==='active') i=4;
+    if(c.active&&['active','none'].indexOf(c.provision_status)>=0) i=5;
+    return {steps:steps,idx:i};
   }
-
-  function loadHealth() {
-    $('banner').innerHTML = '<div class="banner"><div class="ic"><span class="spin"></span></div><div><b>Checking…</b></div></div>';
-    api('/health').then(function (res) {
-      if (res.status !== 200) { $('banner').innerHTML = '<div class="banner bad"><div class="ic">⚠️</div><div><b>Couldn’t load health</b><div class="bsub">' + esc((res.body && res.body.error) || 'Error') + '</div></div></div>'; return; }
-      renderHealth(res.body);
-    }).catch(function(){ $('banner').innerHTML = '<div class="banner bad"><div class="ic">⚠️</div><div><b>Network error</b></div></div>'; });
-  }
-
-  // ---- Shops table -------------------------------------------------------
-
-  function perClientFor(id) {
-    if (!healthCache || !healthCache.perClient) return null;
-    return healthCache.perClient.filter(function (p) { return p.id === id; })[0] || null;
-  }
-
-  function healthDot(c) {
-    var pc = perClientFor(c.id);
-    if (!pc) return '';
-    var cls = pc.status === 'ok' ? 'on' : pc.status === 'bad' ? 'bad' : pc.status === 'warn' ? 'warn' : 'off';
-    return '<span class="pill ' + cls + '" title="' + esc(pc.note) + '"><span class="dot"></span>' + esc(pc.status === 'ok' ? 'OK' : pc.note.length < 26 ? pc.note : pc.status) + '</span>';
-  }
-
-  function rowsHtml(clients) {
-    if (!clients.length) return '<div class="muted" style="margin-top:10px">No shops yet. Add one below.</div>';
-    var h = '<table><thead><tr><th>Shop</th><th>Leads text to</th><th>Phone number</th><th>Status</th><th>Calls today</th><th></th></tr></thead><tbody>';
-    clients.forEach(function (c) {
-      var lc = lifecycle(c);
-      var pc = perClientFor(c.id);
-      var provBtn = '';
-      if (c.provision_status === 'staged') provBtn = '<button class="ok sm" data-act="activateNum" data-id="' + esc(c.id) + '">Activate number</button>';
-      else if (c.provision_status === 'error') provBtn = '<button class="danger sm" data-act="retryNum" data-id="' + esc(c.id) + '">Retry wiring</button>';
-      h += '<tr>' +
-        '<td><div>' + esc(c.business_name || '—') + '</div><div class="rowsub">' + esc(c.agent_name || '') + '</div></td>' +
-        '<td>' + esc(c.dispatch_phone || '—') + '</td>' +
-        '<td>' + esc(c.inbound_number || '—') + ' ' + provisionPill(c) + '</td>' +
-        '<td><span class="pill ' + lc.cls + '">' + esc(lc.label) + '</span> ' + (pc ? healthDot(c) : '') + '</td>' +
-        '<td>' + (pc ? esc(pc.callsToday) : '—') + '</td>' +
-        '<td class="actions">' +
-          provBtn +
-          '<button class="sm" data-act="check" data-id="' + esc(c.id) + '">Check</button>' +
-          '<button class="ghost sm" data-act="link" data-id="' + esc(c.id) + '">Link</button>' +
-          '<button class="ghost sm" data-act="toggle" data-id="' + esc(c.id) + '" data-active="' + (c.active ? '1' : '0') + '">' + (c.active ? 'Turn off' : 'Turn on') + '</button>' +
-        '</td>' +
-      '</tr>';
-    });
-    return h + '</tbody></table>';
-  }
-
-  function loadClients() {
-    api('/clients').then(function (res) {
-      if (res.status === 401) { localStorage.removeItem(KEY); show('login'); return; }
-      if (res.status !== 200) { $('tableWrap').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || 'Error') + '</div>'; return; }
-      clientsCache = res.body.clients || [];
-      $('tableWrap').innerHTML = rowsHtml(clientsCache);
-    });
-  }
-
-  function createClient() {
-    $('createErr').textContent = '';
-    var body = {
-      business_name: $('f_business_name').value.trim(),
-      vapi_assistant_id: $('f_vapi_assistant_id').value.trim(),
-      owner_phone: $('f_owner_phone').value.trim(),
-      dispatch_phone: $('f_dispatch_phone').value.trim()
-    };
-    var agent = $('f_agent_name').value.trim();
-    var inbound = $('f_inbound_number').value.trim();
-    if (agent) body.agent_name = agent;
-    if (inbound) body.inbound_number = inbound;
-
-    $('create').disabled = true;
-    api('/clients', 'POST', body).then(function (res) {
-      $('create').disabled = false;
-      if (res.status === 201) {
-        toast('Shop added', 'ok');
-        ['f_business_name','f_agent_name','f_vapi_assistant_id','f_owner_phone','f_dispatch_phone','f_inbound_number'].forEach(function(id){ $(id).value=''; });
-        loadClients();
-      } else {
-        $('createErr').textContent = (res.body && res.body.error) || ('Error ' + res.status);
-      }
-    }).catch(function(){ $('create').disabled = false; $('createErr').textContent = 'Network error.'; });
-  }
-
-  function toggleActive(id, isActive) {
-    api('/clients/' + id, 'PATCH', { active: !isActive }).then(function (res) {
-      if (res.status === 200) { toast(isActive ? 'Turned off' : 'Turned on', 'ok'); loadClients(); }
-      else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
+  function openShop(id){
+    var c=state.clients.filter(function(x){return x.id===id;})[0]; if(!c) return;
+    var d=$('shopDrawer'); var lc=lifecycle(c); var pc=perClient(c.id);
+    var st=onboardStage(c);
+    var stepper='<div class="stepper">'+st.steps.map(function(s,i){var cls=i<st.idx?'done':i===st.idx?'cur':'';return '<div class="step '+cls+'"><div class="bub">'+(i<st.idx?'✓':(i+1))+'</div><div class="cap">'+s+'</div></div>';}).join('')+'</div>';
+    var f=function(lab,val){return '<div class="field"><span class="lab">'+lab+'</span><span class="val">'+esc(val||'—')+'</span></div>';};
+    d.innerHTML=
+      '<div class="drawer-head"><div><h2>'+esc(c.business_name||'Shop')+'</h2><div class="sub">'+esc(c.agent_name?('Agent: '+c.agent_name):'')+'</div></div>'+
+        '<div class="row" style="gap:10px">'+switchHtml(c)+'<button class="x" data-close>×</button></div></div>'+
+      '<div class="drawer-body">'+
+        '<div class="card pad"><div class="sec-title" style="margin-bottom:12px">Onboarding</div>'+stepper+
+          '<div class="row" style="margin-top:16px;gap:8px;flex-wrap:wrap">'+
+            '<button class="sm" data-link="'+esc(c.id)+'">Send sign &amp; pay link</button>'+
+            (c.onboarding_token?'<button class="ghost sm" data-welcome="'+esc(c.id)+'">Copy welcome link</button>':'')+
+            (c.provision_status==='staged'?'<button class="ok sm" data-activate="'+esc(c.id)+'">Activate number</button>':'')+
+            (c.provision_status==='error'?'<button class="danger sm" data-retry="'+esc(c.id)+'">Retry wiring</button>':'')+
+          '</div></div>'+
+        '<div class="card pad"><div class="between"><div class="sec-title">Details</div><button class="linkbtn" style="font-size:12px" data-edit="'+esc(c.id)+'">Edit</button></div>'+
+          '<div style="margin-top:8px">'+
+          '<div class="field"><span class="lab">Status</span><span class="val"><span class="pill '+lc.cls+'">'+esc(lc.t)+'</span></span></div>'+
+          f('Number', c.inbound_number)+ f('Leads text to', c.dispatch_phone)+ f('Fallback / owner', c.fallback_number||c.owner_phone)+
+          f('Timezone', c.timezone)+ f('Calls today', pc?pc.callsToday:0)+
+          '</div>'+
+          (pc&&pc.note&&pc.status!=='ok'?'<div class="err" style="margin-top:6px">'+esc(pc.note)+'</div>':'')+
+        '</div>'+
+        '<div class="card pad"><div class="sec-title" style="margin-bottom:10px">Troubleshoot</div>'+
+          '<div class="row" style="gap:8px;flex-wrap:wrap"><button class="sm" data-check="'+esc(c.id)+'">Check routing</button>'+
+          '<button class="ghost sm" data-testsms="'+esc(c.id)+'">Test text</button></div>'+
+          '<div id="checkOut" style="margin-top:12px"></div>'+
+        '</div>'+
+        '<div class="card pad"><div class="between"><div class="sec-title">Recent calls</div><button class="linkbtn" style="font-size:12px" data-shopcalls="'+esc(c.id)+'">View all</button></div><div id="shopCalls" style="margin-top:8px"><div class="muted" style="font-size:12.5px">Loading…</div></div></div>'+
+      '</div>';
+    openDrawer(d);
+    api('/calls?limit=6&client_id='+encodeURIComponent(id)).then(function(res){
+      var el=$('shopCalls'); if(!el) return;
+      var cl=(res.body&&res.body.calls)||[];
+      if(!cl.length){ el.innerHTML='<div class="muted" style="font-size:12.5px">No calls yet.</div>'; return; }
+      el.innerHTML=cl.map(function(k){return '<div class="field" style="cursor:pointer" data-call="'+esc(k.vapi_call_id)+'"><span class="lab">'+esc(relTime(k.ended_at))+' · '+esc(k.caller_phone||'—')+'</span><span class="val">'+esc(titleCase(k.outcome)||'—')+(k.notified_at||['wrong_number','spam','info_only'].indexOf(k.outcome)>=0?'':' <span class="pill bad" style="padding:1px 6px">unsent</span>')+'</span></div>';}).join('');
     });
   }
 
-  function activateNumber(id) {
-    if (!confirm('Take this number live? It will start routing real calls to the AI.')) return;
-    toast('Activating…');
-    api('/provision/' + id + '/activate', 'POST', null, BILLING_API).then(function (res) {
-      if (res.status === 200) { toast('Number is live', 'ok'); loadClients(); }
-      else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
-    }).catch(function () { toast('Network error', 'err'); });
+  function openEdit(id){
+    var c=state.clients.filter(function(x){return x.id===id;})[0]; if(!c) return;
+    var d=$('shopDrawer');
+    var fld=function(k,lab,val,ph){return '<label class="f">'+lab+'</label><input id="e_'+k+'" value="'+esc(val||'')+'" placeholder="'+(ph||'')+'"/>';};
+    d.innerHTML='<div class="drawer-head"><div><h2>Edit '+esc(c.business_name||'shop')+'</h2><div class="sub">Changes take effect immediately.</div></div><button class="x" data-close>×</button></div>'+
+      '<div class="drawer-body"><div class="card pad">'+
+        fld('business_name','Business name',c.business_name)+
+        fld('agent_name','Agent name',c.agent_name,'Mike')+
+        fld('dispatch_phone','Leads text to (E.164)',c.dispatch_phone,'+14165551234')+
+        fld('fallback_number','Fallback number (E.164)',c.fallback_number,'+14165551234')+
+        fld('timezone','Timezone',c.timezone,'America/Edmonton')+
+        '<div class="err" id="editErr"></div>'+
+        '<div class="row" style="margin-top:14px;gap:8px"><button data-save="'+esc(c.id)+'">Save changes</button><button class="ghost" data-back="'+esc(c.id)+'">Cancel</button></div>'+
+      '</div></div>';
+  }
+  function saveEdit(id){
+    var body={}; ['business_name','agent_name','dispatch_phone','fallback_number','timezone'].forEach(function(k){var el=$('e_'+k); if(el) body[k]=el.value.trim();});
+    $('editErr').textContent='';
+    api('/clients/'+id,'PATCH',body).then(function(res){
+      if(res.status===200){ toast('Saved','ok'); var i=state.clients.map(function(x){return x.id;}).indexOf(id); if(i>=0&&res.body.client) state.clients[i]=res.body.client; openShop(id); if(state.view==='shops') render(); }
+      else $('editErr').textContent=(res.body&&res.body.error)||('Error '+res.status);
+    }).catch(function(){$('editErr').textContent='Network error.';});
   }
 
-  function retryProvision(id, silent) {
-    if (!silent) toast('Re-running provisioning…');
-    return api('/provision/' + id + '/retry', 'POST', null, BILLING_API).then(function (res) {
-      var r = res.body && res.body.result;
-      if (res.status === 200 && r && r.status === 'staged') { if (!silent) toast('Provisioned — ready to activate', 'ok'); loadClients(); return true; }
-      if (!silent) toast((r && r.error) || (res.body && res.body.error) || ('Error ' + res.status), 'err');
-      loadClients();
-      return false;
-    }).catch(function () { if (!silent) toast('Network error', 'err'); return false; });
+  function runCheck(id){
+    var out=$('checkOut'); if(!out) return;
+    out.innerHTML='<div class="muted" style="font-size:12.5px"><span class="spin"></span> Testing the full call path…</div>';
+    api('/clients/'+id+'/test-call','POST').then(function(res){
+      if(res.status!==200){ out.innerHTML='<div class="err">'+esc((res.body&&res.body.error)||'Error')+'</div>'; return; }
+      var r=res.body;
+      var head=r.ok?'<div class="pill ok" style="margin-bottom:8px">Wired correctly</div>':'<div class="pill bad" style="margin-bottom:8px">Problem found</div>';
+      var rows=(r.checks||[]).map(function(k){var cls=k.ok===true?'pass':k.ok===false?'fail':'skip';var m=k.ok===true?'✓':k.ok===false?'✕':'?';return '<div class="chk"><div class="ci '+cls+'">'+m+'</div><div><div class="cl">'+esc(k.label)+'</div><div class="cd">'+esc(k.detail)+'</div></div></div>';}).join('');
+      var fix=r.repairable?'<button class="warm sm" data-repair="'+esc(id)+'" style="margin-top:10px">Repair routing</button>':'';
+      out.innerHTML=head+rows+fix;
+    }).catch(function(){out.innerHTML='<div class="err">Network error.</div>';});
   }
 
-  function resendLead(callId, btn) {
-    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
-    api('/calls/' + encodeURIComponent(callId) + '/resend-sms', 'POST').then(function (res) {
-      if (res.status === 200) { toast('Lead text sent to ' + res.body.to, 'ok'); loadHealth(); }
-      else { toast((res.body && res.body.error) || ('Error ' + res.status), 'err'); if (btn) { btn.disabled = false; btn.textContent = 'Resend text'; } }
-    }).catch(function () { toast('Network error', 'err'); if (btn) { btn.disabled = false; btn.textContent = 'Resend text'; } });
+  /* ================= CALLS ================= */
+  function renderCalls(c,a){
+    var outcomes=['','lead','wrong_number','spam','info_only'];
+    var chips='<div class="chips">'+outcomes.map(function(o){return '<span class="chip'+(state.callFilter===o?' on':'')+'" data-filter="'+o+'">'+(o?titleCase(o):'All')+'</span>';}).join('')+'</div>';
+    var q=state.callQuery.toLowerCase();
+    var list=state.calls.filter(function(k){
+      if(state.callFilter&&(k.outcome||'')!==state.callFilter) return false;
+      if(!q) return true;
+      return (k.business_name||'').toLowerCase().indexOf(q)>=0||(k.caller_phone||'').indexOf(q)>=0||(k.job||'').toLowerCase().indexOf(q)>=0;
+    });
+    var rows=list.length? list.map(function(k,i){
+      var junk=k.outcome&&['wrong_number','spam','info_only'].indexOf(k.outcome)>=0;
+      var deliv = junk ? '<span class="pill off">no text</span>' : k.notified_at?'<span class="pill ok">texted</span>':'<span class="pill bad">unsent</span>';
+      return '<tr class="clickable rowenter" style="animation-delay:'+Math.min(i*18,140)+'ms" data-call="'+esc(k.vapi_call_id)+'">'+
+        '<td class="rowsub">'+esc(relTime(k.ended_at))+'</td>'+
+        '<td>'+esc(k.business_name||'—')+'</td>'+
+        '<td class="mono">'+esc(k.caller_phone||'—')+'</td>'+
+        '<td>'+esc(titleCase(k.outcome)||'—')+'</td>'+
+        '<td class="trunc">'+esc(k.job||'—')+'</td>'+
+        '<td class="num tnum rowsub">'+esc(dur(k.duration_seconds))+'</td>'+
+        '<td>'+deliv+'</td></tr>';
+    }).join('') : '<tr><td colspan="7"><div class="empty"><div class="e-ic">📞</div><div class="e-t">No calls'+(state.callFilter||q?' match':' yet')+'</div><div>'+(state.callFilter||q?'Try clearing the filter.':'Calls appear here after they happen.')+'</div></div></td></tr>';
+    c.innerHTML='<div class="stack"><div class="between" style="flex-wrap:wrap;gap:12px">'+chips+
+      '<div class="search" style="max-width:260px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="callSearch" placeholder="Search caller, shop, job" value="'+esc(state.callQuery)+'"/></div></div>'+
+      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>When</th><th>Shop</th><th>Caller</th><th>Outcome</th><th>Job</th><th class="num">Length</th><th>Lead</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+    var cs=$('callSearch'); if(cs) cs.addEventListener('input',function(){ state.callQuery=cs.value; var p=cs.selectionStart; renderCalls(c,a); var n=$('callSearch'); if(n){n.focus();try{n.setSelectionRange(p,p);}catch(e){}} });
+  }
+  function openCall(callId){
+    var d=$('callDrawer');
+    d.innerHTML='<div class="drawer-head"><div><h2>Call</h2><div class="sub mono">'+esc(callId)+'</div></div><button class="x" data-close>×</button></div><div class="drawer-body"><div class="muted"><span class="spin"></span> Loading…</div></div>';
+    openDrawer(d);
+    api('/calls/'+encodeURIComponent(callId)).then(function(res){
+      if(res.status!==200){ d.querySelector('.drawer-body').innerHTML='<div class="err">'+esc((res.body&&res.body.error)||'Error')+'</div>'; return; }
+      var k=res.body.call; var f=function(lab,val){return val?'<div class="field"><span class="lab">'+lab+'</span><span class="val">'+esc(val)+'</span></div>':'';};
+      var isJunk=k.outcome&&['wrong_number','spam','info_only'].indexOf(k.outcome)>=0;
+      var deliv=isJunk?'<span class="pill off">no text (junk)</span>':k.notified_at?'<span class="pill ok">texted '+esc(relTime(k.notified_at))+'</span>':'<span class="pill bad">not texted</span>';
+      var resend=(!isJunk)?'<button class="warm sm" data-resendcall="'+esc(k.vapi_call_id)+'">'+(k.notified_at?'Resend text':'Send text now')+'</button>':'';
+      d.querySelector('.drawer-body').innerHTML=
+        '<div class="card pad"><div class="between"><span class="pill '+(isJunk?'off':k.notified_at?'ok':'bad')+'">'+esc(titleCase(k.outcome)||'call')+'</span>'+resend+'</div>'+
+          '<div style="margin-top:10px">'+
+          f('Shop',k.business_name)+ f('Caller',k.caller_phone)+ f('Name',k.caller_name)+ f('Urgency',titleCase(k.urgency))+
+          f('Job',k.job)+ f('Where',k.service_address)+ f('When',k.ended_at?new Date(k.ended_at).toLocaleString():'')+ f('Length',dur(k.duration_seconds))+
+          '<div class="field"><span class="lab">Lead delivery</span><span class="val">'+deliv+'</span></div>'+
+          '</div></div>'+
+        (k.summary?'<div class="card pad"><div class="sec-title">Summary</div><div style="margin-top:6px;font-size:13px">'+esc(k.summary)+'</div></div>':'')+
+        (k.recordingUrl?'<div class="card pad"><div class="sec-title" style="margin-bottom:8px">Recording</div><audio controls src="'+esc(k.recordingUrl)+'" style="width:100%"></audio></div>':'')+
+        (k.transcript?'<div class="card pad"><div class="sec-title" style="margin-bottom:8px">Transcript</div><div class="tx">'+formatTranscript(k.transcript)+'</div></div>':'<div class="muted" style="font-size:12.5px">No transcript captured.</div>');
+    });
+  }
+  function formatTranscript(t){ return esc(t).replace(/\[([^\]]+)\]:/g,'<span class="role">$1:</span>'); }
+
+  /* ================= BLOCKED ================= */
+  function renderBlocked(c,a){
+    a.innerHTML='';
+    var rows=state.banned.length? state.banned.map(function(b){return '<tr><td class="mono">'+esc(b.caller_phone)+'</td><td>'+esc(b.reason||'—')+'</td><td class="rowsub">'+esc((b.created_at||'').slice(0,10))+'</td><td class="act"><button class="ghost sm" data-unban="'+esc(b.caller_phone)+'">Unblock</button></td></tr>';}).join('')
+      : '<tr><td colspan="4"><div class="empty"><div class="e-ic">🛡️</div><div class="e-t">No blocked numbers</div><div>Block a number to stop it before it burns call credits.</div></div></td></tr>';
+    c.innerHTML='<div class="stack"><div class="card"><div class="pad" style="padding-bottom:6px"><div class="sec-title">Blocked numbers</div></div><div class="tbl-wrap"><table><thead><tr><th>Number</th><th>Reason</th><th>Since</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'+
+      '<div class="card pad"><div class="sec-title">Block a number</div><div class="grid2" style="margin-top:8px"><div><label class="f">Number <span class="h">E.164</span></label><input id="banPhone" placeholder="+14165551234"/></div><div><label class="f">Reason <span class="h">optional</span></label><input id="banReason" placeholder="repeat spammer"/></div></div><div class="err" id="banErr"></div><div style="margin-top:12px"><button class="danger" id="banBtn">Block number</button></div></div></div>';
   }
 
-  // ---- Check a shop (synthetic test call + guided fixes) ------------------
-
-  var checkClientId = null;
-  function openCheck(id) {
-    var c = clientsCache.filter(function (x) { return x.id === id; })[0] || {};
-    checkClientId = id;
-    $('checkTitle').textContent = 'Checking ' + (c.business_name || 'this shop');
-    $('checkSub').textContent = 'Testing the full path a real call takes — no real call placed.';
-    $('checkBody').innerHTML = '<div class="muted" style="padding:14px 0"><span class="spin"></span> Running checks…</div>';
-    $('checkActions').innerHTML = '<button class="ghost" id="checkClose">Close</button>';
-    $('checkClose').addEventListener('click', closeCheck);
-    $('checkOverlay').className = 'overlay';
-    runCheck(id);
+  /* ================= actions ================= */
+  function resendLead(callId,btn){
+    if(btn){btn.disabled=true;btn.textContent='Sending…';}
+    api('/calls/'+encodeURIComponent(callId)+'/resend-sms','POST').then(function(res){
+      if(res.status===200){ toast('Lead text sent to '+res.body.to,'ok'); loadHealth(); loadCalls(); if($('callDrawer').classList.contains('show')) openCall(callId); }
+      else { toast((res.body&&res.body.error)||'Error','err'); if(btn){btn.disabled=false;btn.textContent='Resend';} }
+    }).catch(function(){toast('Network error','err');if(btn){btn.disabled=false;btn.textContent='Resend';}});
   }
-  function closeCheck() { $('checkOverlay').className = 'overlay hidden'; checkClientId = null; }
-
-  function runCheck(id) {
-    api('/clients/' + id + '/test-call', 'POST').then(function (res) {
-      if (res.status !== 200) { $('checkBody').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || ('Error ' + res.status)) + '</div>'; return; }
-      renderCheck(res.body);
-    }).catch(function () { $('checkBody').innerHTML = '<div class="err">Network error.</div>'; });
+  function activateNumber(id){
+    if(!confirm('Take this number live? It will start routing real calls to the AI.')) return;
+    api('/provision/'+id+'/activate','POST',null,BILLING).then(function(res){
+      if(res.status===200){ toast('Number is live','ok'); loadClients(function(){openShop(id);}); }
+      else toast((res.body&&res.body.error)||'Error','err');
+    });
   }
-
-  function renderCheck(r) {
-    var head = r.ok
-      ? '<div class="banner good" style="margin:0 0 12px"><div class="ic">✅</div><div><b>This shop is wired correctly</b><div class="bsub">A real call would be answered and its lead texted.</div></div></div>'
-      : '<div class="banner bad" style="margin:0 0 12px"><div class="ic">⚠️</div><div><b>Found a problem</b><div class="bsub">See the failing check(s) below, then use a fix button.</div></div></div>';
-    var rows = (r.checks || []).map(function (c) {
-      var cls = c.ok === true ? 'pass' : c.ok === false ? 'fail' : 'skip';
-      var mark = c.ok === true ? '✓' : c.ok === false ? '✕' : '?';
-      return '<div class="check"><div class="ci ' + cls + '">' + mark + '</div>' +
-        '<div><div class="cl">' + esc(c.label) + '</div><div class="cd">' + esc(c.detail) + '</div></div></div>';
-    }).join('');
-    $('checkBody').innerHTML = head + rows;
-
-    // Guided fixes
-    var actions = '';
-    if (r.repairable) actions += '<button class="warm" id="fixRepair">Repair routing</button>';
-    actions += '<button class="ghost" id="fixRetry">Re-run provisioning</button>';
-    actions += '<button class="ghost" id="checkClose">Close</button>';
-    $('checkActions').innerHTML = actions;
-    $('checkClose').addEventListener('click', closeCheck);
-    if (r.repairable) $('fixRepair').addEventListener('click', doRepair);
-    $('fixRetry').addEventListener('click', doRetryFromCheck);
+  function retryProvision(id){
+    toast('Re-running provisioning…');
+    api('/provision/'+id+'/retry','POST',null,BILLING).then(function(res){
+      var r=res.body&&res.body.result;
+      if(res.status===200&&r&&r.status==='staged'){ toast('Provisioned — ready to activate','ok'); loadClients(function(){openShop(id);}); }
+      else toast((r&&r.error)||(res.body&&res.body.error)||'Error','err');
+    });
+  }
+  function repairRouting(id){
+    var btn=document.querySelector('[data-repair="'+id+'"]'); if(btn){btn.disabled=true;btn.textContent='Repairing…';}
+    api('/clients/'+id+'/repair-routing','POST').then(function(res){
+      if(res.status===200){ toast('Routing repaired','ok'); runCheck(id); loadHealth(); }
+      else { toast((res.body&&res.body.error)||'Error','err'); if(btn){btn.disabled=false;btn.textContent='Repair routing';} }
+    });
+  }
+  function testSms(id){
+    toast('Sending test text…');
+    api('/clients/'+id+'/test-sms','POST').then(function(res){ toast(res.status===200?('Test text sent to '+res.body.to):((res.body&&res.body.error)||'Error'), res.status===200?'ok':'err'); });
+  }
+  function copyWelcome(id){
+    var c=state.clients.filter(function(x){return x.id===id;})[0]; if(!c||!c.onboarding_token){ toast('No link yet — send the sign & pay link first','err'); return; }
+    var url=SITE_URL+'/welcome?token='+encodeURIComponent(c.onboarding_token);
+    (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(url):Promise.reject()).then(function(){toast('Welcome link copied','ok');},function(){ prompt('Copy the welcome link:',url); });
   }
 
-  function doRepair() {
-    var btn = $('fixRepair'); btn.disabled = true; btn.textContent = 'Repairing…';
-    api('/clients/' + checkClientId + '/repair-routing', 'POST').then(function (res) {
-      if (res.status === 200) { toast('Routing repaired — re-checking', 'ok'); runCheck(checkClientId); loadClients(); }
-      else { toast((res.body && res.body.error) || ('Error ' + res.status), 'err'); btn.disabled = false; btn.textContent = 'Repair routing'; }
-    }).catch(function () { toast('Network error', 'err'); btn.disabled = false; btn.textContent = 'Repair routing'; });
+  /* ---------- onboarding link modal ---------- */
+  var linkId=null;
+  function openLink(id){
+    var c=state.clients.filter(function(x){return x.id===id;})[0]||{}; linkId=id;
+    var m=$('linkModal');
+    m.innerHTML='<div class="drawer-head"><div><h2>Onboarding link</h2><div class="sub">Sign &amp; pay link for '+esc(c.business_name||'this shop')+'</div></div><button class="x" data-lclose>×</button></div>'+
+      '<div class="drawer-body"><div id="lform"><label class="f">Shop contact email</label><input id="lemail" type="email" value="'+esc(c.contact_email||'')+'" placeholder="owner@shop.com"/><div class="err" id="lerr"></div><div class="row" style="margin-top:12px;gap:8px"><button id="lgen">Generate link</button><button class="ghost" data-lclose>Cancel</button></div></div>'+
+      '<div id="lresult" class="hidden"><label class="f">Send this to the shop</label><div class="row" style="gap:8px"><input id="llink" readonly/><button class="sm" id="lcopy">Copy</button></div><p class="muted" style="font-size:12.5px;margin-top:8px">They sign the contract, then pay — the number auto-provisions and you Activate it.</p><div class="row" style="margin-top:10px;gap:8px"><button class="ghost sm" id="lsend">Email it to them</button></div><div id="lsendmsg" style="font-size:12.5px;margin-top:8px;min-height:14px"></div></div></div>';
+    openModal();
   }
-
-  function doRetryFromCheck() {
-    var btn = $('fixRetry'); btn.disabled = true; btn.textContent = 'Re-running…';
-    retryProvision(checkClientId, true).then(function (okr) {
-      toast(okr ? 'Provisioning re-run' : 'Provisioning couldn’t complete', okr ? 'ok' : 'err');
-      runCheck(checkClientId);
+  function genLink(){
+    var email=$('lemail').value.trim(); if(!email){$('lerr').textContent='Enter their email.';return;}
+    $('lerr').textContent=''; $('lgen').disabled=true;
+    api('/onboarding','POST',{client_id:linkId,contact_email:email},BILLING).then(function(res){
+      $('lgen').disabled=false;
+      if(res.status===200&&res.body&&res.body.onboarding_url){ $('llink').value=res.body.onboarding_url; $('lform').className='hidden'; $('lresult').className=''; loadClients(); }
+      else $('lerr').textContent=(res.body&&res.body.error)||('Error '+res.status);
+    }).catch(function(){$('lgen').disabled=false;$('lerr').textContent='Network error.';});
+  }
+  function sendLink(){
+    var url=$('llink').value; if(!url) return; var msg=$('lsendmsg'); $('lsend').disabled=true; msg.textContent='Sending…';
+    api('/onboarding/send','POST',{client_id:linkId,onboarding_url:url},BILLING).then(function(res){
+      $('lsend').disabled=false;
+      if(res.status===200&&res.body&&res.body.sent){ msg.textContent='✓ Sent to '+res.body.to; msg.style.color='var(--ok)'; toast('Email sent','ok'); }
+      else { msg.textContent=(res.body&&res.body.error)||'Error'; msg.style.color='var(--bad)'; }
     });
   }
 
-  // ---- Onboarding link ---------------------------------------------------
-
-  var linkClientId = null;
-  function openLinkModal(id) {
-    var c = clientsCache.filter(function (x) { return x.id === id; })[0] || {};
-    linkClientId = id;
-    $('modalBiz').textContent = c.business_name || 'this shop';
-    $('m_email').value = c.contact_email || '';
-    $('modalErr').textContent = '';
-    $('m_link').value = '';
-    $('m_sendMsg').textContent = '';
-    $('modalForm').className = '';
-    $('modalResult').className = 'hidden';
-    $('overlay').className = 'overlay';
-    $('m_email').focus();
+  /* ---------- add shop modal ---------- */
+  function openAdd(){
+    linkId=null; var m=$('linkModal');
+    m.innerHTML='<div class="drawer-head"><div><h2>Add a shop</h2><div class="sub">Starts off — goes live once they sign &amp; pay.</div></div><button class="x" data-lclose>×</button></div>'+
+      '<div class="drawer-body"><div class="grid2">'+
+      '<div><label class="f">Business name</label><input id="a_bn"/></div>'+
+      '<div><label class="f">Agent name <span class="h">AI\'s name</span></label><input id="a_an" placeholder="Mike"/></div>'+
+      '<div><label class="f">Vapi assistant ID</label><input id="a_vid"/></div>'+
+      '<div><label class="f">Owner phone <span class="h">E.164</span></label><input id="a_op" placeholder="+14165551234"/></div>'+
+      '<div><label class="f">Leads text to <span class="h">E.164</span></label><input id="a_dp" placeholder="+14165551234"/></div>'+
+      '<div><label class="f">Assigned number <span class="h">optional</span></label><input id="a_in" placeholder="+16514444875"/></div>'+
+      '</div><div class="err" id="a_err"></div><div style="margin-top:14px"><button id="a_save">Add shop</button></div></div>';
+    openModal();
   }
-  function closeModal() { $('overlay').className = 'overlay hidden'; linkClientId = null; }
-  function generateLink() {
-    var email = $('m_email').value.trim();
-    if (!email) { $('modalErr').textContent = 'Enter the shop’s contact email.'; return; }
-    $('modalErr').textContent = '';
-    $('modalGen').disabled = true;
-    api('/onboarding', 'POST', { client_id: linkClientId, contact_email: email }, BILLING_API).then(function (res) {
-      $('modalGen').disabled = false;
-      if (res.status === 200 && res.body && res.body.onboarding_url) {
-        $('m_link').value = res.body.onboarding_url;
-        $('modalForm').className = 'hidden';
-        $('modalResult').className = '';
-        loadClients();
-      } else {
-        $('modalErr').textContent = (res.body && res.body.error) || ('Error ' + res.status);
-      }
-    }).catch(function(){ $('modalGen').disabled = false; $('modalErr').textContent = 'Network error.'; });
-  }
-  function copyLink() {
-    var v = $('m_link').value;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(v).then(function(){ toast('Link copied', 'ok'); }, function(){ fallbackCopy(); });
-    } else { fallbackCopy(); }
-    function fallbackCopy() { $('m_link').select(); try { document.execCommand('copy'); toast('Link copied', 'ok'); } catch (e) { toast('Copy failed — select manually', 'err'); } }
-  }
-  function sendLink() {
-    var url = $('m_link').value;
-    if (!url) return;
-    var msg = $('m_sendMsg');
-    $('m_send').disabled = true;
-    msg.textContent = 'Sending…'; msg.style.color = 'var(--muted)';
-    api('/onboarding/send', 'POST', { client_id: linkClientId, onboarding_url: url }, BILLING_API).then(function (res) {
-      $('m_send').disabled = false;
-      if (res.status === 200 && res.body && res.body.sent) {
-        msg.textContent = '✓ Sent to ' + res.body.to; msg.style.color = 'var(--ok)';
-        toast('Email sent', 'ok');
-      } else {
-        msg.textContent = (res.body && res.body.error) || ('Error ' + res.status); msg.style.color = 'var(--danger)';
-      }
-    }).catch(function () { $('m_send').disabled = false; msg.textContent = 'Network error.'; msg.style.color = 'var(--danger)'; });
+  function addShop(){
+    var g=function(id){return ($(id).value||'').trim();};
+    var body={business_name:g('a_bn'),vapi_assistant_id:g('a_vid'),owner_phone:g('a_op'),dispatch_phone:g('a_dp')};
+    if(g('a_an'))body.agent_name=g('a_an'); if(g('a_in'))body.inbound_number=g('a_in');
+    $('a_err').textContent=''; $('a_save').disabled=true;
+    api('/clients','POST',body).then(function(res){
+      $('a_save').disabled=false;
+      if(res.status===201){ toast('Shop added','ok'); closeModal(); loadClients(function(){ if(res.body.client) openShop(res.body.client.id); }); }
+      else $('a_err').textContent=(res.body&&res.body.error)||('Error '+res.status);
+    }).catch(function(){$('a_save').disabled=false;$('a_err').textContent='Network error.';});
   }
 
-  // ---- Blocked numbers ---------------------------------------------------
-
-  function bannedHtml(list) {
-    if (!list.length) return '<div class="muted" style="margin-top:8px">No blocked numbers.</div>';
-    var h = '<table><thead><tr><th>Number</th><th>Reason</th><th>Since</th><th></th></tr></thead><tbody>';
-    list.forEach(function (b) {
-      h += '<tr>' +
-        '<td>' + esc(b.caller_phone) + '</td>' +
-        '<td>' + esc(b.reason || '—') + '</td>' +
-        '<td class="rowsub">' + esc((b.created_at || '').slice(0, 10)) + '</td>' +
-        '<td class="actions"><button class="ghost sm" data-unban="' + esc(b.caller_phone) + '">Unblock</button></td>' +
-      '</tr>';
-    });
-    return h + '</tbody></table>';
-  }
-  function loadBanned() {
-    api('/banned').then(function (res) {
-      if (res.status !== 200) { $('bannedWrap').innerHTML = '<div class="err">' + esc((res.body && res.body.error) || 'Error') + '</div>'; return; }
-      $('bannedWrap').innerHTML = bannedHtml(res.body.banned || []);
+  function banNumber(phone,reason,btn){
+    var body={caller_phone:phone}; if(reason)body.reason=reason;
+    if(btn)btn.disabled=true;
+    api('/banned','POST',body).then(function(res){
+      if(res.status===201){ toast('Blocked','ok'); loadBanned(); if($('banPhone')){$('banPhone').value='';$('banReason').value='';} }
+      else { toast((res.body&&res.body.error)||'Error','err'); if(btn)btn.disabled=false; }
     });
   }
-  function banNumber(phone, reason) {
-    var body = { caller_phone: phone };
-    if (reason) body.reason = reason;
-    return api('/banned', 'POST', body).then(function (res) {
-      if (res.status === 201) { toast('Number blocked', 'ok'); loadBanned(); return true; }
-      toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
-      return false;
-    }).catch(function () { toast('Network error', 'err'); return false; });
-  }
-  function banFromForm() {
-    $('banErr').textContent = '';
-    var phone = $('f_ban_phone').value.trim();
-    if (!phone) { $('banErr').textContent = 'Enter a phone number.'; return; }
-    $('banBtn').disabled = true;
-    banNumber(phone, $('f_ban_reason').value.trim()).then(function (ok) {
-      $('banBtn').disabled = false;
-      if (ok) { $('f_ban_phone').value = ''; $('f_ban_reason').value = ''; }
-    });
-  }
-  function unbanNumber(phone) {
-    api('/banned/' + encodeURIComponent(phone), 'DELETE').then(function (res) {
-      if (res.status === 200) { toast('Unblocked', 'ok'); loadBanned(); }
-      else toast((res.body && res.body.error) || ('Error ' + res.status), 'err');
-    });
-  }
+  function unban(phone){ api('/banned/'+encodeURIComponent(phone),'DELETE').then(function(res){ if(res.status===200){toast('Unblocked','ok');loadBanned();} else toast((res.body&&res.body.error)||'Error','err'); }); }
 
-  function loadAll() {
-    // Health first so the shops table can show per-shop status pills on first paint.
-    loadHealth();
-    api('/health').then(function (res) { if (res.status === 200) healthCache = res.body; loadClients(); }).catch(loadClients);
-    loadBanned();
-  }
+  /* ---------- drawers/modals ---------- */
+  function openDrawer(d){ $('scrim').classList.add('show'); d.classList.add('show'); }
+  function closeDrawers(){ $('scrim').classList.remove('show'); $('shopDrawer').classList.remove('show'); $('callDrawer').classList.remove('show'); }
+  function openModal(){ $('linkScrim').classList.add('show'); var m=$('linkModal'); m.style.opacity='1'; m.style.transform='translate(-50%,-50%) scale(1)'; }
+  function closeModal(){ $('linkScrim').classList.remove('show'); var m=$('linkModal'); m.style.opacity='0'; m.style.transform='translate(-50%,-46%) scale(.98)'; }
 
-  // ---- Wire up -----------------------------------------------------------
-  $('connect').addEventListener('click', connect);
-  $('token').addEventListener('keydown', function (e) { if (e.key === 'Enter') connect(); });
-  $('logout').addEventListener('click', function () { localStorage.removeItem(KEY); show('login'); });
-  $('refresh').addEventListener('click', loadClients);
-  $('refreshHealth').addEventListener('click', function () { loadHealth(); loadClients(); });
-  $('refreshBanned').addEventListener('click', loadBanned);
-  $('create').addEventListener('click', createClient);
-  $('banBtn').addEventListener('click', banFromForm);
+  /* ---------- count up ---------- */
+  function countUp(el,to){ if(to<=0){el.textContent='0';return;} var start=performance.now(),durr=Math.min(600,200+to*8); function tick(now){ var p=Math.min(1,(now-start)/durr); var e=1-Math.pow(1-p,3); el.textContent=Math.round(e*to); if(p<1) requestAnimationFrame(tick); } requestAnimationFrame(tick); }
 
-  $('tableWrap').addEventListener('click', function (e) {
-    var btn = e.target.closest('button[data-act]');
-    if (!btn) return;
-    var id = btn.getAttribute('data-id'), act = btn.getAttribute('data-act');
-    if (act === 'link') openLinkModal(id);
-    else if (act === 'check') openCheck(id);
-    else if (act === 'activateNum') activateNumber(id);
-    else if (act === 'retryNum') retryProvision(id);
-    else toggleActive(id, btn.getAttribute('data-active') === '1');
+  /* ---------- loaders ---------- */
+  function loadHealth(cb){ api('/health').then(function(res){ if(res.status===200){ state.health=res.body; var f=(res.body.failedLeads||[]).length; var b=$('shopsBadge'); if(b){ if(f>0){b.textContent=f;b.classList.remove('hidden');} else b.classList.add('hidden'); } if(state.view==='overview'||state.view==='shops') render(); } if(cb)cb(); }); }
+  function loadAnalytics(){ api('/analytics').then(function(res){ if(res.status===200){ state.analytics=res.body; if(state.view==='overview') render(); } }); }
+  function loadClients(cb){ api('/clients').then(function(res){ if(res.status===401){ localStorage.removeItem(TKEY); showLogin(); return; } if(res.status===200){ state.clients=res.body.clients||[]; if(state.view==='shops') render(); } if(cb)cb(); }); }
+  function loadCalls(){ api('/calls?limit=80').then(function(res){ if(res.status===200){ state.calls=res.body.calls||[]; if(state.view==='calls') render(); } }); }
+  function loadBanned(){ api('/banned').then(function(res){ if(res.status===200){ state.banned=res.body.banned||[]; if(state.view==='blocked') render(); } }); }
+  function loadAll(){ loadHealth(); loadAnalytics(); loadClients(); loadCalls(); loadBanned(); }
+
+  /* ---------- auth ---------- */
+  function showLogin(){ $('login').classList.remove('hidden'); $('app').classList.add('hidden'); }
+  function showApp(){ $('login').classList.add('hidden'); $('app').classList.remove('hidden'); }
+  function connect(){ var v=$('token').value.trim(); if(!v){$('loginErr').textContent='Enter the token.';return;} localStorage.setItem(TKEY,v); $('loginErr').textContent='Checking…'; api('/clients').then(function(res){ if(res.status===200){ showApp(); go('overview'); loadAll(); } else if(res.status===401){ $('loginErr').textContent='That token was rejected.'; localStorage.removeItem(TKEY); } else $('loginErr').textContent=(res.body&&res.body.error)||('Error '+res.status); }).catch(function(){$('loginErr').textContent='Network error.';}); }
+
+  /* ---------- events ---------- */
+  $('connect').addEventListener('click',connect);
+  $('token').addEventListener('keydown',function(e){if(e.key==='Enter')connect();});
+  $('nav').addEventListener('click',function(e){var a=e.target.closest('a[data-view]'); if(a)go(a.getAttribute('data-view'));});
+  $('logout').addEventListener('click',function(){localStorage.removeItem(TKEY);showLogin();});
+  $('refreshAll').addEventListener('click',function(){toast('Refreshing…');loadAll();});
+  $('scrim').addEventListener('click',closeDrawers);
+  $('linkScrim').addEventListener('click',closeModal);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){closeDrawers();closeModal();} });
+
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    var sw=t.closest('[data-toggle]'); if(sw){ e.stopPropagation(); toggleActive(sw.getAttribute('data-toggle'),sw); return; }
+    var b=t.closest('button,[data-shop],[data-call]'); if(!b) return;
+    var g=function(k){return b.getAttribute(k);};
+    if(b.hasAttribute('data-close')){ closeDrawers(); return; }
+    if(b.hasAttribute('data-lclose')){ closeModal(); return; }
+    if(g('data-resend')){ resendLead(g('data-resend'),b); return; }
+    if(g('data-resendcall')){ resendLead(g('data-resendcall'),b); return; }
+    if(g('data-banphone')){ banNumber(g('data-banphone'),'heavy caller',b); return; }
+    if(g('data-link')){ openLink(g('data-link')); return; }
+    if(g('data-welcome')){ copyWelcome(g('data-welcome')); return; }
+    if(g('data-activate')){ activateNumber(g('data-activate')); return; }
+    if(g('data-retry')){ retryProvision(g('data-retry')); return; }
+    if(g('data-check')){ runCheck(g('data-check')); return; }
+    if(g('data-repair')){ repairRouting(g('data-repair')); return; }
+    if(g('data-testsms')){ testSms(g('data-testsms')); return; }
+    if(g('data-edit')){ openEdit(g('data-edit')); return; }
+    if(g('data-back')){ openShop(g('data-back')); return; }
+    if(g('data-save')){ saveEdit(g('data-save')); return; }
+    if(g('data-shopcalls')){ closeDrawers(); go('calls'); return; }
+    if(b.id==='addShop'){ openAdd(); return; }
+    if(b.id==='a_save'){ addShop(); return; }
+    if(b.id==='lgen'){ genLink(); return; }
+    if(b.id==='lcopy'){ var v=$('llink').value; (navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(function(){toast('Copied','ok');},function(){$('llink').select();try{document.execCommand('copy');toast('Copied','ok');}catch(x){}}); return; }
+    if(b.id==='lsend'){ sendLink(); return; }
+    if(b.id==='banBtn'){ var p=($('banPhone').value||'').trim(); if(!p){$('banErr').textContent='Enter a number.';return;} banNumber(p,($('banReason').value||'').trim(),b); return; }
+    if(g('data-unban')){ unban(g('data-unban')); return; }
+    if(g('data-filter')!=null){ state.callFilter=g('data-filter'); render(); return; }
+    var call=t.closest('[data-call]'); if(call){ openCall(call.getAttribute('data-call')); return; }
+    var shop=t.closest('tr[data-shop]'); if(shop && !t.closest('[data-noopen]')){ openShop(shop.getAttribute('data-shop')); return; }
   });
-  $('failedWrap').addEventListener('click', function (e) {
-    var rb = e.target.closest('button[data-resend]');
-    if (rb) { resendLead(rb.getAttribute('data-resend'), rb); return; }
-    var bb = e.target.closest('button[data-banphone]');
-    if (bb) { bb.disabled = true; banNumber(bb.getAttribute('data-banphone'), 'heavy caller'); }
-  });
-  $('bannedWrap').addEventListener('click', function (e) {
-    var btn = e.target.closest('button[data-unban]');
-    if (btn) unbanNumber(btn.getAttribute('data-unban'));
-  });
 
-  $('modalCancel').addEventListener('click', closeModal);
-  $('modalClose').addEventListener('click', closeModal);
-  $('modalGen').addEventListener('click', generateLink);
-  $('m_copy').addEventListener('click', copyLink);
-  $('m_send').addEventListener('click', sendLink);
-  $('m_email').addEventListener('keydown', function (e) { if (e.key === 'Enter') generateLink(); });
-  $('overlay').addEventListener('click', function (e) { if (e.target === $('overlay')) closeModal(); });
-  $('checkOverlay').addEventListener('click', function (e) { if (e.target === $('checkOverlay')) closeCheck(); });
-
-  // Boot
-  if (token()) { show('app'); loadAll(); } else { show('login'); }
+  if(token()){ showApp(); go('overview'); loadAll(); } else { showLogin(); }
+})();
 </script>
 </body>
 </html>
