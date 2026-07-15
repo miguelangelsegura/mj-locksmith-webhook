@@ -18,6 +18,7 @@ export const DEMO_PROFILE = {
   service_area: "Calgary and surrounding areas, within 30 km",
   services_offered: "Lockouts, rekeying, lock replacement, car key fobs, safe opening",
   pricing_notes: "Service call starts at $89. After-hours surcharge $40.",
+  avg_job_value: 165,
   provision_status: "active",
   active: true,
   subscription_status: "active",

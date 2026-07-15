@@ -41,6 +41,7 @@ export default function SettingsPage() {
       <AnsweringSection profile={profile} setProfile={setProfile} demo={demo} />
       <LeadNumberSection profile={profile} setProfile={setProfile} demo={demo} />
       <BusinessInfoSection profile={profile} setProfile={setProfile} demo={demo} />
+      <RoiSection profile={profile} setProfile={setProfile} demo={demo} />
     </div>
   );
 }
@@ -262,7 +263,7 @@ function BusinessInfoSection({ profile, setProfile, demo }) {
   }
 
   return (
-    <Section title="About your business" desc="Helps your AI answer callers accurately. Optional, but the more it knows the better it sounds.">
+    <Section title="About your business" desc="Your AI reads this on every call — it'll state your service area and services, and quote a price when you've listed one (otherwise it says the technician confirms on-site). The more you add, the sharper it sounds.">
       <div className="space-y-4">
         <Textarea label="Service area" value={area} onChange={(v) => { setArea(v); mark(); }}
           placeholder="e.g. Calgary and surrounding areas, within 30 km" rows={2} />
@@ -270,8 +271,40 @@ function BusinessInfoSection({ profile, setProfile, demo }) {
           placeholder="e.g. Lockouts, rekeying, lock replacement, car key fobs" rows={3} />
         <Textarea label="Pricing notes" value={pricing} onChange={(v) => { setPricing(v); mark(); }}
           placeholder="e.g. Service call starts at $89. After-hours surcharge $40." rows={3} />
+        <p className="rounded-lg bg-soft px-3 py-2 text-[11px] text-muted">
+          The AI only quotes prices you write here. For anything not listed, it stays safe and says the tech confirms on-site.
+        </p>
       </div>
       <SaveBar dirty={dirty} saving={saving} status={status} onSave={onSave} label="Save business info" />
+    </Section>
+  );
+}
+
+/* --- 4. Reporting: average job value (drives the ROI estimate) --- */
+function RoiSection({ profile, setProfile, demo }) {
+  const [value, setValue] = useState(profile.avg_job_value != null ? String(profile.avg_job_value) : "150");
+  const [dirty, setDirty] = useState(false);
+  const { saving, status, save } = useSaver(setProfile, demo);
+
+  function onSave() {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n < 0) { setValue("150"); return; }
+    save({ avg_job_value: n }, () => setDirty(false));
+  }
+
+  return (
+    <Section title="Your numbers" desc="Used only for the 'Value captured' estimate on your dashboard — not shared with callers.">
+      <label className="block max-w-xs">
+        <span className="mb-1 block text-xs font-semibold text-body">Average job value</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-muted">$</span>
+          <input type="number" min="0" step="10" inputMode="decimal" value={value}
+            onChange={(e) => { setValue(e.target.value); setDirty(true); }}
+            className="w-32 rounded-xl border border-line bg-soft px-3.5 py-2.5 text-sm text-ink outline-none focus:border-brand focus:bg-white" />
+        </div>
+        <span className="mt-1 block text-[11px] text-muted">Your typical ticket. “Value captured” = jobs captured × this.</span>
+      </label>
+      <SaveBar dirty={dirty} saving={saving} status={status} onSave={onSave} label="Save" />
     </Section>
   );
 }

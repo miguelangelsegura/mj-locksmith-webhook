@@ -60,6 +60,7 @@ export default function CallDetail({ call, tz }) {
         <div className="mt-4 rounded-xl bg-soft px-3.5 py-3">
           <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Call summary</p>
           <p className="mt-1 text-sm leading-relaxed text-body">{call.summary}</p>
+          <p className="mt-2 text-[10px] text-muted/80">Written automatically by your AI on the call — included in your plan.</p>
         </div>
       )}
 

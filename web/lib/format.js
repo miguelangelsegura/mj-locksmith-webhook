@@ -45,20 +45,37 @@ export function titleCase(s) {
   return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-// A call counts as a captured lead unless it's a junk outcome (mirrors the
-// webhook's NON_LEAD_OUTCOMES so the customer's numbers match what was texted).
-const NON_LEAD = new Set(["wrong_number", "spam", "info_only"]);
-export function isLead(outcome) {
-  return !NON_LEAD.has(String(outcome ?? "").trim().toLowerCase().replace(/ /g, "_"));
+// Canonical call-outcome vocabulary the AI now emits (Vapi structured-output enum):
+//   lead | spam | wrong_number | info_only | abandoned
+// Legacy rows used dispatched / unable_to_dispatch / caller_hung_up — map them here
+// so old calls still render correctly after the enum change.
+export function normOutcome(outcome) {
+  const o = String(outcome ?? "").trim().toLowerCase().replace(/ /g, "_");
+  if (o === "dispatched" || o === "unable_to_dispatch") return "lead";
+  if (o === "caller_hung_up" || o === "hung_up") return "abandoned";
+  if (o === "robocall") return "spam";
+  return o;
 }
 
-// Human label + tint for a call's disposition. Kept minimal (research: green good,
-// red bad, one accent for spam) so the list scans instantly.
+// Not a captured job. `abandoned` is a missed/hung-up call — still texted to the shop
+// (they get the callback number) but NOT counted as a captured job.
+const JUNK = new Set(["spam", "wrong_number", "info_only", "abandoned"]);
+
+// A captured job worth following up. An empty/unknown outcome on a completed call is
+// treated optimistically as a lead (fail-open — mirrors the webhook texting it anyway).
+export function isLead(outcome) {
+  const o = normOutcome(outcome);
+  if (!o) return true;
+  return !JUNK.has(o);
+}
+
+// Human label + tint for a call's disposition. Minimal palette so the list scans fast.
 export function callStatus(call) {
-  const o = String(call?.outcome ?? "").trim().toLowerCase().replace(/ /g, "_");
-  if (o === "spam" || o === "robocall") return { label: "Spam", tone: "spam" };
+  const o = normOutcome(call?.outcome);
+  if (o === "spam") return { label: "Spam", tone: "spam" };
   if (o === "wrong_number") return { label: "Wrong number", tone: "muted" };
   if (o === "info_only") return { label: "Info only", tone: "muted" };
+  if (o === "abandoned") return { label: "Abandoned", tone: "muted" };
   if (call?.ended_at) return { label: "Lead captured", tone: "lead" };
   return { label: "Answered", tone: "ok" };
 }

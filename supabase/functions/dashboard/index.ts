@@ -42,7 +42,7 @@ const TEXT_MAX = 2000;
 const PROFILE_COLS =
   "id, business_name, agent_name, contact_email, dispatch_phone, fallback_number, cell_number, " +
   "inbound_number, answer_mode, business_hours, timezone, service_area, services_offered, " +
-  "pricing_notes, provision_status, active, subscription_status, plan, created_at";
+  "pricing_notes, avg_job_value, provision_status, active, subscription_status, plan, created_at";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -224,6 +224,13 @@ async function updateSettings(userId: string, body: Record<string, unknown>): Pr
       if (!v.ok) return json({ error: v.error }, 400);
       patch[field] = v.value;
     }
+  }
+  if ("avg_job_value" in body) {
+    const v = Number(body.avg_job_value);
+    if (!Number.isFinite(v) || v < 0 || v > 100000) {
+      return json({ error: "average job value must be a number between 0 and 100000" }, 400);
+    }
+    patch.avg_job_value = v;
   }
 
   // Switching TO scheduled needs a fallback number to bounce out-of-hours calls to

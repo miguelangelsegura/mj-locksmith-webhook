@@ -1,67 +1,79 @@
 import { isLead } from "@/lib/format";
 
-// Conservative assumptions, shown to the customer inline so the ROI is honest, not
-// a black box. A locksmith job is worth well more than this on average; we lowball
-// deliberately so the number is defensible.
-export const AVG_JOB_VALUE = 150; // $ — estimated value of one captured job
+export const DEFAULT_JOB_VALUE = 150; // fallback if a shop hasn't set its own
 export const DISPANGO_MONTHLY = 199; // flat plan price
-// A part-time receptionist/phone staff — conservative monthly cost. Unlike a
-// per-call answering service (which only beats us at high volume), this comparison
-// holds at any volume and is the honest "vs a human" story.
+// A part-time receptionist's typical monthly cost — used for a GENERAL comparison
+// line, not a per-shop "you saved exactly $X" claim.
 export const MONTHLY_RECEPTIONIST = 2400;
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const HOURS_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
-// Returns weekday index (0=Sun) and hour (0-23) for an instant, in a timezone.
+// weekday index (0=Sun), HH:MM, and YYYY-MM-DD for an instant, in a timezone.
 function localParts(iso, tz) {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return null;
   try {
-    const parts = new Intl.DateTimeFormat("en-US", {
-      timeZone: tz, weekday: "short", hour: "numeric", hour12: false,
+    const p = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz, weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false,
+      year: "numeric", month: "2-digit", day: "2-digit",
     }).formatToParts(d);
-    const wd = parts.find((p) => p.type === "weekday")?.value;
-    let hourStr = parts.find((p) => p.type === "hour")?.value ?? "0";
-    let hour = parseInt(hourStr, 10) % 24;
-    const idx = DAY_LABELS.indexOf(wd);
-    return { day: idx, hour };
+    const get = (t) => p.find((x) => x.type === t)?.value ?? "";
+    const day = DAY_LABELS.indexOf(get("weekday"));
+    let hour = parseInt(get("hour"), 10) % 24;
+    const hhmm = `${String(hour).padStart(2, "0")}:${get("minute")}`;
+    const date = `${get("year")}-${get("month")}-${get("day")}`;
+    return { day, hhmm, date };
   } catch {
-    return { day: d.getDay(), hour: d.getHours() };
+    return null;
   }
 }
 
-// Outside Mon–Fri 8am–6pm (shop-local) = the hours a human would likely miss.
-function isAfterHours(iso, tz) {
-  const p = localParts(iso, tz);
-  if (!p) return false;
-  if (p.day === 0 || p.day === 6) return true; // weekend
-  return p.hour < 8 || p.hour >= 18;
+// "After-hours" = outside the shop's configured hours (in its timezone). If the shop
+// has set `business_hours`, honor them exactly; otherwise fall back to Mon–Fri 8–6.
+function isAfterHours(iso, tz, businessHours) {
+  const lp = localParts(iso, tz);
+  if (!lp) return false;
+  const bh = businessHours && typeof businessHours === "object" ? businessHours : null;
+  if (bh) {
+    const day = bh[HOURS_KEYS[lp.day]];
+    if (!day || typeof day !== "object" || !day.on) return true; // closed day
+    const open = typeof day.open === "string" ? day.open : "00:00";
+    const close = typeof day.close === "string" ? day.close : "23:59";
+    return !(lp.hhmm >= open && lp.hhmm < close);
+  }
+  // Default window: Mon–Fri 08:00–18:00.
+  if (lp.day === 0 || lp.day === 6) return true;
+  return lp.hhmm < "08:00" || lp.hhmm >= "18:00";
 }
 
-export function computeAnalytics(calls, tz = "America/Edmonton") {
+export function computeAnalytics(calls, { tz = "America/Edmonton", businessHours = null, avgJobValue = DEFAULT_JOB_VALUE } = {}) {
   const answered = calls.length;
-  const leads = calls.filter((c) => isLead(c.outcome)).length;
-  const afterHours = calls.filter((c) => isLead(c.outcome) && isAfterHours(c.ended_at, tz)).length;
+  const leadCalls = calls.filter((c) => isLead(c.outcome));
+  const leads = leadCalls.length;
+  const afterHours = leadCalls.filter((c) => isAfterHours(c.ended_at, tz, businessHours)).length;
 
   const now = Date.now();
   const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
   const thisWeek = calls.filter((c) => new Date(c.ended_at).getTime() >= weekAgo).length;
 
-  // Last 7 calendar days, oldest→newest, answered-call counts (for the bar chart).
+  // Last 7 calendar days (shop-local), oldest→newest, answered-call counts.
   const byDay = [];
+  const byKey = {};
   for (let i = 6; i >= 0; i--) {
-    const dayStart = new Date(now - i * 24 * 60 * 60 * 1000);
-    const label = DAY_LABELS[dayStart.getDay()];
-    byDay.push({ label, key: dayStart.toISOString().slice(0, 10), count: 0 });
+    const lp = localParts(new Date(now - i * 24 * 60 * 60 * 1000).toISOString(), tz);
+    const key = lp?.date ?? String(i);
+    const entry = { label: lp ? DAY_LABELS[lp.day] : "", key, count: 0 };
+    byDay.push(entry);
+    byKey[key] = entry;
   }
-  const byKey = Object.fromEntries(byDay.map((d) => [d.key, d]));
   for (const c of calls) {
-    const key = new Date(c.ended_at).toISOString().slice(0, 10);
-    if (byKey[key]) byKey[key].count++;
+    const lp = localParts(c.ended_at, tz);
+    if (lp && byKey[lp.date]) byKey[lp.date].count++;
   }
 
-  const estValue = leads * AVG_JOB_VALUE;
-  const receptionistSaved = MONTHLY_RECEPTIONIST - DISPANGO_MONTHLY;
+  const jobValue = Number.isFinite(Number(avgJobValue)) ? Number(avgJobValue) : DEFAULT_JOB_VALUE;
+  const estValue = Math.round(leads * jobValue);
 
-  return { answered, leads, afterHours, thisWeek, byDay, estValue, receptionistSaved };
+  return { answered, leads, afterHours, thisWeek, byDay, estValue, jobValue };
 }

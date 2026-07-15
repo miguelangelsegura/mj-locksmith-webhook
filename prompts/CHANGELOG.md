@@ -7,7 +7,18 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v12 — 2026-06-04 (current)
+## v13 — 2026-07-15 (current)
+Snapshot: [versions/system-prompt-v13.md](versions/system-prompt-v13.md)
+
+Wire per-shop business info into the agent (Phase 4 dashboard). The "About {{business_name}}"
+block now injects the customer-editable `{{service_area}}` / `{{services_offered}}` / `{{pricing_notes}}`
+(blank-safe: unset lines fall back to the generic 24/7-locksmith picture). Pricing rule relaxed per
+Abdul: the agent may quote a price **when it's listed in pricing_notes**, and falls back to "technician
+confirms on-site" when it isn't (never invents a price). Also a one-line nudge so wrong-number/robocall
+exits read as spam/wrong-number, paired with the `outcome` structured-output enum change
+(see [structured-outputs.md](structured-outputs.md)). Keeps the prompt lean.
+
+## v12 — 2026-06-04
 Snapshot: [versions/system-prompt-v12.md](versions/system-prompt-v12.md)
 
 Make the callback question non-paraphrasable. "Speak in your own words" let the model

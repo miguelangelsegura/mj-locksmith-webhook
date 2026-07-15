@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/lib/dashboardData";
-import { computeAnalytics, AVG_JOB_VALUE, DISPANGO_MONTHLY, MONTHLY_RECEPTIONIST } from "@/lib/analytics";
+import { computeAnalytics, DISPANGO_MONTHLY, MONTHLY_RECEPTIONIST } from "@/lib/analytics";
 import { StatCard, PageHeader, Skeleton } from "../ui";
 
 export default function AnalyticsPage() {
@@ -9,7 +9,7 @@ export default function AnalyticsPage() {
   if (loading || !profile) return <AnalyticsSkeleton />;
 
   const tz = profile.timezone || "America/Edmonton";
-  const a = computeAnalytics(calls, tz);
+  const a = computeAnalytics(calls, { tz, businessHours: profile.business_hours, avgJobValue: profile.avg_job_value });
   const maxBar = Math.max(1, ...a.byDay.map((d) => d.count));
 
   return (
@@ -46,26 +46,27 @@ export default function AnalyticsPage() {
           <p className="text-xs font-semibold uppercase tracking-wide text-indigo-100">Estimated value captured</p>
           <p className="mt-1 text-3xl font-extrabold">${a.estValue.toLocaleString()}</p>
           <p className="mt-2 text-xs leading-relaxed text-white/70">
-            {a.leads.toLocaleString()} job{a.leads === 1 ? "" : "s"} captured × ~${AVG_JOB_VALUE}/job
-            (a deliberately conservative estimate — most jobs are worth more).
+            {a.leads.toLocaleString()} job{a.leads === 1 ? "" : "s"} captured × your ${a.jobValue.toLocaleString()}/job
+            estimate. Set your average job value in Settings to tune this.
           </p>
         </div>
 
         <div className="rounded-2xl border border-line bg-white p-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">Vs. a human receptionist</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">The math vs. a human</p>
           <p className="mt-1 text-3xl font-extrabold text-ink">
-            ${a.receptionistSaved.toLocaleString()}<span className="text-base font-semibold text-muted">/mo saved</span>
+            ${DISPANGO_MONTHLY}<span className="text-base font-semibold text-muted">/mo, flat</span>
           </p>
           <p className="mt-2 text-xs leading-relaxed text-body">
-            A part-time receptionist runs about <span className="font-semibold text-ink">${MONTHLY_RECEPTIONIST.toLocaleString()}/mo</span>.
-            Dispango is a flat <span className="font-semibold text-ink">${DISPANGO_MONTHLY}/mo</span> — and answers
-            nights, weekends, and holidays a receptionist wouldn't.
+            A part-time receptionist typically runs <span className="font-semibold text-ink">~${MONTHLY_RECEPTIONIST.toLocaleString()}/mo</span> and
+            still goes home at night. Dispango answers every call — days, nights, weekends, and holidays —
+            for one flat rate.
           </p>
         </div>
       </section>
 
       <p className="text-center text-[11px] text-muted">
-        Estimates use conservative industry figures to keep the numbers honest. Your real job values will vary.
+        “Value captured” is an estimate = jobs captured × your average job value (editable in Settings).
+        The receptionist figure is a typical market rate, not your billed cost.
       </p>
     </div>
   );

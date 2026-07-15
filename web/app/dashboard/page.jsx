@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useDashboard } from "@/lib/dashboardData";
-import { computeAnalytics, AVG_JOB_VALUE } from "@/lib/analytics";
+import { computeAnalytics } from "@/lib/analytics";
 import { isLead, jobLine, displayName, relativeTime, urgencyTone } from "@/lib/format";
 import { StatCard, PageHeader, Badge, LiveBadge, EmptyState, Skeleton } from "./ui";
 
@@ -11,7 +11,7 @@ export default function OverviewPage() {
   if (loading || !profile) return <OverviewSkeleton />;
 
   const tz = profile.timezone || "America/Edmonton";
-  const a = computeAnalytics(calls, tz);
+  const a = computeAnalytics(calls, { tz, businessHours: profile.business_hours, avgJobValue: profile.avg_job_value });
   const live = profile.active && ["active", "none"].includes(profile.provision_status);
   const scheduled = profile.answer_mode === "scheduled";
 
@@ -41,7 +41,7 @@ export default function OverviewPage() {
         <StatCard value={a.leads} label="Jobs captured" tint="emerald" />
         <StatCard value={a.afterHours} label="After-hours catches" tint="sky" />
         <StatCard value={a.estValue} prefix="$" label="Value captured" tint="emerald"
-          hint={`~$${AVG_JOB_VALUE}/job (conservative)`} />
+          hint={`est. $${a.jobValue.toLocaleString()}/job`} />
       </div>
 
       <section>
