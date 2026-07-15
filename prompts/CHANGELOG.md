@@ -7,7 +7,19 @@ Git history is the other safety net (`git show <commit>:prompts/system-prompt.md
 To revert: copy the wanted `versions/system-prompt-vN.md` over `system-prompt.md`,
 then push it to the Vapi assistant.
 
-## v13 — 2026-07-15 (current)
+## v14 — 2026-07-15 (current)
+Snapshot: [versions/system-prompt-v14.md](versions/system-prompt-v14.md)
+
+Legal/consent hardening. Adds one "Situations to handle" bullet: if a caller objects to
+being recorded or to speaking with an AI, don't argue — offer a direct human callback,
+confirm the number, and wrap up (the recording can't be toggled mid-call, so a callback is
+the honest fallback). Pairs with the new **recording + AI disclosure folded into the opening
+greeting** — returning-caller greeting in `vapi-webhook` (`handleAssistantRequest`), new-caller
+greeting in the Vapi assistant `firstMessage` ("your AI assistant, on a recorded line"). This is
+the notice that makes recording consent valid in two-party-consent jurisdictions and satisfies
+bot-disclosure law. Keeps the prompt lean — one bullet, no new scripts.
+
+## v13 — 2026-07-15
 Snapshot: [versions/system-prompt-v13.md](versions/system-prompt-v13.md)
 
 Wire per-shop business info into the agent (Phase 4 dashboard). The "About {{business_name}}"

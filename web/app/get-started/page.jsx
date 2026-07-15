@@ -39,6 +39,7 @@ export default function GetStarted() {
   const [status, setStatus] = useState("idle"); // idle | submitting | error
   const [error, setError] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [agreed, setAgreed] = useState(false); // explicit Terms + recording consent (checkbox, not browsewrap)
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -62,6 +63,7 @@ export default function GetStarted() {
 
   async function submit(e) {
     e.preventDefault();
+    if (!agreed) return; // belt-and-suspenders; the submit button is also gated on this
     setStatus("submitting");
     setError("");
     try {
@@ -161,20 +163,33 @@ export default function GetStarted() {
 
           {status === "error" && <p className="rounded-xl bg-warm-50 px-4 py-3 text-sm text-warm">{error}</p>}
 
+          <label className="flex items-start gap-3 text-xs leading-relaxed text-muted">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-brand focus:ring-brand"
+              required
+            />
+            <span>
+              I agree to the{" "}
+              <a href="/terms" className="text-brand hover:underline">Terms of Service</a> and{" "}
+              <a href="/privacy" className="text-brand hover:underline">Privacy Policy</a>, and I
+              consent to Dispango answering, recording, and transcribing calls to my line with an AI
+              assistant. I confirm I&apos;m authorized to connect the number I forward, and I&apos;m
+              responsible for any caller notice or consent required where I operate.
+            </span>
+          </label>
+
           <button
             type="submit"
-            disabled={status === "submitting" || (TURNSTILE_SITE_KEY && !turnstileToken)}
+            disabled={status === "submitting" || !agreed || (TURNSTILE_SITE_KEY && !turnstileToken)}
             className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-brand/30 transition-transform hover:-translate-y-0.5 disabled:opacity-60"
           >
             {status === "submitting" ? "Setting up…" : "Continue to sign & start trial"}
           </button>
           <p className="text-center text-xs text-muted">
             Next: sign your agreement, then enter payment. 14-day free trial · cancel anytime.
-          </p>
-          <p className="text-center text-xs text-muted">
-            By continuing you agree to our{" "}
-            <a href="/terms" className="text-brand hover:underline">Terms</a> and{" "}
-            <a href="/privacy" className="text-brand hover:underline">Privacy Policy</a>.
           </p>
         </form>
       </section>
