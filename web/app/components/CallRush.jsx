@@ -53,6 +53,7 @@ export default function CallRush() {
   const [runId, setRunId] = useState(0); // bump to replay
   const [started, setStarted] = useState(false);
   const rootRef = useRef(null);
+  const firstPlay = useRef(true); // stagger only the first auto-demo; toggles snap
 
   // Auto-demo once when scrolled into view (or immediately if IO unsupported /
   // reduced-motion). Passive visitors still see the divergence play out.
@@ -70,11 +71,14 @@ export default function CallRush() {
     return () => io.disconnect();
   }, []);
 
-  // Drive the staggered reveal. Re-runs from scratch whenever mode/runId changes.
+  // First scroll-in auto-demo staggers the reveal (the wow). Every manual toggle
+  // after that snaps straight to the resolved state — no grey "Ringing…" reset,
+  // so the 1/5-vs-5/5 divergence is instant when you flip the switch.
   useEffect(() => {
     if (!started) return;
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-    if (reduce) { setPhase(CALLERS.length); return; }
+    if (reduce || !firstPlay.current) { setPhase(CALLERS.length); firstPlay.current = false; return; }
+    firstPlay.current = false;
     setPhase(0);
     const timers = [];
     for (let i = 1; i <= CALLERS.length; i++) {
