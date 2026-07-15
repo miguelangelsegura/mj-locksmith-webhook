@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import PhoneCall from "./components/PhoneCall";
 import Calculator from "./components/Calculator";
 import ContactTab from "./components/ContactTab";
+import CallRush from "./components/CallRush";
+import BuildReceptionist from "./components/BuildReceptionist";
+import CommandCenter from "./components/CommandCenter";
 
 const CONFIG = {
   // Ready values.
@@ -268,6 +271,34 @@ export default function Page() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* CALL RUSH — "you decide" + $-recovered meter */}
+      <section className="mx-auto max-w-6xl px-5 py-20">
+        <p className="reveal eyebrow text-center">The call rush</p>
+        <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">
+          Five calls at once. You grab one. <span className="text-shimmer">Dispango grabs all five.</span>
+        </h2>
+        <p className="reveal mx-auto mt-3 max-w-xl text-center">It doesn&apos;t just answer fast — it answers everyone at the same time, gets the job, and texts it to you before voicemail even picks up.</p>
+        <div className="reveal mt-12"><CallRush /></div>
+      </section>
+
+      {/* BUILD YOUR RECEPTIONIST — trade + voice → live preview */}
+      <section className="glow-soft">
+        <div className="mx-auto max-w-6xl px-5 py-20">
+          <p className="reveal eyebrow text-center">Built around your business</p>
+          <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Not a script. A receptionist trained on your shop.</h2>
+          <p className="reveal mx-auto mt-3 max-w-xl text-center">Your trade, your service area, your hours, your rules — every caller hears your business, never a generic bot.</p>
+          <div className="reveal mt-12"><BuildReceptionist /></div>
+        </div>
+      </section>
+
+      {/* COMMAND CENTER — dashboard preview (aspirational) */}
+      <section className="mx-auto max-w-6xl px-5 py-20">
+        <p className="reveal eyebrow text-center">Your command center</p>
+        <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Every call. Logged, summarized, done.</h2>
+        <p className="reveal mx-auto mt-3 max-w-xl text-center">Every lead, call and text in one place — so nothing slips.</p>
+        <div className="reveal mt-12"><CommandCenter /></div>
       </section>
 
       {/* HOW IT WORKS */}
