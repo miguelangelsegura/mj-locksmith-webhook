@@ -131,6 +131,21 @@ Deno.serve(async (req) => {
   }
 
   const result = { ...summary, ok: problems.length === 0, problems };
+
+  // Record this run so the admin back office can show a "last checked in" time —
+  // a stale/absent heartbeat is itself a signal the external probe has stopped.
+  // Best-effort: a write failure must never fail the health check.
+  try {
+    await supabase.from("ops_heartbeat").upsert({
+      id: 1,
+      last_run_at: new Date().toISOString(),
+      last_ok: result.ok,
+      last_problems: problems.length ? problems.join(" ") : null,
+    });
+  } catch (e) {
+    console.log(`[heartbeat] failed to record run: ${e}`);
+  }
+
   console.log(`[heartbeat] ${JSON.stringify(result)}`);
   return Response.json(result);
 });
