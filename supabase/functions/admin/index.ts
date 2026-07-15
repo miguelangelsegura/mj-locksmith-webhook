@@ -168,6 +168,14 @@ async function vapiFetch(path: string, init: RequestInit = {}): Promise<Response
   });
 }
 
+// Strip a `?token=`/`&token=` value from any string before it's returned to the
+// browser. The Vapi number's server URL and the synthetic-webhook URL both carry
+// VAPI_SECRET — a strictly higher trust boundary than the ADMIN_API_TOKEN the
+// operator holds. Never echo the raw secret into a check detail or error message.
+function redactToken(s: string): string {
+  return s.replace(/([?&]token=)[^&\s"']+/gi, "$1***");
+}
+
 // Find the Vapi phone-number resource matching an E.164 number. Returns the raw
 // object (with .server, .assistantId, .fallbackDestination) or null if not imported.
 async function vapiFindNumber(number: string): Promise<any | null> {
@@ -202,6 +210,11 @@ async function createClientRow(body: Record<string, unknown>): Promise<Response>
   }
 
   const row = pickWritable(body);
+  if ("fallback_number" in row) {
+    const fb = normalizePhone(row.fallback_number);
+    if (row.fallback_number && !fb) return json({ error: "fallback_number must be E.164" }, 400);
+    row.fallback_number = fb;
+  }
   row.business_name = businessName;
   row.vapi_assistant_id = assistantId;
   row.dispatch_phone = dispatchPhone;
@@ -227,6 +240,17 @@ async function updateClientRow(id: string, body: Record<string, unknown>): Promi
     const normalized = normalizePhone(patch.owner_phone);
     if (!normalized) return json({ error: "owner_phone must be E.164" }, 400);
     patch.owner_phone = normalized;
+  }
+  // fallback_number feeds the Vapi fallbackDestination — validate it like the others
+  // so garbage can't be saved (an empty string clears it).
+  if ("fallback_number" in patch) {
+    const raw = typeof patch.fallback_number === "string" ? patch.fallback_number.trim() : "";
+    if (raw === "") patch.fallback_number = null;
+    else {
+      const normalized = normalizePhone(patch.fallback_number);
+      if (!normalized) return json({ error: "fallback_number must be E.164" }, 400);
+      patch.fallback_number = normalized;
+    }
   }
   if (Object.keys(patch).length === 0) {
     return json({ error: "no writable fields in body" }, 400);
@@ -395,6 +419,7 @@ async function testCall(id: string): Promise<Response> {
         checks.push({ key: "vapi_routing", label: "Vapi routing", ok: false, detail: `${inbound} is not imported into Vapi — run provisioning to wire it.` });
       } else {
         const serverUrl = String(vapiNumber?.server?.url ?? "");
+        const shownUrl = redactToken(serverUrl); // never surface VAPI_SECRET to the operator
         const pointsHere = !!WEBHOOK_BASE && serverUrl.startsWith(WEBHOOK_BASE);
         const dead = /onrender\.com|localhost|ngrok/i.test(serverUrl);
         const hasToken = /[?&]token=/.test(serverUrl);
@@ -407,10 +432,10 @@ async function testCall(id: string): Promise<Response> {
           detail: !serverUrl
             ? "The number has NO server URL — live calls won't reach us. Click Repair routing."
             : dead
-              ? `Server URL points at a dead host (${serverUrl}). Click Repair routing.`
+              ? `Server URL points at a dead host (${shownUrl}). Click Repair routing.`
               : pointsHere
                 ? "Server URL points at this webhook. ✓"
-                : `Server URL points somewhere unexpected (${serverUrl}). Click Repair routing.`,
+                : `Server URL points somewhere unexpected (${shownUrl}). Click Repair routing.`,
         });
         checks.push({
           key: "vapi_token", label: "Server URL carries the auth token",
@@ -472,7 +497,8 @@ async function testCall(id: string): Promise<Response> {
         });
       }
     } catch (e) {
-      checks.push({ key: "webhook", label: "Webhook recognizes this shop", ok: false, detail: `Couldn't reach the webhook: ${e}` });
+      // Deno's fetch error text can embed the full request URL (with ?token=) — redact it.
+      checks.push({ key: "webhook", label: "Webhook recognizes this shop", ok: false, detail: `Couldn't reach the webhook: ${redactToken(String(e))}` });
     }
   }
 
@@ -509,13 +535,27 @@ async function repairRouting(id: string): Promise<Response> {
       assistantId: null,
       squadId: null,
     };
+    // Re-send the Twilio credential linkage (same account that provisioning's POST
+    // sends). Vapi's PATCH for some resources REPLACES rather than merges (see the
+    // model-PATCH note in CLAUDE.md); re-including these makes repair safe under
+    // either semantic — a fix must never wipe the number's ability to place calls.
+    if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN) {
+      patch.provider = "twilio";
+      patch.twilioAccountSid = TWILIO_ACCOUNT_SID;
+      patch.twilioAuthToken = TWILIO_AUTH_TOKEN;
+    }
     if (fallback) patch.fallbackDestination = { type: "number", number: fallback };
     const resp = await vapiFetch(`/phone-number/${num.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
     });
-    if (!resp.ok) return json({ error: `vapi patch ${resp.status}: ${await resp.text()}` }, 502);
+    if (!resp.ok) {
+      // The patch body carries twilioAuthToken; a Vapi 4xx can echo rejected field
+      // values back. Log the body server-side only — never return it to the operator.
+      console.log(`[admin] repair patch failed client=${id} vapi ${resp.status}: ${await resp.text()}`);
+      return json({ error: `vapi rejected the repair (status ${resp.status}) — see function logs` }, 502);
+    }
     console.log(`[admin] repaired routing client=${id} number=${inbound}`);
     return json({ repaired: true, number: inbound });
   } catch (e) {
@@ -535,22 +575,37 @@ async function resendSms(callId: string, force: boolean): Promise<Response> {
   const { data } = await supabase!.from("calls").select("*").eq("vapi_call_id", callId).limit(1);
   const row = data?.[0];
   if (!row) return json({ error: "call not found" }, 404);
-  if (row.notified_at && !force) {
-    return json({ error: "this lead was already texted — pass force to send it again", notified_at: row.notified_at }, 409);
-  }
   const { data: clientRows } = await supabase!
     .from("clients").select("dispatch_phone, timezone").eq("id", row.client_id).limit(1);
   const dispatch = normalizePhone(clientRows?.[0]?.dispatch_phone);
   if (!dispatch) return json({ error: "client has no valid dispatch phone" }, 400);
   const tz = clientRows?.[0]?.timezone || DEFAULT_TZ;
+
+  // Claim the row BEFORE sending, exactly like the webhook's sendDispatchSms — an
+  // atomic conditional update, not a check-then-act — so two concurrent resends
+  // (or a double-click) can never both send. Without `force` the claim only lands
+  // when notified_at IS NULL (a genuinely failed/unsent lead); with `force` the
+  // operator is deliberately overriding a prior send, so claim unconditionally.
+  const claimTs = new Date().toISOString();
+  let claim = supabase!.from("calls")
+    .update({ notified_at: claimTs, notified_phone: dispatch })
+    .eq("vapi_call_id", callId);
+  if (!force) claim = claim.is("notified_at", null);
+  const { data: claimed, error: claimErr } = await claim.select();
+  if (claimErr) return json({ error: claimErr.message }, 400);
+  if (!claimed || claimed.length === 0) {
+    return json({ error: "this lead was already texted — pass force to send it again", notified_at: row.notified_at }, 409);
+  }
+
   try {
     const sid = await sendSms(dispatch, composeSmsBody(row, tz));
-    await supabase!.from("calls")
-      .update({ notified_at: new Date().toISOString(), notified_phone: dispatch })
-      .eq("vapi_call_id", callId);
     console.log(`[admin] resent lead sms call=${callId} to=${dispatch} sid=${sid}`);
     return json({ sent: true, to: dispatch, sid });
   } catch (e) {
+    // Release the claim so a later resend can retry — mirrors the webhook.
+    await supabase!.from("calls")
+      .update({ notified_at: row.notified_at ?? null, notified_phone: row.notified_phone ?? null })
+      .eq("vapi_call_id", callId);
     console.log(`[admin] resend sms failed call=${callId}: ${e}`);
     return json({ error: `twilio send failed: ${e}` }, 502);
   }
