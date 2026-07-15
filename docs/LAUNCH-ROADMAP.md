@@ -112,15 +112,15 @@ UA (Cloudflare 1010) + full-object PATCH.
 `provision_status`/`fallback_number`, `web/app/welcome/page.jsx`. **Branch:** `feat/provisioning`.
 **Review:** **`/deep-review`** (payments + live call path + spends money). **Dedicated session. Riskiest.**
 
-> **STATUS (2026-07-14): SHIPPED — but gated OFF pending secrets. ⚠️ ACTION REQUIRED.**
+> **STATUS (2026-07-15): SHIPPED & LIVE — provisioning is ON. ✅**
 > Provisioning + one-click Activate + the `/welcome` real-number display are built, reviewed,
-> merged, and deployed. The migration is applied (existing clients kept live). BUT the robot
-> **won't buy anything** until these secrets are set on the `billing` function (else it falls
-> back to the old "provision now" email): **`VAPI_PRIVATE_KEY`, `VAPI_ASSISTANT_ID`,
-> `VAPI_SECRET`, `TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`** (+ optional `TWILIO_NUMBER_COUNTRY`,
-> default CA). Full checklist + behavior: [billing README](../supabase/functions/billing/README.md#provisioning-secrets-phase-2--auto-buy-a-number-on-payment).
-> Not yet proven with a real paid onboarding (Twilio-test-creds verification only) — **watch
-> the first real one in logs.**
+> merged, and deployed; the migration is applied (existing clients kept live). All required
+> secrets are set in the Supabase project env (`VAPI_PRIVATE_KEY` added 2026-07-15;
+> `VAPI_ASSISTANT_ID` / `VAPI_SECRET` / Twilio already present), so the next paid checkout
+> auto-provisions. Secret reference + rotate steps:
+> [billing README → Provisioning secrets](../supabase/functions/billing/README.md#provisioning-secrets-phase-2--auto-buy-a-number-on-payment).
+> **Not yet proven on a real paid onboarding** (Twilio-test-creds verification only) — **watch
+> the first real one in logs**, then tap Activate in admin-ui.
 
 ### Phase 3 — Live "call our AI" demo number
 **Goal:** a real number on the site to hear the AI. **Depends on Phase 2 + the shipped rate limit.**

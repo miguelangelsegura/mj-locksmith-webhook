@@ -1,6 +1,6 @@
 # Dispango — Commercialization Status & Roadmap
 
-_Reference doc for continuing work in a fresh session. Last updated: 2026-07-13._
+_Reference doc for continuing work in a fresh session. Last updated: 2026-07-15._
 
 ## Plain-English summary
 
@@ -65,10 +65,13 @@ the form before driving paid ad traffic.
    real open gap — the `banned_callers` list was never enforced in the webhook, so **ban enforcement was
    added** to `handleAssistantRequest`. Both decline before any AI minutes are spent. Deferred: counting
    in-flight/simultaneous calls (only completed calls are counted today). Unblocks the public demo number.
-2. **🌟 Auto-provisioning robot** (the big one, "minimize my input"): on payment, auto-buy a Twilio
-   number → attach the shared Vapi assistant → set server URL + secret + fallback → write the row. Makes
-   onboarding fully hands-off (number is instant on `/welcome`). Touches the live call path (broke it
-   twice when done by hand) — needs a careful dedicated session + review. Spec: `docs/ADMIN-DASHBOARD-SPEC.md`.
+2. **🌟 Auto-provisioning robot** — **DONE & LIVE (2026-07-15).** On payment, auto-buys a Twilio number →
+   registers it with Vapi (server URL + `?token` + fallback, no static assistant) → writes the row as
+   `provision_status='staged'`; operator taps **Activate** in admin-ui to go live. `/welcome` shows the
+   real number. **Provisioning is ON** — all required secrets are set in the Supabase project env
+   (`VAPI_PRIVATE_KEY` added 2026-07-15; `VAPI_ASSISTANT_ID` / `VAPI_SECRET` / Twilio already present).
+   Secret reference + how to rotate: [billing README → Provisioning secrets](../supabase/functions/billing/README.md#provisioning-secrets-phase-2--auto-buy-a-number-on-payment).
+   Not yet proven on a real paid onboarding — **watch the first one in logs.** Spec: `docs/ADMIN-DASHBOARD-SPEC.md`.
 3. **Live "call our AI" demo number** on the site (depends on #1).
 4. **Customer login dashboard + RLS** (multi-tenant DB isolation) — makes "Sign In" real; needed before
    many paying customers.
