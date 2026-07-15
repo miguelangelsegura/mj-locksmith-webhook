@@ -28,14 +28,19 @@ function defaultHours() {
 }
 
 export default function SettingsPage() {
-  const { profile, loading, setProfile } = useDashboard();
+  const { profile, loading, setProfile, demo } = useDashboard();
   if (loading || !profile) return <SettingsSkeleton />;
   return (
     <div className="animate-slideup space-y-5">
       <PageHeader title="Settings" subtitle="Control how your AI receptionist works. Changes take effect immediately." />
-      <AnsweringSection profile={profile} setProfile={setProfile} />
-      <LeadNumberSection profile={profile} setProfile={setProfile} />
-      <BusinessInfoSection profile={profile} setProfile={setProfile} />
+      {demo && (
+        <p className="rounded-xl bg-warm-50 px-4 py-2.5 text-xs font-semibold text-warm-amber">
+          You're viewing the demo — feel free to click around, but changes here aren't saved.
+        </p>
+      )}
+      <AnsweringSection profile={profile} setProfile={setProfile} demo={demo} />
+      <LeadNumberSection profile={profile} setProfile={setProfile} demo={demo} />
+      <BusinessInfoSection profile={profile} setProfile={setProfile} demo={demo} />
     </div>
   );
 }
@@ -65,10 +70,11 @@ function SaveBar({ dirty, saving, status, onSave, label = "Save changes" }) {
   );
 }
 
-function useSaver(setProfile) {
+function useSaver(setProfile, demo) {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
   async function save(patch, onOk) {
+    if (demo) { setStatus({ tone: "ok", text: "Demo — changes aren't saved." }); onOk?.(); return; }
     setSaving(true); setStatus(null);
     const res = await callDashboard("/settings", { method: "PATCH", body: patch });
     setSaving(false);
@@ -84,12 +90,12 @@ function useSaver(setProfile) {
 }
 
 /* --- 1. Answering mode + hours + timezone --- */
-function AnsweringSection({ profile, setProfile }) {
+function AnsweringSection({ profile, setProfile, demo }) {
   const [mode, setMode] = useState(profile.answer_mode === "scheduled" ? "scheduled" : "ai_first");
   const [tz, setTz] = useState(profile.timezone || "America/Edmonton");
   const [hours, setHours] = useState(() => ({ ...defaultHours(), ...(profile.business_hours || {}) }));
   const [dirty, setDirty] = useState(false);
-  const { saving, status, setStatus, save } = useSaver(setProfile);
+  const { saving, status, setStatus, save } = useSaver(setProfile, demo);
 
   const mark = () => { setDirty(true); setStatus(null); };
   const detectTz = () => {
@@ -188,15 +194,16 @@ function DayRow({ label, day, onChange }) {
 }
 
 /* --- 2. Lead delivery number + shop fallback --- */
-function LeadNumberSection({ profile, setProfile }) {
+function LeadNumberSection({ profile, setProfile, demo }) {
   const [dispatch, setDispatch] = useState(profile.dispatch_phone || "");
   const [fallback, setFallback] = useState(profile.fallback_number || "");
   const [dirty, setDirty] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testMsg, setTestMsg] = useState(null);
-  const { saving, status, save } = useSaver(setProfile);
+  const { saving, status, save } = useSaver(setProfile, demo);
 
   async function sendTest() {
+    if (demo) { setTestMsg({ tone: "ok", text: "Demo — no real text is sent." }); return; }
     setTesting(true); setTestMsg(null);
     const res = await callDashboard("/test-text", { method: "POST", body: { to: dispatch.trim() } });
     setTesting(false);
@@ -242,12 +249,12 @@ function LeadNumberSection({ profile, setProfile }) {
 }
 
 /* --- 3. Business info --- */
-function BusinessInfoSection({ profile, setProfile }) {
+function BusinessInfoSection({ profile, setProfile, demo }) {
   const [area, setArea] = useState(profile.service_area || "");
   const [services, setServices] = useState(profile.services_offered || "");
   const [pricing, setPricing] = useState(profile.pricing_notes || "");
   const [dirty, setDirty] = useState(false);
-  const { saving, status, save } = useSaver(setProfile);
+  const { saving, status, save } = useSaver(setProfile, demo);
   const mark = () => setDirty(true);
 
   function onSave() {

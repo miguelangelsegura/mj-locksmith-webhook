@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Logo from "@/app/components/Logo";
 import { getSupabase } from "@/lib/supabase";
-import { DashboardProvider, useDashboard } from "@/lib/dashboardData";
+import { DashboardProvider, useDashboard, exitDemo } from "@/lib/dashboardData";
 
 const NAV = [
   { group: null, items: [{ href: "/dashboard", label: "Overview", icon: IconHome }] },
@@ -28,23 +28,24 @@ export default function DashboardLayout({ children }) {
 function Shell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { loading, error, profile, configured } = useDashboard();
+  const { loading, error, profile, configured, demo } = useDashboard();
 
-  // Bounce to sign-in the moment there's no session.
+  // Bounce to sign-in the moment there's no session (never in the demo tour).
   useEffect(() => {
-    if (!loading && error === "no-session") router.replace("/login");
-  }, [loading, error, router]);
+    if (!demo && !loading && error === "no-session") router.replace("/login");
+  }, [demo, loading, error, router]);
 
   async function signOut() {
+    if (demo) { exitDemo(); router.replace("/"); return; }
     const supabase = getSupabase();
     if (supabase) await supabase.auth.signOut();
     router.replace("/login");
   }
 
-  if (!configured) return <FullMessage title="Portal not switched on yet" body="The customer dashboard isn't live just yet. Please check back shortly." />;
   if (loading) return <LoadingShell />;
-  if (error === "no-session") return <LoadingShell />; // redirecting
-  if (error && error !== null && !profile) {
+  if (!demo && !configured) return <FullMessage title="Portal not switched on yet" body="The customer dashboard isn't live just yet. Please check back shortly." />;
+  if (!demo && error === "no-session") return <LoadingShell />; // redirecting
+  if (!demo && error && error !== null && !profile) {
     return (
       <FullMessage
         title="No shop is linked to this login"
@@ -61,7 +62,10 @@ function Shell({ children }) {
       {/* Sidebar (desktop) / top chip-scroll (mobile) */}
       <aside className="md:flex md:w-60 md:flex-col md:justify-between bg-ink md:min-h-screen md:sticky md:top-0">
         <div>
-          <div className="hidden md:block px-5 pb-2 pt-6"><Logo dark /></div>
+          <div className="hidden md:block px-5 pb-2 pt-6">
+            <Logo dark />
+            {demo && <span className="mt-2 inline-block rounded-full bg-warm-amber/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-warm-amber">Demo tour</span>}
+          </div>
           <nav className="flex gap-1.5 overflow-x-auto px-3 py-3 md:mt-2 md:flex-col md:gap-0.5 md:overflow-visible md:px-3" aria-label="Dashboard">
             {NAV.map((g, gi) => (
               <div key={gi} className="flex shrink-0 gap-1.5 md:flex-col md:gap-0.5">
@@ -88,7 +92,7 @@ function Shell({ children }) {
           <div className="truncate px-3 pb-2 text-xs text-white/45">{profile?.business_name || "Your shop"}</div>
           <button onClick={signOut}
             className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white">
-            <IconSignOut className="h-4 w-4" /> Sign out
+            <IconSignOut className="h-4 w-4" /> {demo ? "Exit demo" : "Sign out"}
           </button>
         </div>
       </aside>
@@ -97,8 +101,8 @@ function Shell({ children }) {
       <div className="min-w-0 flex-1">
         {/* Mobile top bar */}
         <div className="flex items-center justify-between border-b border-line bg-white px-4 py-3 md:hidden">
-          <Logo />
-          <button onClick={signOut} className="text-xs font-semibold text-muted">Sign out</button>
+          <span className="flex items-center gap-2"><Logo />{demo && <span className="rounded-full bg-warm-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-warm-amber">Demo</span>}</span>
+          <button onClick={signOut} className="text-xs font-semibold text-muted">{demo ? "Exit demo" : "Sign out"}</button>
         </div>
         <main className="mx-auto max-w-5xl px-4 py-6 md:px-8 md:py-10">{children}</main>
       </div>

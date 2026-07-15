@@ -221,6 +221,7 @@ export default function Page() {
             <a href="#faq" className="navlink hover:text-brand">FAQ</a>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3">
+            <a href="/dashboard?demo=1" className="navlink hidden text-sm font-semibold text-ink hover:text-brand md:inline">Live Demo</a>
             {CONFIG.portal && (
               <a href={CONFIG.portal} className="navlink hidden text-sm font-semibold text-ink hover:text-brand sm:inline">Sign In</a>
             )}
@@ -317,6 +318,10 @@ export default function Page() {
         <h2 className="reveal mt-2 text-center text-3xl font-extrabold tracking-tight text-ink md:text-5xl">Every call. Logged, summarized, done.</h2>
         <p className="reveal mx-auto mt-3 max-w-xl text-center">Every lead, call and text in one place — so nothing slips.</p>
         <div className="reveal mt-12"><CommandCenter /></div>
+        <div className="reveal mt-8 text-center">
+          <Btn href="/dashboard?demo=1">Explore the live dashboard <Arrow /></Btn>
+          <p className="mt-2 text-sm text-muted">Real, clickable — no sign-up needed.</p>
+        </div>
       </section>
 
       {/* HOW IT WORKS */}

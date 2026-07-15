@@ -2,6 +2,26 @@
 
 import { createContext, useContext, useCallback, useEffect, useState } from "react";
 import { getSupabase, callDashboard, supabaseConfigured } from "@/lib/supabase";
+import { DEMO_PROFILE, demoCalls } from "@/lib/demoData";
+
+// Demo mode = the public "Live demo" tour. Set when ?demo=1 is seen, remembered in
+// sessionStorage so it survives client-side navigation and refreshes within the tab.
+const DEMO_KEY = "dispango_demo";
+function detectDemo() {
+  if (typeof window === "undefined") return false;
+  try {
+    if (new URLSearchParams(window.location.search).get("demo") === "1") {
+      sessionStorage.setItem(DEMO_KEY, "1");
+      return true;
+    }
+    return sessionStorage.getItem(DEMO_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+export function exitDemo() {
+  try { sessionStorage.removeItem(DEMO_KEY); } catch {}
+}
 
 const DashboardContext = createContext(null);
 
@@ -20,9 +40,14 @@ export function DashboardProvider({ children }) {
     session: null,
     profile: null,
     calls: [],
+    demo: false,
   });
 
   const load = useCallback(async () => {
+    if (detectDemo()) {
+      setState({ loading: false, error: null, session: null, profile: DEMO_PROFILE, calls: demoCalls(), demo: true });
+      return;
+    }
     const supabase = getSupabase();
     if (!supabase) {
       setState((s) => ({ ...s, loading: false, error: "not-configured" }));
@@ -56,6 +81,7 @@ export function DashboardProvider({ children }) {
     const supabase = getSupabase();
     if (!supabase) return;
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (detectDemo()) return; // demo tour never depends on a session
       if (!session) setState((s) => ({ ...s, session: null, error: "no-session" }));
     });
     return () => sub?.subscription?.unsubscribe();

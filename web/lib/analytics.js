@@ -5,8 +5,10 @@ import { isLead } from "@/lib/format";
 // deliberately so the number is defensible.
 export const AVG_JOB_VALUE = 150; // $ — estimated value of one captured job
 export const DISPANGO_MONTHLY = 199; // flat plan price
-// A live human answering service typically bills per answered call.
-export const HUMAN_PER_CALL = 2.25;
+// A part-time receptionist/phone staff — conservative monthly cost. Unlike a
+// per-call answering service (which only beats us at high volume), this comparison
+// holds at any volume and is the honest "vs a human" story.
+export const MONTHLY_RECEPTIONIST = 2400;
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -59,7 +61,7 @@ export function computeAnalytics(calls, tz = "America/Edmonton") {
   }
 
   const estValue = leads * AVG_JOB_VALUE;
-  const humanCost = Math.round(answered * HUMAN_PER_CALL);
+  const receptionistSaved = MONTHLY_RECEPTIONIST - DISPANGO_MONTHLY;
 
-  return { answered, leads, afterHours, thisWeek, byDay, estValue, humanCost };
+  return { answered, leads, afterHours, thisWeek, byDay, estValue, receptionistSaved };
 }

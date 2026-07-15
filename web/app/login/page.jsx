@@ -140,6 +140,14 @@ export default function LoginPage() {
             {cfg.altLabel}
           </button>
         </p>
+
+        <div className="mt-5 border-t border-line pt-4 text-center">
+          <a href="/dashboard?demo=1"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-brand hover:underline">
+            Just exploring? See the live demo
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14m-6-6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </a>
+        </div>
       </div>
 
       <p className="mt-6 text-center text-xs text-muted">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/lib/dashboardData";
-import { computeAnalytics, AVG_JOB_VALUE, DISPANGO_MONTHLY, HUMAN_PER_CALL } from "@/lib/analytics";
+import { computeAnalytics, AVG_JOB_VALUE, DISPANGO_MONTHLY, MONTHLY_RECEPTIONIST } from "@/lib/analytics";
 import { StatCard, PageHeader, Skeleton } from "../ui";
 
 export default function AnalyticsPage() {
@@ -11,7 +11,6 @@ export default function AnalyticsPage() {
   const tz = profile.timezone || "America/Edmonton";
   const a = computeAnalytics(calls, tz);
   const maxBar = Math.max(1, ...a.byDay.map((d) => d.count));
-  const humanVsUs = Math.max(0, a.humanCost - DISPANGO_MONTHLY);
 
   return (
     <div className="animate-slideup space-y-6">
@@ -29,10 +28,10 @@ export default function AnalyticsPage() {
         <p className="mb-4 text-xs font-bold uppercase tracking-wider text-muted">Calls answered · last 7 days</p>
         <div className="flex h-36 items-end gap-2.5">
           {a.byDay.map((d, i) => (
-            <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1.5">
+            <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
               <span className="text-[11px] font-bold tabular-nums text-ink">{d.count || ""}</span>
               <div className="w-full rounded-t-md bg-gradient-to-t from-brand to-brand-600 transition-all"
-                style={{ height: `${Math.max(4, (d.count / maxBar) * 100)}%` }} />
+                style={{ height: `${Math.max(6, (d.count / maxBar) * 116)}px` }} />
             </div>
           ))}
         </div>
@@ -53,15 +52,14 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="rounded-2xl border border-line bg-white p-5">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted">Vs. a human answering service</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-muted">Vs. a human receptionist</p>
           <p className="mt-1 text-3xl font-extrabold text-ink">
-            ${humanVsUs.toLocaleString()}<span className="text-base font-semibold text-muted"> saved</span>
+            ${a.receptionistSaved.toLocaleString()}<span className="text-base font-semibold text-muted">/mo saved</span>
           </p>
           <p className="mt-2 text-xs leading-relaxed text-body">
-            A live answering service billing ~${HUMAN_PER_CALL.toFixed(2)}/call would have charged about
-            <span className="font-semibold text-ink"> ${a.humanCost.toLocaleString()}</span> to handle these
-            calls. Dispango is a flat <span className="font-semibold text-ink">${DISPANGO_MONTHLY}/mo</span> —
-            and never puts a caller on hold.
+            A part-time receptionist runs about <span className="font-semibold text-ink">${MONTHLY_RECEPTIONIST.toLocaleString()}/mo</span>.
+            Dispango is a flat <span className="font-semibold text-ink">${DISPANGO_MONTHLY}/mo</span> — and answers
+            nights, weekends, and holidays a receptionist wouldn't.
           </p>
         </div>
       </section>
