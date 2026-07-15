@@ -19,6 +19,24 @@ everyone — and every Claude Code instance working here — follows this:
   commit experimental work straight to `main`.
 - **One task = one short-lived branch** (`feat/…`, `fix/…`, `docs/…`); two people never
   edit the same branch.
+- **ALWAYS work in your own isolated `git worktree` — never edit files in the shared main
+  checkout.** This repo is worked by **multiple Claude Code sessions at once** (the launch
+  phases run in parallel), and every `git checkout`/branch-switch a sibling session runs
+  resets the shared working tree — silently reverting your uncommitted edits mid-task (this
+  has happened). A worktree is a private directory with its own HEAD, immune to that. **Before
+  changing any file**, create one off the latest `main`:
+  ```
+  git fetch origin main
+  git worktree add /Users/abdulkassem/mj-<task>-wt -b <feat/…> origin/main
+  ```
+  Work, commit, push, and open the PR from that worktree; `git worktree remove <path> --force`
+  when the branch is merged. Read-only exploration in the main checkout is fine — but the
+  moment you edit, use a worktree.
+  - **`web/` worktrees:** symlink deps and copy the deploy link, or the build/deploy break:
+    `ln -s <main>/web/node_modules <wt>/web/node_modules` and
+    `cp <main>/web/.vercel/project.json <wt>/web/.vercel/project.json` (the `.vercel` link is
+    gitignored, so without it `vercel --prod` publishes to a NEW orphan project instead of
+    `dispango`).
 - **Push your branch freely/continuously** — it's a backup + lets the team see progress,
   and changes nothing live (a push is *not* a deploy).
 - **Merge to `main` via a quick PR**, once sanity-checked; delete the branch after.
