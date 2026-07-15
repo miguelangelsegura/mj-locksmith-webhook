@@ -279,6 +279,13 @@ async function lookupClientByInboundAnyState(number: string | null): Promise<str
 
 async function lookupClientId(assistantId: unknown): Promise<string | null> {
   if (!assistantId || !supabase) return null;
+  // The shared VAPI_ASSISTANT_ID answers for EVERY shop (per-shop identity is injected
+  // per call via assistantOverrides), yet it's stored as ONE legacy client's
+  // vapi_assistant_id. Resolving by it would misattribute every call that didn't match
+  // an inbound number to that single shop, so the shared id can't identify a tenant —
+  // only a genuinely per-client assistant id can. Refuse it and let the caller skip
+  // the insert rather than file the call (and text a lead) under the wrong shop.
+  if (DEMO_ASSISTANT_ID && assistantId === DEMO_ASSISTANT_ID) return null;
   const { data } = await supabase
     .from("clients").select("id").eq("vapi_assistant_id", assistantId).eq("active", true).limit(1);
   return data?.[0]?.id ?? null;
