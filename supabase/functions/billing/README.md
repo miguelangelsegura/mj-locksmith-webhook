@@ -46,10 +46,11 @@ is smart-retrying the card); revoked only on `canceled` / `unpaid` / subscriptio
 
 ### Provisioning secrets (Phase 2 — auto-buy a number on payment)
 
-> ⚠️ **ACTION REQUIRED to turn provisioning ON.** The code is deployed but **stays OFF**
-> (falls back to the manual "provision now" email) until **all** of the following are set
-> on the `billing` function. Set them, redeploy is not needed (secrets are read at call
-> time), and the next paid checkout auto-provisions. This is the plug-and-play switch.
+> ✅ **LIVE as of 2026-07-15 — provisioning is ON.** All secrets below are set in the Supabase
+> project env (they're project-wide, shared by every function). `VAPI_PRIVATE_KEY` was the last
+> one added; the rest were already present from the webhook. The next paid checkout auto-provisions.
+> This table is now the **reference + rotate guide** — if a value changes, `supabase secrets set …`
+> the new one (the local copy of `VAPI_PRIVATE_KEY` lives in the gitignored `supabase/functions/.env.local`).
 
 | Secret | What |
 |---|---|
