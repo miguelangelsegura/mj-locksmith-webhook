@@ -16,6 +16,16 @@ import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 // NOT be flagged as "unsent leads". Mirrors sendDispatchSms in the webhook.
 export const NON_LEAD_OUTCOMES = new Set(["wrong_number", "spam", "info_only"]);
 
+// A call counts as a real lead unless its outcome is a known non-lead one. The
+// single source of truth for "is this a lead?" — used by the unsent-lead monitor
+// AND admin analytics so the two can never drift. Normalizes the free-text
+// outcome (case, surrounding space, "wrong number" → "wrong_number") first.
+export function isLeadOutcome(outcome: unknown): boolean {
+  return !NON_LEAD_OUTCOMES.has(
+    String(outcome ?? "").trim().toLowerCase().replace(/ /g, "_"),
+  );
+}
+
 // One caller placing >= this many calls in the last hour trips the abuse signal.
 // Env-overridable; default 6 matches the value the admin health card used.
 export const ABUSE_BURST_THRESHOLD = Number(Deno.env.get("ABUSE_BURST_THRESHOLD") ?? "6");
@@ -42,9 +52,7 @@ export async function collectMonitoring(supabase: SupabaseClient): Promise<Monit
   // Fail open, but leave a trail: a persistent query failure must not silently
   // read as "all healthy" with no way to notice.
   if (unsentErr) console.log(`[monitoring] unsent-leads query failed: ${unsentErr.message}`);
-  const unsentLeads = (unsent ?? []).filter((c) =>
-    !NON_LEAD_OUTCOMES.has(String(c.outcome ?? "").trim().toLowerCase().replace(/ /g, "_"))
-  ).length;
+  const unsentLeads = (unsent ?? []).filter((c) => isLeadOutcome(c.outcome)).length;
 
   // 2. Abuse burst (one number, many calls in the last hour).
   const { data: recent, error: recentErr } = await supabase

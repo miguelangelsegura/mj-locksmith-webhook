@@ -20,7 +20,7 @@
 // assistant + server URL) is intentionally NOT here yet — see ADMIN-DASHBOARD-SPEC.md.
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { collectMonitoring, NON_LEAD_OUTCOMES } from "../_shared/monitoring.ts";
+import { collectMonitoring, isLeadOutcome } from "../_shared/monitoring.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -320,8 +320,7 @@ async function health(): Promise<Response> {
   const clientById: Record<string, any> = {};
   for (const c of clients) clientById[c.id] = c;
 
-  const isLead = (o: unknown) =>
-    !NON_LEAD_OUTCOMES.has(String(o ?? "").trim().toLowerCase().replace(/ /g, "_"));
+  const isLead = isLeadOutcome;
 
   // Failed lead texts: real leads that ended (>2min ago) with no dispatch SMS.
   const failedLeads = (unsentRes.data ?? []).filter((c) => isLead(c.outcome)).map((c) => ({
@@ -696,8 +695,7 @@ async function getAnalytics(): Promise<Response> {
   for (const c of clientsRes.data ?? []) tzById[c.id] = c.timezone || DEFAULT_TZ;
 
   const rows = callsRes.data ?? [];
-  const isLead = (o: unknown) =>
-    !NON_LEAD_OUTCOMES.has(String(o ?? "").trim().toLowerCase().replace(/ /g, "_"));
+  const isLead = isLeadOutcome;
 
   let leads = 0, afterHours = 0, durSum = 0, durN = 0, today = 0, leadsToday = 0;
   const outcomeMix: Record<string, number> = {};
