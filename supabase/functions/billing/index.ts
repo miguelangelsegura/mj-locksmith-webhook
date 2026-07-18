@@ -561,20 +561,28 @@ async function onboardingPay(token: string): Promise<Response> {
   const client = data?.[0];
   if (!client) return html("<p>This onboarding link is invalid or has expired.</p>", 404);
 
-  // Gate: must be signed. The webhook is the source of truth, but if it hasn't
-  // landed yet do one synchronous status fetch so a just-signed user isn't stuck.
+  // Gate: must be signed. The webhook is the source of truth, but SignWell
+  // redirects the browser here the instant the user signs — often a beat before
+  // its own API/webhook reports "Completed". Poll briefly (a few checks over a
+  // few seconds) so a just-signed user is carried straight to payment instead of
+  // hitting a dead-end message. (This page renders as plain text from *.supabase.co,
+  // so a client-side meta-refresh wouldn't run — the rescue has to be server-side.)
   let signed = client.contract_status === "signed";
   if (!signed && client.contract_request_id) {
-    const status = await signwellGetStatus(client.contract_request_id);
-    if (isCompletedStatus(status)) {
-      await supabase.from("clients").update({ contract_status: "signed", signed_at: new Date().toISOString() })
-        .eq("id", client.id);
-      await recomputeActive(client.id);
-      signed = true;
+    for (let i = 0; i < 4 && !signed; i++) {
+      const status = await signwellGetStatus(client.contract_request_id);
+      if (isCompletedStatus(status)) {
+        await supabase.from("clients").update({ contract_status: "signed", signed_at: new Date().toISOString() })
+          .eq("id", client.id);
+        await recomputeActive(client.id);
+        signed = true;
+        break;
+      }
+      if (i < 3) await new Promise((r) => setTimeout(r, 1500));
     }
   }
   if (!signed) {
-    return html("<p>Please finish signing the contract first. If you just signed, refresh in a moment.</p>", 409);
+    return html("<p>Please finish signing the contract first. If you just signed, refresh this page in a moment.</p>", 409);
   }
 
   // Already paid? Send them to the confirmation rather than charging twice.
@@ -594,7 +602,19 @@ async function onboardingPay(token: string): Promise<Response> {
     }, { idempotencyKey: `checkout_${token}` });
     return Response.redirect(session.url!, 302);
   } catch (e) {
-    console.log(`[billing] checkout create failed token=${token}: ${e}`);
+    const type = (e as any)?.type;
+    const code = (e as any)?.code;
+    console.log(`[billing] checkout create failed token=${token} type=${type} code=${code}: ${e}`);
+    // A config error (missing/invalid price, wrong-mode or bad key) fails EVERY
+    // payment the same way — the classic trap when flipping Stripe test→live. Page
+    // ops so a misconfig can't silently block all revenue; transient errors just log.
+    if (type === "StripeInvalidRequestError" || type === "StripeAuthenticationError") {
+      await notifyOps(
+        "Payment blocked — Stripe misconfigured",
+        `Checkout failed to start (type=${type} code=${code}). Verify STRIPE_PRICE_ID and ` +
+          `STRIPE_SECRET_KEY are the SAME mode (both live or both test) and the price exists.`,
+      );
+    }
     return html("<p>Could not start payment. Please try again.</p>", 502);
   }
 }
