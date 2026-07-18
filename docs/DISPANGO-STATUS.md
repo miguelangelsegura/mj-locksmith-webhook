@@ -1,6 +1,32 @@
 # Dispango — Commercialization Status & Roadmap
 
-_Reference doc for continuing work in a fresh session. Last updated: 2026-07-15._
+_Reference doc for continuing work in a fresh session. Last updated: 2026-07-18._
+
+## ⟳ 2026-07-18 reconciliation (READ FIRST — the sections below were behind reality)
+
+A full Phase 0–7 audit found the build is **~85% to launch**; several items this doc still
+listed as "to do" are **shipped + merged to `main`**. Corrected status:
+
+- **Payment is NOT broken.** The reported "no payment page after signing" is not reproducible
+  today: `/pay` returns a valid Stripe Checkout (verified — a `cs_test_...` 302). The flow works
+  **in Stripe TEST mode**. The real revenue gate is **flipping Stripe to LIVE keys** (below).
+  Hardened `/pay` anyway: a bounded poll kills the sign→pay race, and a Stripe **config error now
+  pages ops** (guards the test→live flip).
+- **Customer login + dashboard + RLS = BUILT & MERGED** (PRs #26/#27/#29) — `web/app/dashboard/**`,
+  `web/app/login/**`, `dashboard` Edge Function, default-deny RLS on `clients`+`calls`. Roadmap #4
+  is done, not pending.
+- **Business-hours forwarding = WIRED** in the webhook (`answer_mode='scheduled'` → AI in-hours,
+  bounce to `fallback_number` after-hours). Now covered by unit tests.
+- **Demo line = LIVE on the site** (`+1 651-551-9855`) but AI toggled **OFF** (admin Active flag).
+- **Turnstile (Phase 6) = built, gated OFF** pending Cloudflare keys. **Monitoring (Phase 1) = live**
+  (heartbeat + SMS alerts; email alerts off pending DNS).
+- **Cal.com link = LIVE** (`cal.com/abdul-zxafqn/30min`), not a placeholder. **VAPI_PRIVATE_KEY = set**
+  (provisioning + admin test-call/repair tools live). Pooled-assistant mis-attribution bug = **FIXED**
+  (PR #30). Marketing-site branch = **merged to `main`**.
+- **First automated tests + CI now exist** (`.github/workflows/ci.yml`; `_shared/*_test.ts`).
+
+**The two real gaps to launch:** (a) flip Stripe to LIVE + do a full go-live dry run incl. the first
+real provisioning (Phase 7); (b) turn on the demo AI / hide-when-off. Everything else is verify-not-build.
 
 ## Plain-English summary
 
@@ -42,14 +68,17 @@ the form before driving paid ad traffic.
 
 ## Config placeholders to fill before real launch
 
-- **Cal.com booking link** — the "Book a demo" buttons point at `https://cal.com/REPLACE/dispango-demo`
-  (in `web/app/page.jsx` CONFIG). Cal.com individual plan is free.
+- ~~**Cal.com booking link**~~ — DONE, live at `https://cal.com/abdul-zxafqn/30min` (`web/app/page.jsx` CONFIG).
 - **`PUBLIC_SITE_URL`** secret currently = `https://dispango.vercel.app`; switch to `https://dispango.com`
   once DNS is flipped (then `/welcome` lives on the real domain).
 - **dispango.com DNS at GoDaddy** (you/Miguel) — still points at the OLD site. Vercel alias is set; needs
   A `@` → `216.198.79.1` + `64.29.17.1` (or `76.76.21.21`), CNAME `www` → `cname.vercel-dns.com`.
-- Mailing **address**, contact **phone**, and the **"Sign In"** target (Stripe customer portal URL).
-- **Stripe mode:** confirm keys are test vs live. A test card (`4242...`) declines on live keys (safe).
+- Mailing **address** (→ Jordan's PO box) + **Privacy Officer name** in `/privacy` + `/terms`, contact
+  **phone**, and the **"Sign In"** target.
+- **Stripe mode — CONFIRMED TEST as of 2026-07-18** (`/pay` returns `cs_test_` sessions). Real revenue is
+  blocked until LIVE keys are set: `supabase secrets set STRIPE_SECRET_KEY=… STRIPE_WEBHOOK_SECRET=…
+  STRIPE_PRICE_ID=…` — all three MUST be the **same (live) mode** and the price must exist in the live
+  account, or `/pay` throws (it now pages ops if so). Human gate — Abdul provides live keys.
 
 ## Test the workflow (no real money — test mode)
 
@@ -87,5 +116,5 @@ the form before driving paid ad traffic.
   `web/app/{get-started,welcome,terms,privacy}/page.jsx`.
 - Backend: `supabase/functions/billing/index.ts` (signup + Stripe + SignWell), `supabase/functions/admin/index.ts`
   (admin-token client CRUD), `supabase/functions/vapi-webhook/index.ts` (live call path).
-- All website + onboarding work is on branch **`feat/marketing-site-nextjs`** (committed + pushed; not yet
-  merged to `main`). Deploys are human-gated. See `CLAUDE.md` for git/deploy protocol.
+- Website + onboarding + customer dashboard are **merged to `main`** and deployed. New work follows the
+  branch-per-task + PR protocol in `CLAUDE.md`; deploys of verified+reviewed changes are auto-gated per that doc.

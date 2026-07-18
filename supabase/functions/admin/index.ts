@@ -17,7 +17,10 @@
 //   POST   /clients/:id/test-sms    send a test dispatch SMS to the client's number
 //
 // Provisioning automation (buying the Twilio number, attaching the Vapi
-// assistant + server URL) is intentionally NOT here yet — see ADMIN-DASHBOARD-SPEC.md.
+// assistant + server URL) lives in billing/provisioning.ts and runs on payment
+// (Stripe checkout.session.completed); the Activate/Retry controls are billing
+// routes. This function provides the related operator diagnostics — POST
+// /clients/:id/test-call and /clients/:id/repair-routing.
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { collectMonitoring, isLeadOutcome } from "../_shared/monitoring.ts";
