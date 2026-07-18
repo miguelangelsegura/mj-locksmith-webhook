@@ -552,6 +552,10 @@ async function handleSignup(req: Request, body: Record<string, unknown>): Promis
   return await createOnboarding({ client_id: clientId, contact_email: contactEmail });
 }
 
+// Tokens we've already paged ops about for a Stripe config error, so a misconfig
+// under live traffic alerts once (per instance) instead of on every refresh.
+const stripeConfigPaged = new Set<string>();
+
 async function onboardingPay(token: string): Promise<Response> {
   if (!supabase) return html("<p>Service unavailable.</p>", 503);
   if (!stripe || !STRIPE_PRICE_ID) return html("<p>Payment is not configured.</p>", 503);
@@ -608,7 +612,11 @@ async function onboardingPay(token: string): Promise<Response> {
     // A config error (missing/invalid price, wrong-mode or bad key) fails EVERY
     // payment the same way — the classic trap when flipping Stripe test→live. Page
     // ops so a misconfig can't silently block all revenue; transient errors just log.
-    if (type === "StripeInvalidRequestError" || type === "StripeAuthenticationError") {
+    if (
+      (type === "StripeInvalidRequestError" || type === "StripeAuthenticationError") &&
+      !stripeConfigPaged.has(token)
+    ) {
+      stripeConfigPaged.add(token);
       await notifyOps(
         "Payment blocked — Stripe misconfigured",
         `Checkout failed to start (type=${type} code=${code}). Verify STRIPE_PRICE_ID and ` +
