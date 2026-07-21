@@ -510,6 +510,7 @@ async function handleSignup(req: Request, body: Record<string, unknown>): Promis
       contact_email: contactEmail,
       dispatch_phone: phone,
       owner_phone: phone,
+      trade: trade || null,
       active: false,
     }).select("id").limit(1);
     if (insErr) {
@@ -535,11 +536,13 @@ async function handleSignup(req: Request, body: Record<string, unknown>): Promis
       business_name: businessName,
       dispatch_phone: phone,
       owner_phone: phone,
+      trade: trade || null,
     }).eq("id", clientId);
   }
 
   // Fire-and-forget lead alert with the details a human needs to provision later
-  // (voice/trade aren't stored — no column yet — so they ride the notification).
+  // (voice isn't stored — no column — so it rides the notification; trade is now
+  // persisted on the row above but kept here too for the at-a-glance alert).
   notifyOps(
     "New self-serve signup",
     `${businessName} started signup.\nEmail: ${contactEmail}\nLead phone: ${phone}\n` +
