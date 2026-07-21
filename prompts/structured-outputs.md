@@ -12,16 +12,38 @@ lowercased with spaces → underscores, matching `STRUCTURED_FIELDS`.
 |---|---|---|---|
 | `Caller Name` | `caller_name` | string | |
 | `service_address` | `service_address` | string | city + cross-streets if exact withheld |
-| `door_type` | `door_type` | string | free text; model emits values like `residential_key` |
-| `damage_description` | `damage_description` | string | preferred for the SMS "Job" line |
+| `door_type` | `door_type` | string | free text; the specific item/fixture the job involves (trade-neutral — see below) |
+| `damage_description` | `damage_description` | string | the problem/issue (trade-neutral); preferred for the SMS "Job" line |
 | `urgency` | `urgency` | string | drives SMS header (HIGH/EMERGENCY/…) |
-| `vehicle_info` | `vehicle_info` | string | car jobs |
+| `vehicle_info` | `vehicle_info` | string | filled only when a vehicle is involved |
 | `outcome` | `outcome` | string | how the call ended |
 | `summary` | (ignored — webhook uses `analysis.summary`) | string | |
 
 All are **free strings with no enum**, which is why `door_type` produced the raw
 `residential_key`. The webhook now **humanizes** that on the SMS (`_` → space) and
 prefers `damage_description`, so no Vapi change is required.
+
+## Trade-neutral descriptions (Phase 7 — applied 2026-07-20)
+
+Launch is locksmith-only, but three descriptions were locksmith-shaped and would
+mis-capture (or awkwardly shoehorn) a non-locksmith call. Their `description` **and**
+extraction-driving `schema.description` were reworded to trade-neutral supersets — every
+locksmith example is preserved, so locksmith capture doesn't regress; other trades now
+return `null` instead of a forced value. Applied live via the Vapi API; `maxLength`
+unchanged. Old → new:
+
+- **`damage_description`** — was "damage or break-in indicators / signs of forced entry" →
+  now "the problem or issue the caller needs help with (what's wrong, plus detail — damage,
+  forced entry, a leak, a malfunction, or what they were trying to do)".
+- **`door_type`** — was "the door or lock the caller needs help with" → now "the specific
+  item, equipment, fixture, or location the job involves" (locksmith examples kept first;
+  added e.g. water heater, breaker panel).
+- **`vehicle_info`** — was "for car lockouts only" → now "only when the job involves a
+  vehicle" (make/model/year, + colour/plate if given).
+
+The field **names** stay locksmith-flavoured (`door_type`, `vehicle_info`) and the webhook's
+SMS labels are unchanged — deliberate, since launch traffic is locksmith. This is *light*
+groundwork (graceful degradation), not per-trade tuning.
 
 ## `outcome` enum (Phase 4 — applied)
 
