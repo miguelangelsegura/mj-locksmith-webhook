@@ -5,6 +5,12 @@ _The step-by-step map from current state to a Calio-equivalent, launch-ready pro
 for sprints 2–6), and [ADMIN-DASHBOARD-SPEC.md](ADMIN-DASHBOARD-SPEC.md). Ready-to-run per-phase
 prompts live in [prompts/](prompts/). Last updated: 2026-07-14._
 
+> **⟳ 2026-07-18 reconciliation:** phase statuses below are stale. Per a full audit, Phases 0, 1, 2,
+> 3, 5, 6 are shipped and **Phase 4 (customer login + dashboard + RLS) is BUILT & merged** (not
+> "greenfield"). Business-hours forwarding is wired; the payment flow works in Stripe TEST mode. The
+> only real remaining build is **Phase 7 (go-live: flip Stripe→live, DNS, full dry run)**. See the
+> reconciliation banner in [DISPANGO-STATUS.md](DISPANGO-STATUS.md) for the authoritative current state.
+
 ## PLAIN-ENGLISH SUMMARY
 
 Goal: a **Calio-equivalent, launch-ready** Dispango — polished website, near-automated onboarding

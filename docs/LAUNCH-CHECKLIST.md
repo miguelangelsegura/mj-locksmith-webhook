@@ -5,6 +5,12 @@ decision) to fully switch on everything that's already built and deployed. Code-
 gated OFF safely — nothing here is broken while these sit undone; each item just unlocks a capability.
 Grouped so you can knock them out in one sitting. Last updated: 2026-07-14._
 
+> **⟳ 2026-07-18:** the top human-gated items are now: (1) **flip Stripe to LIVE keys** (all three
+> `STRIPE_*` secrets same live mode + a live price) — the only thing blocking real revenue; the flow
+> already works in test mode. (2) **dispango.com DNS flip** at GoDaddy (also unlocks email alerts).
+> (3) **Cloudflare Turnstile keys** before paid ad traffic. (4) **PO box address + Privacy Officer name**
+> (Jordan) into `/privacy` + `/terms`. See [DISPANGO-STATUS.md](DISPANGO-STATUS.md) for full current state.
+
 Project ref for all `supabase secrets set …` commands: **`yqyvybukyfokyfsjzyso`**.
 
 ---
