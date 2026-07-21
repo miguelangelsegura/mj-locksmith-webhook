@@ -3,7 +3,7 @@ const CONFIG = {
   legalName: "Jam Works Inc.",
   // TODO(Phase 7 / launch): fill real values before go-live — tracked on the dashboard.
   address: "[ADD REGISTERED MAILING ADDRESS]",
-  privacyOfficer: "[ADD PRIVACY OFFICER NAME / TITLE]",
+  privacyOfficer: "Jordan Taylor, Privacy Officer",
   effective: "July 15, 2026",
 };
 
