@@ -9,7 +9,7 @@
 **AMONG:**
 
 1. **JORDAN BAILEY TAYLOR**, of London, Ontario ("Jordan")
-2. **ABDULRAHMAN KASSEM**, of Calgary, Alberta ("Abdul")
+2. **ABDULRAHMAN MAGDY MOHAMED KASSEM**, of Calgary, Alberta ("Abdul")
 3. **MIGUEL ANGEL SEGURA**, of London, Ontario ("Miguel")
 
 (each a "Founder" and collectively the "Founders")
@@ -204,6 +204,6 @@ In this Agreement:
 | | |
 |---|---|
 | JORDAN BAILEY TAYLOR | Date |
-| ABDULRAHMAN KASSEM | Date |
+| ABDULRAHMAN MAGDY MOHAMED KASSEM | Date |
 | MIGUEL ANGEL SEGURA | Date |
 | JAM WORKS INC., by its authorized signatory | Date |

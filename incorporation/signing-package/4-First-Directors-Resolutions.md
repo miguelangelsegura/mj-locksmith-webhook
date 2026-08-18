@@ -17,7 +17,7 @@ The undersigned, being all the directors of the Corporation, sign the following 
 **4. Directors.** The following are confirmed as the directors of the Corporation until the next annual meeting or until their successors are elected or appointed:
 
 - Jordan Bailey Taylor
-- Abdulrahman Kassem
+- Abdulrahman Magdy Mohamed Kassem
 - Miguel Angel Segura
 
 **5. Financial year-end.** The financial year-end of the Corporation is set as **December 31**.
@@ -27,7 +27,7 @@ The undersigned, being all the directors of the Corporation, sign the following 
 | Subscriber | Common shares | Consideration |
 |---|---|---|
 | Jordan Bailey Taylor | 1,000,000 | $10.00 |
-| Abdulrahman Kassem | 1,000,000 | $10.00 |
+| Abdulrahman Magdy Mohamed Kassem | 1,000,000 | $10.00 |
 | Miguel Angel Segura | 1,000,000 | $10.00 |
 
 **7. Shareholders' agreement.** The Corporation is authorized to enter into the Founders' and Shareholders' Agreement (a unanimous shareholder agreement under s.146 of the CBCA) among the Corporation and the three shareholders, and the directors are authorized to sign it.
@@ -45,5 +45,5 @@ The undersigned, being all the directors of the Corporation, sign the following 
 | | |
 |---|---|
 | JORDAN BAILEY TAYLOR | Date |
-| ABDULRAHMAN KASSEM | Date |
+| ABDULRAHMAN MAGDY MOHAMED KASSEM | Date |
 | MIGUEL ANGEL SEGURA | Date |

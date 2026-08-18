@@ -4,7 +4,7 @@
 
 **THIS AGREEMENT** is made effective as of the date on which it is last signed by the parties below,
 
-**AMONG:** **JORDAN BAILEY TAYLOR**, **ABDULRAHMAN KASSEM**, and **MIGUEL ANGEL SEGURA** (each an "Assignor"), **AND JAM WORKS INC.** (the "Corporation").
+**AMONG:** **JORDAN BAILEY TAYLOR**, **ABDULRAHMAN MAGDY MOHAMED KASSEM**, and **MIGUEL ANGEL SEGURA** (each an "Assignor"), **AND JAM WORKS INC.** (the "Corporation").
 
 ## 1. Assignment
 
@@ -52,6 +52,6 @@ Governed by the laws of Ontario and the federal laws of Canada. May be signed in
 | | |
 |---|---|
 | JORDAN BAILEY TAYLOR | Date |
-| ABDULRAHMAN KASSEM | Date |
+| ABDULRAHMAN MAGDY MOHAMED KASSEM | Date |
 | MIGUEL ANGEL SEGURA | Date |
 | JAM WORKS INC., by its authorized signatory | Date |
