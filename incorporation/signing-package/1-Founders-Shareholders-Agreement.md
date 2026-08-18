@@ -8,7 +8,7 @@
 
 **AMONG:**
 
-1. **JORDAN TAYLOR**, of London, Ontario ("Jordan")
+1. **JORDAN BAILEY TAYLOR**, of London, Ontario ("Jordan")
 2. **ABDULRAHMAN KASSEM**, of Calgary, Alberta ("Abdul")
 3. **MIGUEL ANGEL SEGURA**, of London, Ontario ("Miguel")
 
@@ -159,7 +159,7 @@ In this Agreement:
 
 ## ARTICLE 9 — DISPUTE RESOLUTION AND DEADLOCK
 
-9.1 **Escalation ladder.** Any dispute under this Agreement, or any deadlock of the Board or shareholders, is resolved as follows: (a) good-faith negotiation among the Founders for 15 days; then (b) mediation before a single mediator in Calgary, Alberta for up to 30 days; then (c) final and binding arbitration by a single arbitrator in Calgary under the *Arbitration Act* (Alberta), with the arbitrator's costs following the outcome.
+9.1 **Escalation ladder.** Any dispute under this Agreement, or any deadlock of the Board or shareholders, is resolved as follows: (a) good-faith negotiation among the Founders for 15 days; then (b) mediation before a single mediator in Toronto, Ontario for up to 30 days; then (c) final and binding arbitration by a single arbitrator in Toronto under the *Arbitration Act, 1991* (Ontario), with the arbitrator's costs following the outcome.
 
 9.2 **Fundamental deadlock.** If a matter listed in 6.3 (unanimous matters) remains deadlocked after mediation, any Founder may serve a "Buy-Sell Notice" electing to sell all of their Shares, whereupon the Corporation and the other Founders have the option, for 60 days, to purchase those Shares at FMV under Article 8, payable under the instalment terms in 4.5. For clarity, no Founder can be **forced** to sell under this Article — it provides an exit at fair value, not an expulsion.
 
@@ -185,7 +185,7 @@ In this Agreement:
 
 11.1 **Term.** This Agreement terminates on the earlier of: written agreement of all Founders; one person becoming the sole holder of all Shares; or the closing of a bona fide equity financing or share sale in which it is superseded by a replacement shareholders' or investors' agreement.
 
-11.2 **Governing law.** Alberta and the federal laws of Canada applicable in Alberta.
+11.2 **Governing law.** Ontario and the federal laws of Canada applicable in Ontario.
 
 11.3 **Entire agreement.** This Agreement, together with the Pre-Incorporation IP Assignment Agreement, is the entire agreement among the parties regarding its subject matter.
 
@@ -193,7 +193,7 @@ In this Agreement:
 
 11.5 **Amendment.** Only in writing, signed by all parties.
 
-11.6 **Counterparts and electronic signatures.** This Agreement may be signed in counterparts, each of which is an original and all of which together form one agreement. The parties agree that electronic signatures (including e-signature platforms and scanned or PDF signatures) are valid, binding, and have the same effect as original signatures, consistent with the *Electronic Transactions Act* (Alberta) and the *Personal Information Protection and Electronic Documents Act* (Canada).
+11.6 **Counterparts and electronic signatures.** This Agreement may be signed in counterparts, each of which is an original and all of which together form one agreement. The parties agree that electronic signatures (including e-signature platforms and scanned or PDF signatures) are valid, binding, and have the same effect as original signatures, consistent with the *Electronic Commerce Act, 2000* (Ontario) and the *Personal Information Protection and Electronic Documents Act* (Canada).
 
 11.7 **Effective date.** This Agreement is dated, and takes effect, as of the date the Corporation first issues Shares to the Founders under Article 2, so that the shareholding and this Agreement come into existence together.
 
@@ -203,7 +203,7 @@ In this Agreement:
 
 | | |
 |---|---|
-| JORDAN TAYLOR | Date |
+| JORDAN BAILEY TAYLOR | Date |
 | ABDULRAHMAN KASSEM | Date |
 | MIGUEL ANGEL SEGURA | Date |
 | JAM WORKS INC., by its authorized signatory | Date |

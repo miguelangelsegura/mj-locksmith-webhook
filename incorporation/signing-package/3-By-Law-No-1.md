@@ -58,6 +58,6 @@
 
 | | |
 |---|---|
-| JORDAN TAYLOR | Date |
+| JORDAN BAILEY TAYLOR | Date |
 | ABDULRAHMAN KASSEM | Date |
 | MIGUEL ANGEL SEGURA | Date |

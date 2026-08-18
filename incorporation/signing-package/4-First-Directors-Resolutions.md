@@ -10,13 +10,13 @@ The undersigned, being all the directors of the Corporation, sign the following 
 
 **1. Certificate and articles.** The Certificate of Incorporation dated ____________________, and the articles of incorporation, issued under the CBCA (Corporation No. ____________________) are noted and placed in the minute book.
 
-**2. Registered office.** The registered office of the Corporation is located at 250 Walden Square, Calgary, Alberta.
+**2. Registered office.** The registered office of the Corporation is located at 350 Bay Street, Suite 1300B, Toronto, Ontario M5H 2S6.
 
 **3. By-law.** By-Law No. 1 of the Corporation, a general operating by-law, is made, and is to be submitted to the shareholders for confirmation.
 
 **4. Directors.** The following are confirmed as the directors of the Corporation until the next annual meeting or until their successors are elected or appointed:
 
-- Jordan Taylor
+- Jordan Bailey Taylor
 - Abdulrahman Kassem
 - Miguel Angel Segura
 
@@ -26,7 +26,7 @@ The undersigned, being all the directors of the Corporation, sign the following 
 
 | Subscriber | Common shares | Consideration |
 |---|---|---|
-| Jordan Taylor | 1,000,000 | $10.00 |
+| Jordan Bailey Taylor | 1,000,000 | $10.00 |
 | Abdulrahman Kassem | 1,000,000 | $10.00 |
 | Miguel Angel Segura | 1,000,000 | $10.00 |
 
@@ -36,7 +36,7 @@ The undersigned, being all the directors of the Corporation, sign the following 
 
 **9. Banking.** The Corporation is authorized to open a bank account at a Canadian chartered bank designated by the directors, and any one director is authorized to operate it and sign the bank's standard resolution.
 
-**10. General authorization.** The directors are authorized to do everything necessary to give effect to these resolutions, including filing the initial registered-office and directors notice, any required annual return, and (given the Corporation will carry on business in Alberta) the Alberta extra-provincial registration.
+**10. General authorization.** The directors are authorized to do everything necessary to give effect to these resolutions, including filing the initial registered-office and directors notice, the initial return under Ontario's *Corporations Information Act*, any required annual return, and any extra-provincial or business registrations required in the provinces where the Corporation carries on business.
 
 ---
 
@@ -44,6 +44,6 @@ The undersigned, being all the directors of the Corporation, sign the following 
 
 | | |
 |---|---|
-| JORDAN TAYLOR | Date |
+| JORDAN BAILEY TAYLOR | Date |
 | ABDULRAHMAN KASSEM | Date |
 | MIGUEL ANGEL SEGURA | Date |
