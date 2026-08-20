@@ -57,8 +57,8 @@ Miguel Segura
 ## FOOTER (appended to every email)
 
 —
-Miguel Segura
-626 Platts Lane, London, ON N6G 3B1
+Miguel Segura · Jam Works Inc. (Dispango)
+350 Bay Street, Suite 1300B, Toronto, ON M5H 2S6
 
 You're receiving this because your business email is published on your website. If
 you'd rather not hear from us, just reply "STOP" and we'll remove you immediately.
