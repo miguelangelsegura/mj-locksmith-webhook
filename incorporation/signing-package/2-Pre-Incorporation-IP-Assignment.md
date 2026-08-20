@@ -4,7 +4,7 @@
 
 **THIS AGREEMENT** is made effective as of the date on which it is last signed by the parties below,
 
-**AMONG:** **JORDAN TAYLOR**, **ABDULRAHMAN KASSEM**, and **MIGUEL ANGEL SEGURA** (each an "Assignor"), **AND JAM WORKS INC.** (the "Corporation").
+**AMONG:** **JORDAN BAILEY TAYLOR**, **ABDULRAHMAN MAGDY MOHAMED KASSEM**, and **MIGUEL ANGEL SEGURA** (each an "Assignor"), **AND JAM WORKS INC.** (the "Corporation").
 
 ## 1. Assignment
 
@@ -24,7 +24,7 @@ Each Assignor represents that, to their knowledge: (a) they have the right to as
 
 ## 5. General
 
-Governed by the laws of Alberta and the federal laws of Canada. May be signed in counterparts, including electronically. This Agreement survives and is confirmed by the Founders' and Shareholders' Agreement of even date.
+Governed by the laws of Ontario and the federal laws of Canada. May be signed in counterparts, including electronically. This Agreement survives and is confirmed by the Founders' and Shareholders' Agreement of even date.
 
 ---
 
@@ -51,7 +51,7 @@ Governed by the laws of Alberta and the federal laws of Canada. May be signed in
 
 | | |
 |---|---|
-| JORDAN TAYLOR | Date |
-| ABDUL KASSEM | Date |
+| JORDAN BAILEY TAYLOR | Date |
+| ABDULRAHMAN MAGDY MOHAMED KASSEM | Date |
 | MIGUEL ANGEL SEGURA | Date |
 | JAM WORKS INC., by its authorized signatory | Date |

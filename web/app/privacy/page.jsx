@@ -1,10 +1,9 @@
 const CONFIG = {
   email: "hello@dispango.com",
   legalName: "Jam Works Inc.",
-  // TODO(Phase 7 / launch): fill real values before go-live — tracked on the dashboard.
-  address: "[ADD REGISTERED MAILING ADDRESS]",
-  privacyOfficer: "[ADD PRIVACY OFFICER NAME / TITLE]",
-  effective: "July 15, 2026",
+  address: "350 Bay Street, Suite 1300B, Toronto, ON M5H 2S6",
+  privacyOfficer: "Jordan Bailey Taylor, Privacy Officer",
+  effective: "August 20, 2026",
 };
 
 export const metadata = {

@@ -20,7 +20,7 @@ const CONFIG = {
   demoLine: "+1 (651) 551-9855", // live call-in demo number (Phase 3). tel: link strips to digits; webhook handles it as the "Dispango Demo" persona with tight caps and no lead SMS.
   sampleAudio: "", // TODO: URL to a recorded sample call. The audio player renders only when set.
   phone: "", // TODO(Phase 7): public business contact line. Phone contact points are hidden until set.
-  address: "", // TODO(Phase 7): registered mailing address. Footer/Terms/Privacy omit it until set.
+  address: "350 Bay Street, Suite 1300B, Toronto, ON M5H 2S6", // registered office (Jam Works Inc.)
 };
 const PRICE = 199;
 
