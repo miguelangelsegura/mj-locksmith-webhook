@@ -14,7 +14,7 @@ The undersigned, being all the directors of the Corporation, sign the following 
 
 **1. Certificate and articles.** The Certificate of Incorporation dated ____________________, and the articles of incorporation, issued under the CBCA (Corporation No. ____________________) are noted and placed in the minute book.
 
-**2. Registered office.** The registered office of the Corporation is located at 250 Walden Square, Calgary, Alberta.
+**2. Registered office.** The registered office of the Corporation is located at 350 Bay Street, Suite 1300B, Toronto, Ontario M5H 2S6.
 
 **3. By-law.** By-Law No. 1 of the Corporation, a general operating by-law, is made, and is to be submitted to the shareholders for confirmation.
 
