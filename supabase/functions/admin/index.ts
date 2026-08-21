@@ -850,8 +850,7 @@ const NON_IDENTITY_DOMAINS = [
   "facebook.com", "instagram.com", "twitter.com", "x.com", "linkedin.com",
   "yelp.ca", "yelp.com", "yellowpages.ca", "yellowpages.com", "kijiji.ca",
   "thumbtack.com", "bbb.org", "angi.com", "homestars.com", "google.com",
-  "maps.google.com", "business.site", "wixsite.com", "squarespace.com",
-  "threebestrated.ca", "canadacompanies.net", "catalog-online.ca",
+  "maps.google.com", "threebestrated.ca", "canadacompanies.net", "catalog-online.ca",
 ];
 
 function normalizeDomain(website: unknown, explicit: unknown): string | null {
@@ -958,14 +957,20 @@ async function upsertLeads(body: Record<string, unknown>): Promise<Response> {
     row.business_name = businessName;
     row.domain = normalizeDomain(raw.website, raw.domain);
     row.phone = normalizeLeadPhone(raw.phone);
+    // An unreadable number (extension, vanity spelling) shouldn't cost us a lead
+    // that a website already identifies — keep the raw text so a human can fix it.
     if (raw.phone && !row.phone) {
-      results.push({
-        business_name: businessName,
-        action: "error",
-        reason: `phone ${JSON.stringify(raw.phone)} is not a readable North American number`,
-      });
-      skipped++;
-      continue;
+      if (!row.domain) {
+        results.push({
+          business_name: businessName,
+          action: "error",
+          reason: `phone ${JSON.stringify(raw.phone)} is not a readable North American number`,
+        });
+        skipped++;
+        continue;
+      }
+      const asWritten = `phone as published: ${String(raw.phone).trim()}`;
+      row.notes = row.notes ? `${row.notes}; ${asWritten}` : asWritten;
     }
     if (!row.domain && !row.phone) {
       results.push({ business_name: businessName, action: "error", reason: "needs a website or a usable phone number" });
@@ -1083,8 +1088,6 @@ async function logLeadActivity(id: string, body: Record<string, unknown>): Promi
   if (!["call", "email", "note", "status"].includes(kind)) {
     return json({ error: "kind must be call, email, note or status" }, 400);
   }
-  const { data: lead } = await supabase!.from("leads").select("id").eq("id", id).limit(1);
-  if (!lead || lead.length === 0) return json({ error: "not found" }, 404);
 
   const patch: Record<string, unknown> = {};
   if ("status" in body) {
@@ -1097,41 +1100,25 @@ async function logLeadActivity(id: string, body: Record<string, unknown>): Promi
     if (body.next_action_at !== null && !isIsoDate(body.next_action_at)) {
       return json({ error: "next_action_at must be YYYY-MM-DD or null" }, 400);
     }
-    patch.next_action_at = body.next_action_at;
+    patch.next_action_at = body.next_action_at ?? "";
   }
   if ("owner" in body) patch.owner = typeof body.owner === "string" ? body.owner.trim() || null : null;
-  if (kind === "call" || kind === "email") patch.last_contacted_at = new Date().toISOString();
 
-  // Move the lead BEFORE writing history: `lead_activity` is append-only, so a
-  // retry after a failed update would leave a duplicate entry behind. The call
-  // counter increments in SQL — three people work this list at once and a
-  // read-then-write would lose one of two simultaneous calls.
-  let updated: Record<string, unknown> | null = null;
-  if (kind === "call") {
-    const { data, error } = await supabase!.rpc("log_lead_call", { p_lead_id: id, p_patch: patch });
-    if (error) return json({ error: error.message }, 400);
-    updated = data ?? null;
-  } else if (Object.keys(patch).length > 0) {
-    const { data, error } = await supabase!.from("leads").update(patch).eq("id", id).select();
-    if (error) return json({ error: error.message }, 400);
-    updated = data?.[0] ?? null;
-  }
-
-  const { error: activityError } = await supabase!.from("lead_activity").insert({
-    lead_id: id,
-    actor: typeof body.actor === "string" ? body.actor.trim() || null : null,
-    kind,
-    outcome: typeof body.status === "string" ? body.status : (typeof body.outcome === "string" ? body.outcome : null),
-    note: typeof body.note === "string" ? body.note.trim() || null : null,
+  // Moving the lead and appending its history happen inside one SQL function, so
+  // a half-applied save can't leave `attempts` counted with no note to show for it.
+  const { data, error } = await supabase!.rpc("log_lead_event", {
+    p_lead_id: id,
+    p_patch: patch,
+    p_actor: typeof body.actor === "string" ? body.actor.trim() || null : null,
+    p_kind: kind,
+    p_outcome: typeof body.status === "string" ? body.status : (typeof body.outcome === "string" ? body.outcome : null),
+    p_note: typeof body.note === "string" ? body.note.trim() || null : null,
   });
-  if (activityError) return json({ error: activityError.message }, 400);
+  if (error) return json({ error: error.message }, 400);
+  if (!data) return json({ error: "not found" }, 404);
 
   console.log(`[admin] lead activity id=${id} kind=${kind} status=${patch.status ?? "unchanged"}`);
-  if (!updated) {
-    const { data } = await supabase!.from("leads").select("*").eq("id", id).limit(1);
-    updated = data?.[0] ?? null;
-  }
-  return json({ logged: true, lead: updated });
+  return json({ logged: true, lead: data });
 }
 
 async function deleteLead(id: string): Promise<Response> {

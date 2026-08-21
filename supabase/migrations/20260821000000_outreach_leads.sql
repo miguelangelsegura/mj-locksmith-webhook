@@ -81,29 +81,3 @@ create trigger leads_updated_at before update on leads
 -- x-admin-token gate). No anon/authenticated access.
 alter table leads enable row level security;
 alter table lead_activity enable row level security;
-
--- Logging a call must increment `attempts` atomically: three people work this
--- list at once, and a read-then-write in the API would drop one of two
--- simultaneous calls. Applies the rest of the patch (status/owner/next step) in
--- the same statement so the row can never move without its attempt counted.
-create or replace function log_lead_call(p_lead_id uuid, p_patch jsonb)
-returns leads
-language plpgsql
-as $$
-declare
-  result leads;
-begin
-  update leads set
-    attempts = attempts + 1,
-    status = coalesce(p_patch->>'status', status),
-    owner = case when p_patch ? 'owner' then p_patch->>'owner' else owner end,
-    next_action_at = case when p_patch ? 'next_action_at'
-      then nullif(p_patch->>'next_action_at','')::date else next_action_at end,
-    last_contacted_at = coalesce((p_patch->>'last_contacted_at')::timestamptz, now())
-  where id = p_lead_id
-  returning * into result;
-  return result;
-end;
-$$;
-
-revoke all on function log_lead_call(uuid, jsonb) from public, anon, authenticated;
