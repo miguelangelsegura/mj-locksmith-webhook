@@ -6,6 +6,10 @@
 --
 -- `attempts` also increments in SQL rather than read-then-write: three people
 -- work this list at once and two simultaneous calls would otherwise lose one.
+-- A two-argument log_lead_call() briefly existed in an earlier revision of this
+-- branch; drop it so a database that did apply it doesn't keep a dead function.
+drop function if exists log_lead_call(uuid, jsonb);
+
 create or replace function log_lead_event(
   p_lead_id uuid,
   p_patch jsonb,

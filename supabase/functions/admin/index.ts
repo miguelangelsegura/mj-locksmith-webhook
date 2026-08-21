@@ -853,6 +853,13 @@ const NON_IDENTITY_DOMAINS = [
   "maps.google.com", "threebestrated.ca", "canadacompanies.net", "catalog-online.ca",
 ];
 
+// Site builders host one shop per SUBDOMAIN — `bobslocks.wixsite.com` really is
+// Bob's identity. Only the bare apex (a scraped "Powered by …" footer link) is junk.
+const BUILDER_APEXES = [
+  "wixsite.com", "business.site", "squarespace.com", "weebly.com",
+  "godaddysites.com", "webflow.io", "wordpress.com",
+];
+
 function normalizeDomain(website: unknown, explicit: unknown): string | null {
   const candidate = typeof explicit === "string" && explicit.trim()
     ? explicit.trim()
@@ -865,6 +872,7 @@ function normalizeDomain(website: unknown, explicit: unknown): string | null {
     .toLowerCase();
   if (!host.includes(".")) return null;
   if (NON_IDENTITY_DOMAINS.some((d) => host === d || host.endsWith(`.${d}`))) return null;
+  if (BUILDER_APEXES.includes(host)) return null;
   return host;
 }
 
@@ -1019,7 +1027,10 @@ async function upsertLeads(body: Record<string, unknown>): Promise<Response> {
     if (existing) {
       const fill: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(row)) {
-        if (key === "status" || key === "owner" || key === "notes") continue;
+        // status/owner are never blank once set, so they're skipped outright;
+        // notes rides the emptiness check below — a human's note is non-empty
+        // and stays, but a blank one can still receive "phone as published: …".
+        if (key === "status" || key === "owner") continue;
         if (value === null || value === undefined || value === "") continue;
         if (existing[key] === null || existing[key] === undefined || existing[key] === "") fill[key] = value;
       }
@@ -1115,7 +1126,9 @@ async function logLeadActivity(id: string, body: Record<string, unknown>): Promi
     p_note: typeof body.note === "string" ? body.note.trim() || null : null,
   });
   if (error) return json({ error: error.message }, 400);
-  if (!data) return json({ error: "not found" }, 404);
+  // A plpgsql function `returns leads` gives PostgREST a row of all-NULL columns
+  // rather than a null result, so an unknown id has to be spotted by its id.
+  if (!data || !data.id) return json({ error: "not found" }, 404);
 
   console.log(`[admin] lead activity id=${id} kind=${kind} status=${patch.status ?? "unchanged"}`);
   return json({ logged: true, lead: data });
