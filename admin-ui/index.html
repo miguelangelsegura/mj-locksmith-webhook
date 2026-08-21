@@ -256,9 +256,9 @@
 <div id="login" class="login-wrap hidden">
   <div class="login card pad">
     <div class="row" style="margin-bottom:4px"><div class="logo"></div><b style="font-size:16px">Operator Console</b></div>
-    <p class="muted" style="font-size:13px;margin:6px 0 0">Enter your operator token. Stored only in this browser — no secrets on the page.</p>
-    <label class="f">Operator token</label>
-    <input id="token" type="password" placeholder="ADMIN_API_TOKEN" autocomplete="off" autocapitalize="off" spellcheck="false" />
+    <p class="muted" style="font-size:13px;margin:6px 0 0">Enter the admin password. Remembered only in this browser — no secrets on the page.</p>
+    <label class="f">Password</label>
+    <input id="token" type="password" placeholder="Admin password" autocomplete="current-password" autocapitalize="off" spellcheck="false" />
     <div class="err" id="loginErr"></div>
     <div style="margin-top:12px"><button id="connect" style="width:100%">Sign in</button></div>
   </div>
@@ -759,7 +759,7 @@
   /* ---------- auth ---------- */
   function showLogin(){ $('login').classList.remove('hidden'); $('app').classList.add('hidden'); }
   function showApp(){ $('login').classList.add('hidden'); $('app').classList.remove('hidden'); }
-  function connect(){ var v=$('token').value.trim(); if(!v){$('loginErr').textContent='Enter the token.';return;} localStorage.setItem(TKEY,v); $('loginErr').textContent='Checking…'; api('/clients').then(function(res){ if(res.status===200){ showApp(); go('overview'); loadAll(); } else if(res.status===401){ $('loginErr').textContent='That token was rejected.'; localStorage.removeItem(TKEY); } else $('loginErr').textContent=(res.body&&res.body.error)||('Error '+res.status); }).catch(function(){$('loginErr').textContent='Network error.';}); }
+  function connect(){ var v=$('token').value.trim(); if(!v){$("loginErr").textContent="Enter the password.";return;} localStorage.setItem(TKEY,v); $('loginErr').textContent='Checking…'; api('/clients').then(function(res){ if(res.status===200){ showApp(); go('overview'); loadAll(); } else if(res.status===401){ $("loginErr").textContent="Wrong password."; localStorage.removeItem(TKEY); } else $('loginErr').textContent=(res.body&&res.body.error)||('Error '+res.status); }).catch(function(){$('loginErr').textContent='Network error.';}); }
 
   /* ---------- events ---------- */
   $('connect').addEventListener('click',connect);

@@ -2,7 +2,7 @@
 
 A single, self-contained page (`index.html`) for the Dispango team to onboard and
 manage locksmith clients. It calls the `admin` Supabase Edge Function (validated
-create, list, update, test-SMS) using an admin token entered at runtime and kept
+create, list, update, test-SMS) using an admin password entered at runtime and kept
 only in the browser's localStorage. The page holds no secrets.
 
 ## Hosting
@@ -23,5 +23,5 @@ The API base URL is hard-coded in `index.html`, so the page works from any origi
 
 ## Use
 
-Open the hosted page, paste the `ADMIN_API_TOKEN` (the value set as a Supabase
+Open the hosted page, enter the admin password (the `ADMIN_API_TOKEN` value set as a Supabase
 secret) once, and you're in.
