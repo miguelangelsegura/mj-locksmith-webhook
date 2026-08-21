@@ -24,6 +24,12 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { collectMonitoring, isLeadOutcome } from "../_shared/monitoring.ts";
+import {
+  adminAuthConfigured,
+  adminEmails,
+  authenticateAdmin,
+  isAdminEmail,
+} from "../_shared/admin-auth.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -32,8 +38,7 @@ const supabase = supabaseUrl && supabaseServiceKey
   : null;
 if (!supabase) console.log("[startup] Supabase env not set — admin API in log-only mode");
 
-const ADMIN_API_TOKEN = Deno.env.get("ADMIN_API_TOKEN");
-if (!ADMIN_API_TOKEN) console.log("[startup] ADMIN_API_TOKEN not set — admin API is DISABLED (fails closed)");
+if (!adminAuthConfigured()) console.log("[startup] ADMIN_EMAILS not set — admin API is DISABLED (fails closed)");
 
 const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
@@ -67,7 +72,7 @@ const WRITABLE_FIELDS = [
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, content-type, x-admin-token",
+  "Access-Control-Allow-Headers": "authorization, content-type",
 };
 
 function json(body: unknown, status = 200): Response {
@@ -75,13 +80,6 @@ function json(body: unknown, status = 200): Response {
     status,
     headers: { "Content-Type": "application/json", ...CORS },
   });
-}
-
-function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
 }
 
 function normalizePhone(value: unknown): string | null {
@@ -173,8 +171,8 @@ async function vapiFetch(path: string, init: RequestInit = {}): Promise<Response
 
 // Strip a `?token=`/`&token=` value from any string before it's returned to the
 // browser. The Vapi number's server URL and the synthetic-webhook URL both carry
-// VAPI_SECRET — a strictly higher trust boundary than the ADMIN_API_TOKEN the
-// operator holds. Never echo the raw secret into a check detail or error message.
+// VAPI_SECRET — a strictly higher trust boundary than the operator's own login.
+// Never echo the raw secret into a check detail or error message.
 function redactToken(s: string): string {
   return s.replace(/([?&]token=)[^&\s"']+/gi, "$1***");
 }
@@ -807,6 +805,58 @@ async function unbanCaller(phone: string): Promise<Response> {
   return json({ unbanned: true });
 }
 
+
+// --- operator accounts -------------------------------------------------------
+// Each operator on the ADMIN_EMAILS allowlist has their own Supabase Auth login.
+// Operators change their OWN password directly against GoTrue from the browser;
+// these endpoints exist for the two things a browser session can't do: see the
+// team, and set a teammate's password when they're locked out (the stand-in for
+// emailed reset links until the mail domain is verified).
+
+const MIN_PASSWORD_LENGTH = 10;
+
+async function listTeam(currentEmail: string): Promise<Response> {
+  const { data, error } = await supabase!.auth.admin.listUsers({ perPage: 200 });
+  if (error) return json({ error: error.message }, 400);
+
+  const byEmail = new Map<string, { last_sign_in_at: string | null }>();
+  for (const user of data?.users ?? []) {
+    const email = (user.email ?? "").toLowerCase();
+    if (email) byEmail.set(email, { last_sign_in_at: user.last_sign_in_at ?? null });
+  }
+
+  // Driven by the allowlist, not by auth.users: an account that exists but was
+  // taken off the allowlist has no access and must not look like a teammate.
+  const members = adminEmails().map((email) => ({
+    email,
+    has_account: byEmail.has(email),
+    last_sign_in_at: byEmail.get(email)?.last_sign_in_at ?? null,
+    is_you: email === currentEmail,
+  }));
+  return json({ members });
+}
+
+async function setTeamPassword(body: Record<string, unknown>, actorEmail: string): Promise<Response> {
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const password = typeof body.password === "string" ? body.password : "";
+
+  if (!isAdminEmail(email)) return json({ error: "not an operator account" }, 400);
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return json({ error: `password must be at least ${MIN_PASSWORD_LENGTH} characters` }, 400);
+  }
+
+  const { data, error } = await supabase!.auth.admin.listUsers({ perPage: 200 });
+  if (error) return json({ error: error.message }, 400);
+  const target = (data?.users ?? []).find((u) => (u.email ?? "").toLowerCase() === email);
+  if (!target) return json({ error: "no account for that address yet" }, 404);
+
+  const { error: updateError } = await supabase!.auth.admin.updateUserById(target.id, { password });
+  if (updateError) return json({ error: updateError.message }, 400);
+
+  console.log(`[admin] ${actorEmail} reset the password for ${email}`);
+  return json({ ok: true, email });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -821,9 +871,10 @@ Deno.serve(async (req) => {
   }
 
   // --- auth gate (fail closed) ---
-  if (!ADMIN_API_TOKEN) return json({ error: "admin API not configured" }, 503);
-  if (!constantTimeEqual(req.headers.get("x-admin-token") ?? "", ADMIN_API_TOKEN)) {
-    console.log("[admin] rejected: bad/missing token");
+  if (!adminAuthConfigured()) return json({ error: "admin API not configured" }, 503);
+  const operator = await authenticateAdmin(req);
+  if (!operator) {
+    console.log("[admin] rejected: bad/missing operator token");
     return json({ error: "unauthorized" }, 401);
   }
   if (!supabase) return json({ error: "supabase not configured" }, 503);
@@ -876,6 +927,13 @@ Deno.serve(async (req) => {
     const itemMatch = path.match(/^\/clients\/([^/]+)$/);
     if (req.method === "PATCH" && itemMatch) {
       return await updateClientRow(itemMatch[1], await req.json());
+    }
+
+    if (req.method === "GET" && path === "/team") {
+      return await listTeam(operator.email);
+    }
+    if (req.method === "POST" && path === "/team/set-password") {
+      return await setTeamPassword(await req.json(), operator.email);
     }
 
     if (req.method === "GET" && path === "/health") {

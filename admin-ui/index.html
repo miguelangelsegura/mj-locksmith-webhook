@@ -256,11 +256,14 @@
 <div id="login" class="login-wrap hidden">
   <div class="login card pad">
     <div class="row" style="margin-bottom:4px"><div class="logo"></div><b style="font-size:16px">Operator Console</b></div>
-    <p class="muted" style="font-size:13px;margin:6px 0 0">Enter the admin password. Remembered only in this browser — no secrets on the page.</p>
-    <label class="f">Password</label>
-    <input id="token" type="password" placeholder="Admin password" autocomplete="current-password" autocapitalize="off" spellcheck="false" />
+    <p class="muted" style="font-size:13px;margin:6px 0 0">Sign in with your own operator account. Your session stays in this browser only.</p>
+    <label class="f">Email</label>
+    <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="username" autocapitalize="off" spellcheck="false" />
+    <label class="f" style="margin-top:10px">Password</label>
+    <input id="loginPw" type="password" placeholder="Your password" autocomplete="current-password" autocapitalize="off" spellcheck="false" />
     <div class="err" id="loginErr"></div>
     <div style="margin-top:12px"><button id="connect" style="width:100%">Sign in</button></div>
+    <p class="muted" style="font-size:12.5px;margin:10px 0 0">Forgot it? Ask a teammate to set you a new one from Team &rarr; Set password.</p>
   </div>
 </div>
 
@@ -273,6 +276,7 @@
       <a data-view="shops"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg>Shops<span class="badge hidden" id="shopsBadge"></span></a>
       <a data-view="calls"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>Calls</a>
       <a data-view="blocked"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Blocked</a>
+      <a data-view="team"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>Team</a>
     </nav>
     <div class="side-foot nav">
       <a id="refreshAll"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>Refresh</a>
@@ -306,15 +310,51 @@
   var API='https://yqyvybukyfokyfsjzyso.supabase.co/functions/v1/admin';
   var BILLING='https://yqyvybukyfokyfsjzyso.supabase.co/functions/v1/billing';
   var SITE_URL='https://dispango.com'; // public marketing site (welcome/routing page lives here)
-  var TKEY='dispango_admin_token';
+  var AUTH='https://yqyvybukyfokyfsjzyso.supabase.co/auth/v1';
+  // Public anon key — safe in the page by design; it identifies the project, it
+  // does not grant access. Access comes from the operator's own login.
+  var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlxeXZ5YnVreWZva3lmc2p6eXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyOTgzNDgsImV4cCI6MjA5Mzg3NDM0OH0.AdDdhAS316KQnwung9ec4RDqqc17xwiLLJiYMxZkE5E';
+  var TKEY='dispango_admin_session';
   var $=function(id){return document.getElementById(id);};
   var esc=function(v){return v==null?'':String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
-  var state={ view:'overview', health:null, clients:[], analytics:null, banned:[], calls:[], callFilter:'', shopQuery:'', callQuery:'' };
+  var state={ view:'overview', health:null, clients:[], analytics:null, banned:[], calls:[], callFilter:'', shopQuery:'', callQuery:'', team:null };
 
-  function token(){return localStorage.getItem(TKEY)||'';}
-  function api(path,method,body,base){
-    return fetch((base||API)+path,{method:method||'GET',headers:{'x-admin-token':token(),'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined})
+  /* ---------- session ---------- */
+  function session(){ try{ return JSON.parse(localStorage.getItem(TKEY)||'null'); }catch(e){ return null; } }
+  function saveSession(t){ localStorage.setItem(TKEY,JSON.stringify({access_token:t.access_token,refresh_token:t.refresh_token,email:(t.user&&t.user.email)||(session()||{}).email||''})); }
+  function clearSession(){ localStorage.removeItem(TKEY); }
+  function accessToken(){ var s=session(); return s?s.access_token:''; }
+  function myEmail(){ var s=session(); return s?(s.email||''):''; }
+
+  function authFetch(path,method,body,tok){
+    var h={'apikey':ANON,'Content-Type':'application/json'};
+    if(tok) h['Authorization']='Bearer '+tok;
+    return fetch(AUTH+path,{method:method||'POST',headers:h,body:body?JSON.stringify(body):undefined})
       .then(function(r){return r.json().catch(function(){return{};}).then(function(j){return{status:r.status,body:j};});});
+  }
+  function signIn(email,password){
+    return authFetch('/token?grant_type=password','POST',{email:email,password:password})
+      .then(function(res){ if(res.status===200&&res.body.access_token){ saveSession(res.body); return {ok:true}; }
+        return {ok:false,error:(res.body&&(res.body.error_description||res.body.msg))||'Sign-in failed'}; });
+  }
+  function refreshSession(){
+    var s=session(); if(!s||!s.refresh_token) return Promise.resolve(false);
+    return authFetch('/token?grant_type=refresh_token','POST',{refresh_token:s.refresh_token})
+      .then(function(res){ if(res.status===200&&res.body.access_token){ saveSession(res.body); return true; } return false; })
+      .catch(function(){ return false; });
+  }
+
+  function rawApi(path,method,body,base){
+    return fetch((base||API)+path,{method:method||'GET',headers:{'Authorization':'Bearer '+accessToken(),'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined})
+      .then(function(r){return r.json().catch(function(){return{};}).then(function(j){return{status:r.status,body:j};});});
+  }
+  // One silent refresh-and-retry on 401 so an expired hour-old token doesn't
+  // bounce the operator back to the login screen mid-task.
+  function api(path,method,body,base){
+    return rawApi(path,method,body,base).then(function(res){
+      if(res.status!==401) return res;
+      return refreshSession().then(function(ok){ return ok ? rawApi(path,method,body,base) : res; });
+    });
   }
   var toastT;
   function toast(msg,kind){var t=$('toast');t.textContent=msg;t.className='toast show '+(kind||'');clearTimeout(toastT);toastT=setTimeout(function(){t.className='toast '+(kind||'');},3200);}
@@ -344,7 +384,7 @@
   function perClient(id){ var h=state.health; if(!h||!h.perClient) return null; return h.perClient.filter(function(p){return p.id===id;})[0]||null; }
 
   /* ================= ROUTER ================= */
-  var TITLES={overview:'Overview',shops:'Shops',calls:'Calls & leads',blocked:'Blocked numbers'};
+  var TITLES={overview:'Overview',shops:'Shops',calls:'Calls & leads',blocked:'Blocked numbers',team:'Team'};
   function go(view){
     state.view=view;
     [].forEach.call($('nav').querySelectorAll('a[data-view]'),function(a){a.classList.toggle('on',a.getAttribute('data-view')===view);});
@@ -358,6 +398,7 @@
     if(state.view==='shops') return renderShops(c,a);
     if(state.view==='calls') return renderCalls(c,a);
     if(state.view==='blocked') return renderBlocked(c,a);
+    if(state.view==='team') return renderTeam(c);
   }
 
   /* ================= OVERVIEW ================= */
@@ -748,10 +789,63 @@
   /* ---------- count up ---------- */
   function countUp(el,to){ if(to<=0){el.textContent='0';return;} var start=performance.now(),durr=Math.min(600,200+to*8); function tick(now){ var p=Math.min(1,(now-start)/durr); var e=1-Math.pow(1-p,3); el.textContent=Math.round(e*to); if(p<1) requestAnimationFrame(tick); } requestAnimationFrame(tick); }
 
+
+  /* ================= TEAM ================= */
+  var MIN_PW=10;
+  function renderTeam(c){
+    var me=myEmail();
+    var rows=(state.team||[]).map(function(m){
+      var when=m.last_sign_in_at?new Date(m.last_sign_in_at).toLocaleString():'never';
+      return '<tr><td><b>'+esc(m.email)+'</b>'+(m.is_you?' <span class="pill">you</span>':'')+
+        (m.has_account?'':' <span class="pill warn">no account</span>')+'</td>'+
+        '<td class="muted">'+esc(when)+'</td>'+
+        '<td style="text-align:right">'+(m.is_you||!m.has_account?'':'<button class="ghost sm" data-setpw="'+esc(m.email)+'">Set password</button>')+'</td></tr>';
+    }).join('');
+    c.innerHTML=
+      '<div class="card pad" style="max-width:560px">'+
+        '<b>Your account</b>'+
+        '<p class="muted" style="font-size:13px;margin:6px 0 12px">Signed in as '+esc(me||'—')+'</p>'+
+        '<label class="f">New password</label><input id="pw1" type="password" autocomplete="new-password" placeholder="At least '+MIN_PW+' characters"/>'+
+        '<label class="f" style="margin-top:10px">Confirm new password</label><input id="pw2" type="password" autocomplete="new-password"/>'+
+        '<div class="err" id="pwErr"></div>'+
+        '<div style="margin-top:12px"><button id="pwSave">Change my password</button></div>'+
+      '</div>'+
+      '<div class="card pad" style="max-width:560px;margin-top:16px">'+
+        '<b>Team</b>'+
+        '<p class="muted" style="font-size:13px;margin:6px 0 12px">Everyone here can sign in to this console. Locked out? A teammate sets you a new password.</p>'+
+        '<table class="tbl"><thead><tr><th>Operator</th><th>Last sign-in</th><th></th></tr></thead><tbody>'+
+        (rows||'<tr><td colspan="3" class="muted">Loading…</td></tr>')+'</tbody></table>'+
+      '</div>';
+    if(!state.team) loadTeam();
+  }
+  function loadTeam(){ api('/team').then(function(res){ if(res.status===200){ state.team=res.body.members||[]; if(state.view==='team') render(); } }); }
+
+  function changeMyPassword(btn){
+    var a=$('pw1').value||'', b=$('pw2').value||'', e=$('pwErr');
+    if(a.length<MIN_PW){ e.textContent='Use at least '+MIN_PW+' characters.'; return; }
+    if(a!==b){ e.textContent='The two passwords do not match.'; return; }
+    e.textContent=''; btn.disabled=true;
+    authFetch('/user','PUT',{password:a},accessToken()).then(function(res){
+      btn.disabled=false;
+      if(res.status===200){ $('pw1').value=''; $('pw2').value=''; toast('Password changed','ok'); }
+      else e.textContent=(res.body&&(res.body.msg||res.body.error_description))||'Could not change it.';
+    }).catch(function(){ btn.disabled=false; e.textContent='Network error.'; });
+  }
+
+  function setTeammatePassword(email){
+    var pw=window.prompt('New password for '+email+' (at least '+MIN_PW+' characters).\nSend it to them and ask them to change it after signing in.');
+    if(pw===null) return;
+    if(pw.length<MIN_PW){ toast('Too short — at least '+MIN_PW+' characters','err'); return; }
+    api('/team/set-password','POST',{email:email,password:pw}).then(function(res){
+      if(res.status===200) toast('Password set for '+email,'ok');
+      else toast((res.body&&res.body.error)||'Could not set it','err');
+    });
+  }
+
   /* ---------- loaders ---------- */
   function loadHealth(cb){ api('/health').then(function(res){ if(res.status===200){ state.health=res.body; var f=(res.body.failedLeads||[]).length; var b=$('shopsBadge'); if(b){ if(f>0){b.textContent=f;b.classList.remove('hidden');} else b.classList.add('hidden'); } if(state.view==='overview'||state.view==='shops') render(); } if(cb)cb(); }); }
   function loadAnalytics(){ api('/analytics').then(function(res){ if(res.status===200){ state.analytics=res.body; if(state.view==='overview') render(); } }); }
-  function loadClients(cb){ api('/clients').then(function(res){ if(res.status===401){ localStorage.removeItem(TKEY); showLogin(); return; } if(res.status===200){ state.clients=res.body.clients||[]; if(state.view==='shops') render(); } if(cb)cb(); }); }
+  function loadClients(cb){ api('/clients').then(function(res){ if(res.status===401){ clearSession(); showLogin(); return; } if(res.status===200){ state.clients=res.body.clients||[]; if(state.view==='shops') render(); } if(cb)cb(); }); }
   function loadCalls(){ api('/calls?limit=80').then(function(res){ if(res.status===200){ state.calls=res.body.calls||[]; if(state.view==='calls') render(); } }); }
   function loadBanned(){ api('/banned').then(function(res){ if(res.status===200){ state.banned=res.body.banned||[]; if(state.view==='blocked') render(); } }); }
   function loadAll(){ loadHealth(); loadAnalytics(); loadClients(); loadCalls(); loadBanned(); }
@@ -759,13 +853,26 @@
   /* ---------- auth ---------- */
   function showLogin(){ $('login').classList.remove('hidden'); $('app').classList.add('hidden'); }
   function showApp(){ $('login').classList.add('hidden'); $('app').classList.remove('hidden'); }
-  function connect(){ var v=$('token').value.trim(); if(!v){$("loginErr").textContent="Enter the password.";return;} localStorage.setItem(TKEY,v); $('loginErr').textContent='Checking…'; api('/clients').then(function(res){ if(res.status===200){ showApp(); go('overview'); loadAll(); } else if(res.status===401){ $("loginErr").textContent="Wrong password."; localStorage.removeItem(TKEY); } else $('loginErr').textContent=(res.body&&res.body.error)||('Error '+res.status); }).catch(function(){$('loginErr').textContent='Network error.';}); }
+  function connect(){
+    var email=($('loginEmail').value||'').trim(), pw=$('loginPw').value||'';
+    if(!email||!pw){ $('loginErr').textContent='Enter your email and password.'; return; }
+    $('loginErr').textContent='Signing in…';
+    signIn(email,pw).then(function(r){
+      if(!r.ok){ $('loginErr').textContent=r.error; clearSession(); return; }
+      return api('/clients').then(function(res){
+        if(res.status===200){ $('loginErr').textContent=''; $('loginPw').value=''; showApp(); go('overview'); loadAll(); }
+        else if(res.status===401){ $('loginErr').textContent='That account is not an operator on this console.'; clearSession(); }
+        else $('loginErr').textContent=(res.body&&res.body.error)||('Error '+res.status);
+      });
+    }).catch(function(){ $('loginErr').textContent='Network error.'; });
+  }
 
   /* ---------- events ---------- */
   $('connect').addEventListener('click',connect);
-  $('token').addEventListener('keydown',function(e){if(e.key==='Enter')connect();});
+  $('loginEmail').addEventListener('keydown',function(e){if(e.key==='Enter')$('loginPw').focus();});
+  $('loginPw').addEventListener('keydown',function(e){if(e.key==='Enter')connect();});
   $('nav').addEventListener('click',function(e){var a=e.target.closest('a[data-view]'); if(a)go(a.getAttribute('data-view'));});
-  $('logout').addEventListener('click',function(){localStorage.removeItem(TKEY);showLogin();});
+  $('logout').addEventListener('click',function(){clearSession();showLogin();});
   $('refreshAll').addEventListener('click',function(){toast('Refreshing…');loadAll();});
   $('scrim').addEventListener('click',closeDrawers);
   $('linkScrim').addEventListener('click',closeModal);
@@ -797,6 +904,8 @@
     if(b.id==='lgen'){ genLink(); return; }
     if(b.id==='lcopy'){ var v=$('llink').value; (navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(function(){toast('Copied','ok');},function(){$('llink').select();try{document.execCommand('copy');toast('Copied','ok');}catch(x){}}); return; }
     if(b.id==='lsend'){ sendLink(); return; }
+    if(b.id==='pwSave'){ changeMyPassword(b); return; }
+    if(g('data-setpw')){ setTeammatePassword(g('data-setpw')); return; }
     if(b.id==='banBtn'){ var p=($('banPhone').value||'').trim(); if(!p){$('banErr').textContent='Enter a number.';return;} banNumber(p,($('banReason').value||'').trim(),b); return; }
     if(g('data-unban')){ unban(g('data-unban')); return; }
     if(g('data-filter')!=null){ state.callFilter=g('data-filter'); render(); return; }
@@ -804,7 +913,7 @@
     var shop=t.closest('tr[data-shop]'); if(shop && !t.closest('[data-noopen]')){ openShop(shop.getAttribute('data-shop')); return; }
   });
 
-  if(token()){ showApp(); go('overview'); loadAll(); } else { showLogin(); }
+  if(session()){ showApp(); go('overview'); loadAll(); } else { showLogin(); }
 })();
 </script>
 </body>

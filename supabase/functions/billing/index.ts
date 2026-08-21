@@ -8,7 +8,7 @@
 // reads, so the agent stops answering automatically.
 //
 // Auth differs per route:
-//   POST /onboarding              x-admin-token  — Miguel creates the signing link
+//   POST /onboarding              operator login — Miguel creates the signing link
 //   GET  /onboarding/:token/pay   token is auth  — post-sign redirect → Stripe Checkout
 //   GET  /onboarding/:token/done  public         — confirmation page
 //   POST /webhooks/signwell       SignWell HMAC  — contract signed → store PDF
@@ -20,6 +20,7 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import Stripe from "npm:stripe";
 import { provisionForClient, provisioningEnabled } from "./provisioning.ts";
+import { adminAuthConfigured, authenticateAdmin } from "../_shared/admin-auth.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -28,8 +29,20 @@ const supabase = supabaseUrl && supabaseServiceKey
   : null;
 if (!supabase) console.log("[startup] Supabase env not set — billing API in log-only mode");
 
-const ADMIN_API_TOKEN = Deno.env.get("ADMIN_API_TOKEN");
-if (!ADMIN_API_TOKEN) console.log("[startup] ADMIN_API_TOKEN not set — /onboarding create is DISABLED (fails closed)");
+if (!adminAuthConfigured()) console.log("[startup] ADMIN_EMAILS not set — operator routes are DISABLED (fails closed)");
+
+// Operator-only routes share the admin console's login (Supabase Auth + the
+// ADMIN_EMAILS allowlist). Returns a response to send when access is refused,
+// or null when the caller is a signed-in operator.
+async function requireOperator(req: Request): Promise<Response | null> {
+  if (!adminAuthConfigured()) return json({ error: "admin API not configured" }, 503);
+  const operator = await authenticateAdmin(req);
+  if (!operator) {
+    console.log("[billing] rejected: bad/missing operator token");
+    return json({ error: "unauthorized" }, 401);
+  }
+  return null;
+}
 
 const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
 const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
@@ -70,7 +83,7 @@ function donePageUrl(token: string): string {
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, content-type, x-admin-token",
+  "Access-Control-Allow-Headers": "authorization, content-type",
 };
 
 function json(body: unknown, status = 200): Response {
@@ -941,34 +954,25 @@ Deno.serve(async (req) => {
       return await handleSignwellWebhook(await req.text());
     }
 
-    // Admin-token route.
+    // Operator-only route.
     if (req.method === "POST" && path === "/onboarding") {
-      if (!ADMIN_API_TOKEN) return json({ error: "admin API not configured" }, 503);
-      if (!constantTimeEqual(req.headers.get("x-admin-token") ?? "", ADMIN_API_TOKEN)) {
-        console.log("[billing] rejected: bad/missing admin token");
-        return json({ error: "unauthorized" }, 401);
-      }
+      const denied = await requireOperator(req);
+      if (denied) return denied;
       return await createOnboarding(await req.json());
     }
 
     if (req.method === "POST" && path === "/onboarding/send") {
-      if (!ADMIN_API_TOKEN) return json({ error: "admin API not configured" }, 503);
-      if (!constantTimeEqual(req.headers.get("x-admin-token") ?? "", ADMIN_API_TOKEN)) {
-        console.log("[billing] rejected: bad/missing admin token");
-        return json({ error: "unauthorized" }, 401);
-      }
+      const denied = await requireOperator(req);
+      if (denied) return denied;
       return await sendOnboardingLink(await req.json());
     }
 
-    // Admin-token provisioning controls (activate / retry).
+    // Operator-only provisioning controls (activate / retry).
     const activateMatch = path.match(/^\/provision\/([^/]+)\/activate$/);
     const retryMatch = path.match(/^\/provision\/([^/]+)\/retry$/);
     if (req.method === "POST" && (activateMatch || retryMatch)) {
-      if (!ADMIN_API_TOKEN) return json({ error: "admin API not configured" }, 503);
-      if (!constantTimeEqual(req.headers.get("x-admin-token") ?? "", ADMIN_API_TOKEN)) {
-        console.log("[billing] rejected: bad/missing admin token");
-        return json({ error: "unauthorized" }, 401);
-      }
+      const denied = await requireOperator(req);
+      if (denied) return denied;
       return activateMatch ? await activateProvision(activateMatch[1]) : await retryProvision(retryMatch![1]);
     }
 
