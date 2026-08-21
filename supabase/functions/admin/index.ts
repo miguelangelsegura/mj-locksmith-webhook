@@ -15,6 +15,11 @@
 //   POST   /clients                 create a client (validated)
 //   PATCH  /clients/:id             update a client (e.g. active toggle)
 //   POST   /clients/:id/test-sms    send a test dispatch SMS to the client's number
+//   GET    /leads                   outreach call sheet (filters: city/status/owner/trade/q)
+//   POST   /leads                   upsert prospects (bulk; used by the outreach skill)
+//   PATCH  /leads/:id               update status / owner / next step / notes
+//   POST   /leads/:id/activity      log a call outcome (appends history, bumps status)
+//   DELETE /leads/:id               remove a prospect row
 //
 // Provisioning automation (buying the Twilio number, attaching the Vapi
 // assistant + server URL) lives in billing/provisioning.ts and runs on payment
@@ -62,6 +67,21 @@ const WRITABLE_FIELDS = [
   "business_name", "agent_name", "vapi_assistant_id", "dispatch_phone",
   "owner_phone", "inbound_number", "fallback_number", "cell_number", "answer_mode",
   "ring_timeout_seconds", "business_hours", "timezone", "active",
+];
+
+const LEAD_STATUSES = [
+  "new", "no_answer", "voicemail", "callback", "reached", "interested",
+  "demo_booked", "won", "not_interested", "bad_number", "do_not_contact",
+];
+const LEAD_EMAIL_STATUSES = ["none", "drafted", "sent", "replied", "bounced"];
+
+// Columns the console / outreach skill may write. Everything else in a body is
+// dropped so a caller can't set id/created_at/attempts directly.
+const LEAD_WRITABLE = [
+  "business_name", "website", "domain", "phone", "city", "province", "trade",
+  "hours", "timezone", "description", "contact_name",
+  "email", "email_source_url", "email_status", "drafted_at",
+  "status", "owner", "next_action_at", "notes", "source",
 ];
 
 const CORS = {
@@ -807,6 +827,264 @@ async function unbanCaller(phone: string): Promise<Response> {
   return json({ unbanned: true });
 }
 
+// ---------------------------------------------------------------- outreach leads
+
+// Scraped numbers arrive as "403-250-5698", "(403) 250 5698", "1-800-...".
+// The column is the dedup key and powers tel: links, so store one shape only.
+function normalizeLeadPhone(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!raw) return null;
+  if (PHONE_RE.test(raw)) return raw;
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  return null;
+}
+
+// One business = one domain. Strip scheme/www/path so "https://www.x.com/contact"
+// and "http://x.com" collide instead of becoming two rows.
+function normalizeDomain(website: unknown, explicit: unknown): string | null {
+  const candidate = typeof explicit === "string" && explicit.trim()
+    ? explicit.trim()
+    : typeof website === "string" ? website.trim() : "";
+  if (!candidate) return null;
+  const host = candidate
+    .replace(/^https?:\/\//i, "")
+    .replace(/^www\./i, "")
+    .split(/[/?#]/)[0]
+    .toLowerCase();
+  return host.includes(".") ? host : null;
+}
+
+function isIsoDate(value: unknown): boolean {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function pickLeadFields(body: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const key of LEAD_WRITABLE) {
+    if (key in body) out[key] = body[key];
+  }
+  return out;
+}
+
+// Returns an error string, or null when the patch is clean.
+function validateLeadPatch(patch: Record<string, unknown>): string | null {
+  if ("status" in patch && !LEAD_STATUSES.includes(String(patch.status))) {
+    return `status must be one of: ${LEAD_STATUSES.join(", ")}`;
+  }
+  if ("email_status" in patch && !LEAD_EMAIL_STATUSES.includes(String(patch.email_status))) {
+    return `email_status must be one of: ${LEAD_EMAIL_STATUSES.join(", ")}`;
+  }
+  for (const key of ["next_action_at", "drafted_at"]) {
+    if (key in patch && patch[key] !== null && !isIsoDate(patch[key])) {
+      return `${key} must be YYYY-MM-DD or null`;
+    }
+  }
+  if ("phone" in patch && patch.phone !== null) {
+    const phone = normalizeLeadPhone(patch.phone);
+    if (!phone) return "phone could not be read as a North American number";
+    patch.phone = phone;
+  }
+  return null;
+}
+
+async function listLeads(params: URLSearchParams): Promise<Response> {
+  let query = supabase!.from("leads").select("*");
+  const city = params.get("city");
+  const status = params.get("status");
+  const owner = params.get("owner");
+  const trade = params.get("trade");
+  const search = params.get("q");
+  if (city) query = query.eq("city", city);
+  if (status) query = query.eq("status", status);
+  if (owner) query = query.eq("owner", owner);
+  if (trade) query = query.eq("trade", trade);
+  if (search) query = query.ilike("business_name", `%${search}%`);
+
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(2000);
+  if (error) return json({ error: error.message }, 400);
+
+  const leads = data ?? [];
+  const counts: Record<string, number> = {};
+  for (const lead of leads) counts[lead.status] = (counts[lead.status] ?? 0) + 1;
+  return json({ leads, counts });
+}
+
+async function getLead(id: string): Promise<Response> {
+  const { data, error } = await supabase!.from("leads").select("*").eq("id", id).limit(1);
+  if (error) return json({ error: error.message }, 400);
+  if (!data || data.length === 0) return json({ error: "not found" }, 404);
+  const { data: activity } = await supabase!
+    .from("lead_activity").select("*").eq("lead_id", id).order("created_at", { ascending: false });
+  return json({ lead: data[0], activity: activity ?? [] });
+}
+
+// Bulk-safe upsert used by the outreach skill. A lead already in the list is
+// ENRICHED, never overwritten: we only fill columns that are still empty, so a
+// rerun can add a phone number it missed without wiping someone's call notes.
+async function upsertLeads(body: Record<string, unknown>): Promise<Response> {
+  const incoming = Array.isArray(body.leads)
+    ? body.leads as Record<string, unknown>[]
+    : [body];
+  if (incoming.length === 0) return json({ error: "no leads supplied" }, 400);
+  if (incoming.length > 200) return json({ error: "send at most 200 leads per request" }, 400);
+
+  const results: Record<string, unknown>[] = [];
+  let created = 0, enriched = 0, skipped = 0;
+
+  for (const raw of incoming) {
+    const businessName = String(raw.business_name ?? "").trim();
+    if (!businessName) {
+      results.push({ business_name: raw.business_name ?? null, action: "error", reason: "business_name is required" });
+      skipped++;
+      continue;
+    }
+
+    const row = pickLeadFields(raw);
+    row.business_name = businessName;
+    row.domain = normalizeDomain(raw.website, raw.domain);
+    row.phone = normalizeLeadPhone(raw.phone);
+    if (!row.domain && !row.phone) {
+      results.push({ business_name: businessName, action: "error", reason: "needs a website or a usable phone number" });
+      skipped++;
+      continue;
+    }
+
+    const patchError = validateLeadPatch(row);
+    if (patchError) {
+      results.push({ business_name: businessName, action: "error", reason: patchError });
+      skipped++;
+      continue;
+    }
+
+    // Dedup on either natural key — a shop found via a directory this run may
+    // already be in the list under its own domain.
+    const filters: string[] = [];
+    if (row.domain) filters.push(`domain.eq.${row.domain}`);
+    if (row.phone) filters.push(`phone.eq.${row.phone}`);
+    const { data: existingRows } = await supabase!
+      .from("leads").select("*").or(filters.join(",")).limit(1);
+    const existing = existingRows?.[0];
+
+    if (existing) {
+      const fill: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(row)) {
+        if (key === "status" || key === "owner" || key === "notes") continue;
+        if (value === null || value === undefined || value === "") continue;
+        if (existing[key] === null || existing[key] === undefined || existing[key] === "") fill[key] = value;
+      }
+      if (Object.keys(fill).length === 0) {
+        results.push({ business_name: businessName, id: existing.id, action: "duplicate" });
+        skipped++;
+        continue;
+      }
+      const { error } = await supabase!.from("leads").update(fill).eq("id", existing.id);
+      if (error) {
+        results.push({ business_name: businessName, action: "error", reason: error.message });
+        skipped++;
+        continue;
+      }
+      results.push({ business_name: businessName, id: existing.id, action: "enriched", fields: Object.keys(fill) });
+      enriched++;
+      continue;
+    }
+
+    const { data, error } = await supabase!.from("leads").insert(row).select();
+    if (error) {
+      results.push({ business_name: businessName, action: "error", reason: error.message });
+      skipped++;
+      continue;
+    }
+    results.push({ business_name: businessName, id: data?.[0]?.id ?? null, action: "created" });
+    created++;
+  }
+
+  console.log(`[admin] leads upsert created=${created} enriched=${enriched} skipped=${skipped}`);
+  return json({ created, enriched, skipped, results }, 201);
+}
+
+async function updateLead(id: string, body: Record<string, unknown>): Promise<Response> {
+  const patch = pickLeadFields(body);
+  if ("domain" in patch || "website" in patch) {
+    patch.domain = normalizeDomain(body.website, body.domain);
+  }
+  const patchError = validateLeadPatch(patch);
+  if (patchError) return json({ error: patchError }, 400);
+  if (Object.keys(patch).length === 0) return json({ error: "nothing to update" }, 400);
+
+  const { data: before } = await supabase!.from("leads").select("status").eq("id", id).limit(1);
+  if (!before || before.length === 0) return json({ error: "not found" }, 404);
+
+  const { data, error } = await supabase!.from("leads").update(patch).eq("id", id).select();
+  if (error) return json({ error: error.message }, 400);
+
+  // A status change is history: record it so the team can see who moved it and when.
+  if (patch.status && patch.status !== before[0].status) {
+    await supabase!.from("lead_activity").insert({
+      lead_id: id,
+      actor: typeof body.actor === "string" ? body.actor.trim() || null : null,
+      kind: "status",
+      outcome: String(patch.status),
+      note: `${before[0].status} → ${patch.status}`,
+    });
+  }
+  return json({ updated: true, lead: data?.[0] ?? null });
+}
+
+// The call sheet's main write: log what happened on a call and move the lead in
+// one round-trip, so a spotty phone connection can't half-apply the update.
+async function logLeadActivity(id: string, body: Record<string, unknown>): Promise<Response> {
+  const kind = String(body.kind ?? "call");
+  if (!["call", "email", "note", "status"].includes(kind)) {
+    return json({ error: "kind must be call, email, note or status" }, 400);
+  }
+  const { data: lead } = await supabase!.from("leads").select("attempts").eq("id", id).limit(1);
+  if (!lead || lead.length === 0) return json({ error: "not found" }, 404);
+
+  const patch: Record<string, unknown> = {};
+  if ("status" in body) {
+    if (!LEAD_STATUSES.includes(String(body.status))) {
+      return json({ error: `status must be one of: ${LEAD_STATUSES.join(", ")}` }, 400);
+    }
+    patch.status = body.status;
+  }
+  if ("next_action_at" in body) {
+    if (body.next_action_at !== null && !isIsoDate(body.next_action_at)) {
+      return json({ error: "next_action_at must be YYYY-MM-DD or null" }, 400);
+    }
+    patch.next_action_at = body.next_action_at;
+  }
+  if ("owner" in body) patch.owner = typeof body.owner === "string" ? body.owner.trim() || null : null;
+  if (kind === "call") {
+    patch.attempts = (lead[0].attempts ?? 0) + 1;
+    patch.last_contacted_at = new Date().toISOString();
+  }
+  if (kind === "email") patch.last_contacted_at = new Date().toISOString();
+
+  const { error: activityError } = await supabase!.from("lead_activity").insert({
+    lead_id: id,
+    actor: typeof body.actor === "string" ? body.actor.trim() || null : null,
+    kind,
+    outcome: typeof body.status === "string" ? body.status : (typeof body.outcome === "string" ? body.outcome : null),
+    note: typeof body.note === "string" ? body.note.trim() || null : null,
+  });
+  if (activityError) return json({ error: activityError.message }, 400);
+
+  const { data, error } = await supabase!.from("leads").update(patch).eq("id", id).select();
+  if (error) return json({ error: error.message }, 400);
+  console.log(`[admin] lead activity id=${id} kind=${kind} status=${patch.status ?? "unchanged"}`);
+  return json({ logged: true, lead: data?.[0] ?? null });
+}
+
+async function deleteLead(id: string): Promise<Response> {
+  const { data, error } = await supabase!.from("leads").delete().eq("id", id).select();
+  if (error) return json({ error: error.message }, 400);
+  if (!data || data.length === 0) return json({ error: "not found" }, 404);
+  return json({ deleted: true });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -876,6 +1154,23 @@ Deno.serve(async (req) => {
     const itemMatch = path.match(/^\/clients\/([^/]+)$/);
     if (req.method === "PATCH" && itemMatch) {
       return await updateClientRow(itemMatch[1], await req.json());
+    }
+
+    if (req.method === "GET" && path === "/leads") {
+      return await listLeads(new URL(req.url).searchParams);
+    }
+    if (req.method === "POST" && path === "/leads") {
+      return await upsertLeads(await req.json());
+    }
+    const leadActivityMatch = path.match(/^\/leads\/([^/]+)\/activity$/);
+    if (req.method === "POST" && leadActivityMatch) {
+      return await logLeadActivity(leadActivityMatch[1], await req.json());
+    }
+    const leadMatch = path.match(/^\/leads\/([^/]+)$/);
+    if (leadMatch) {
+      if (req.method === "GET") return await getLead(leadMatch[1]);
+      if (req.method === "PATCH") return await updateLead(leadMatch[1], await req.json());
+      if (req.method === "DELETE") return await deleteLead(leadMatch[1]);
     }
 
     if (req.method === "GET" && path === "/health") {

@@ -32,6 +32,7 @@
   }
   .mono { font-family:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",monospace; }
   .tnum { font-variant-numeric:tabular-nums; }
+  .btn-call { display:inline-block; padding:9px 14px; border-radius:var(--r-sm); background:var(--gray-900); color:#fff; font-size:13.5px; font-weight:600; text-decoration:none; }
   ::selection { background:var(--accent-tint); }
 
   /* ---------- shell ---------- */
@@ -272,6 +273,7 @@
       <a data-view="overview" class="on"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Overview</a>
       <a data-view="shops"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg>Shops<span class="badge hidden" id="shopsBadge"></span></a>
       <a data-view="calls"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>Calls</a>
+      <a data-view="leads"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18"/><path d="M3 12h18"/><path d="M3 19h18"/><circle cx="7" cy="5" r="0.5" fill="currentColor"/></svg>Leads<span class="badge hidden" id="leadsBadge"></span></a>
       <a data-view="blocked"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Blocked</a>
     </nav>
     <div class="side-foot nav">
@@ -294,6 +296,7 @@
 <div id="scrim" class="scrim"></div>
 <div id="shopDrawer" class="drawer"></div>
 <div id="callDrawer" class="drawer"></div>
+<div id="leadDrawer" class="drawer"></div>
 
 <!-- onboarding link / add-shop modal -->
 <div id="linkScrim" class="scrim"></div>
@@ -309,7 +312,7 @@
   var TKEY='dispango_admin_token';
   var $=function(id){return document.getElementById(id);};
   var esc=function(v){return v==null?'':String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
-  var state={ view:'overview', health:null, clients:[], analytics:null, banned:[], calls:[], callFilter:'', shopQuery:'', callQuery:'' };
+  var state={ view:'overview', health:null, clients:[], analytics:null, banned:[], calls:[], callFilter:'', shopQuery:'', callQuery:'', leads:[], leadQuery:'', leadCity:'', leadStatus:'open' };
 
   function token(){return localStorage.getItem(TKEY)||'';}
   function api(path,method,body,base){
@@ -344,7 +347,7 @@
   function perClient(id){ var h=state.health; if(!h||!h.perClient) return null; return h.perClient.filter(function(p){return p.id===id;})[0]||null; }
 
   /* ================= ROUTER ================= */
-  var TITLES={overview:'Overview',shops:'Shops',calls:'Calls & leads',blocked:'Blocked numbers'};
+  var TITLES={overview:'Overview',shops:'Shops',calls:'Calls & leads',leads:'Outreach leads',blocked:'Blocked numbers'};
   function go(view){
     state.view=view;
     [].forEach.call($('nav').querySelectorAll('a[data-view]'),function(a){a.classList.toggle('on',a.getAttribute('data-view')===view);});
@@ -357,6 +360,7 @@
     if(state.view==='overview') return renderOverview(c);
     if(state.view==='shops') return renderShops(c,a);
     if(state.view==='calls') return renderCalls(c,a);
+    if(state.view==='leads') return renderLeads(c,a);
     if(state.view==='blocked') return renderBlocked(c,a);
   }
 
@@ -630,6 +634,158 @@
       '<div class="card pad"><div class="sec-title">Block a number</div><div class="grid2" style="margin-top:8px"><div><label class="f">Number <span class="h">E.164</span></label><input id="banPhone" placeholder="+14165551234"/></div><div><label class="f">Reason <span class="h">optional</span></label><input id="banReason" placeholder="repeat spammer"/></div></div><div class="err" id="banErr"></div><div style="margin-top:12px"><button class="danger" id="banBtn">Block number</button></div></div></div>';
   }
 
+
+  /* ================= LEADS (outreach call sheet) ================= */
+  var LEAD_STATUS=[
+    {v:'new',t:'Not contacted',cls:'off'},
+    {v:'no_answer',t:'No answer',cls:'warn'},
+    {v:'voicemail',t:'Voicemail left',cls:'warn'},
+    {v:'callback',t:'Call back',cls:'info'},
+    {v:'reached',t:'Spoke to them',cls:'info'},
+    {v:'interested',t:'Interested',cls:'ok'},
+    {v:'demo_booked',t:'Demo booked',cls:'ok'},
+    {v:'won',t:'Signed up',cls:'ok'},
+    {v:'not_interested',t:'Not interested',cls:'off'},
+    {v:'bad_number',t:'Bad number',cls:'bad'},
+    {v:'do_not_contact',t:'Do not contact',cls:'bad'}
+  ];
+  var LEAD_DONE=['won','not_interested','bad_number','do_not_contact'];
+  function leadMeta(v){ return LEAD_STATUS.filter(function(x){return x.v===v;})[0]||{v:v,t:titleCase(v),cls:'off'}; }
+  function today(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+  function isDue(l){ return LEAD_DONE.indexOf(l.status)<0 && l.next_action_at && l.next_action_at<=today(); }
+
+  // Their timezone is stored as e.g. "Mountain Time (America/Edmonton)" — pull the
+  // IANA zone so we can show the shop's LOCAL clock. Calling at 6am kills a lead.
+  function ianaZone(tz){ if(!tz) return null; var m=String(tz).match(/([A-Za-z_]+\/[A-Za-z_]+)/); return m?m[1]:null; }
+  function localClock(tz){
+    var z=ianaZone(tz); if(!z) return null;
+    try{ var f=new Intl.DateTimeFormat('en-CA',{timeZone:z,hour:'numeric',minute:'2-digit',hour12:true}); 
+         var h=Number(new Intl.DateTimeFormat('en-CA',{timeZone:z,hour:'numeric',hour12:false}).format(new Date()));
+         return {label:f.format(new Date()), odd:(h<8||h>=19)}; }catch(e){ return null; }
+  }
+
+  function leadSort(a,b){
+    var ad=LEAD_DONE.indexOf(a.status)>=0, bd=LEAD_DONE.indexOf(b.status)>=0;
+    if(ad!==bd) return ad?1:-1;                       // finished leads sink
+    var an=isDue(a), bn=isDue(b);
+    if(an!==bn) return an?-1:1;                        // due callbacks float
+    if(a.next_action_at&&b.next_action_at&&a.next_action_at!==b.next_action_at) return a.next_action_at<b.next_action_at?-1:1;
+    if(a.next_action_at!==b.next_action_at) return a.next_action_at?-1:1;
+    if((a.status==='new')!==(b.status==='new')) return a.status==='new'?-1:1;  // then untouched
+    return (a.attempts||0)-(b.attempts||0);
+  }
+
+  function renderLeads(c,a){
+    var all=state.leads;
+    a.innerHTML='<button class="ghost sm" id="leadCsv">Export CSV</button>';
+
+    var cities={}; all.forEach(function(l){ if(l.city) cities[l.city]=(cities[l.city]||0)+1; });
+    var cityOpts='<option value="">All cities</option>'+Object.keys(cities).sort().map(function(x){return '<option value="'+esc(x)+'"'+(state.leadCity===x?' selected':'')+'>'+esc(x)+' ('+cities[x]+')</option>';}).join('');
+    var statusOpts='<option value="open"'+(state.leadStatus==='open'?' selected':'')+'>Still open</option><option value=""'+(state.leadStatus===''?' selected':'')+'>Everything</option>'+
+      LEAD_STATUS.map(function(x){return '<option value="'+x.v+'"'+(state.leadStatus===x.v?' selected':'')+'>'+x.t+'</option>';}).join('');
+
+    var q=state.leadQuery.toLowerCase();
+    var list=all.filter(function(l){
+      if(state.leadCity&&l.city!==state.leadCity) return false;
+      if(state.leadStatus==='open'){ if(LEAD_DONE.indexOf(l.status)>=0) return false; }
+      else if(state.leadStatus&&l.status!==state.leadStatus) return false;
+      if(q&&(String(l.business_name||'')+' '+String(l.phone||'')+' '+String(l.owner||'')).toLowerCase().indexOf(q)<0) return false;
+      return true;
+    }).sort(leadSort);
+
+    var due=all.filter(isDue).length;
+    var untouched=all.filter(function(l){return l.status==='new';}).length;
+    var warm=all.filter(function(l){return ['interested','demo_booked','callback'].indexOf(l.status)>=0;}).length;
+    var won=all.filter(function(l){return l.status==='won';}).length;
+    var stat=function(n,lab,m){return '<div class="tile"><div class="k">'+esc(lab)+'</div><div class="v tnum">'+n+'</div><div class="m">'+esc(m)+'</div></div>';};
+
+    var rows=list.length? list.map(function(l){
+      var m=leadMeta(l.status); var clock=localClock(l.timezone);
+      var when=isDue(l)?'<span class="pill warn">due '+esc(l.next_action_at)+'</span>':(l.next_action_at?'<span class="rowsub">'+esc(l.next_action_at)+'</span>':'<span class="rowsub">—</span>');
+      var tel=l.phone?'<a class="mono" href="tel:'+esc(l.phone)+'" onclick="event.stopPropagation()">'+esc(l.phone)+'</a>':'<span class="rowsub">no number</span>';
+      return '<tr data-lead="'+esc(l.id)+'" style="cursor:pointer"><td><div>'+esc(l.business_name)+'</div><div class="rowsub">'+esc(l.city||'—')+(l.attempts?' · '+l.attempts+' call'+(l.attempts>1?'s':''):'')+'</div></td>'+
+        '<td>'+tel+'</td>'+
+        '<td>'+(clock?'<span'+(clock.odd?' class="pill warn"':'')+'>'+esc(clock.label)+'</span>':'<span class="rowsub">—</span>')+'</td>'+
+        '<td><span class="pill '+m.cls+'">'+esc(m.t)+'</span></td>'+
+        '<td>'+esc(l.owner||'—')+'</td><td>'+when+'</td></tr>';
+    }).join('')
+      : '<tr><td colspan="6"><div class="empty"><div class="e-ic">📇</div><div class="e-t">No leads here</div><div>Run <span class="mono">/locksmith-outreach &lt;city&gt;</span> in Claude Code to fill this list.</div></div></td></tr>';
+
+    c.innerHTML='<div class="stack">'+
+      '<div class="tiles">'+stat(due,'Due today','callbacks owed now')+stat(untouched,'Never called','fresh leads waiting')+stat(warm,'Warm','interested or booked')+stat(won,'Signed up','closed deals')+'</div>'+
+      '<div class="row" style="gap:8px;flex-wrap:wrap">'+
+        '<div class="search" style="max-width:280px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="leadSearch" placeholder="Search name, number, owner" value="'+esc(state.leadQuery)+'"/></div>'+
+        '<select id="leadCityF" style="max-width:200px">'+cityOpts+'</select>'+
+        '<select id="leadStatusF" style="max-width:200px">'+statusOpts+'</select>'+
+      '</div>'+
+      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Business</th><th>Phone</th><th>Their time</th><th>Status</th><th>Owner</th><th>Next step</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+
+    var si=$('leadSearch'); if(si){ si.addEventListener('input',function(){ state.leadQuery=si.value; var pos=si.selectionStart; renderLeads(c,a); var n=$('leadSearch'); if(n){n.focus(); try{n.setSelectionRange(pos,pos);}catch(e){}} }); }
+    var cf=$('leadCityF'); if(cf) cf.addEventListener('change',function(){ state.leadCity=cf.value; renderLeads(c,a); });
+    var sf=$('leadStatusF'); if(sf) sf.addEventListener('change',function(){ state.leadStatus=sf.value; renderLeads(c,a); });
+    var cv=$('leadCsv'); if(cv) cv.addEventListener('click',function(){ exportLeads(list); });
+  }
+
+  function openLead(id){
+    var d=$('leadDrawer');
+    d.innerHTML='<div class="drawer-head"><div><h2>Lead</h2></div><button class="x" data-close>×</button></div><div class="drawer-body"><div class="muted"><span class="spin"></span> Loading…</div></div>';
+    openDrawer(d);
+    api('/leads/'+encodeURIComponent(id)).then(function(res){
+      if(res.status!==200){ d.querySelector('.drawer-body').innerHTML='<div class="err">'+esc((res.body&&res.body.error)||'Error')+'</div>'; return; }
+      var l=res.body.lead, acts=res.body.activity||[];
+      var m=leadMeta(l.status), clock=localClock(l.timezone);
+      var f=function(lab,val){return val?'<div class="field"><span class="lab">'+lab+'</span><span class="val">'+esc(val)+'</span></div>':'';};
+      d.querySelector('.drawer-head').innerHTML='<div><h2>'+esc(l.business_name)+'</h2><div class="sub">'+esc(l.city||'')+(l.trade?' · '+esc(l.trade):'')+'</div></div><button class="x" data-close>×</button>';
+      d.querySelector('.drawer-body').innerHTML=
+        '<div class="card pad"><div class="between"><span class="pill '+m.cls+'">'+esc(m.t)+'</span>'+
+          (l.phone?'<a class="btn-call" href="tel:'+esc(l.phone)+'">📞 Call '+esc(l.phone)+'</a>':'<span class="pill bad">no number</span>')+'</div>'+
+          '<div style="margin-top:10px">'+
+          f('Hours',l.hours)+ (clock?'<div class="field"><span class="lab">Their time now</span><span class="val'+(clock.odd?' warn':'')+'">'+esc(clock.label)+(clock.odd?' — probably closed':'')+'</span></div>':'')+
+          f('Contact',l.contact_name)+
+          (l.website?'<div class="field"><span class="lab">Website</span><span class="val"><a href="'+esc(l.website)+'" target="_blank" rel="noopener">'+esc(l.domain||l.website)+'</a></span></div>':'')+
+          (l.email?'<div class="field"><span class="lab">Email</span><span class="val"><a href="mailto:'+esc(l.email)+'">'+esc(l.email)+'</a> <span class="rowsub">'+esc(l.email_status)+'</span></span></div>':'')+
+          f('Attempts',String(l.attempts||0))+
+          '</div>'+
+          (l.description?'<div style="margin-top:10px;font-size:13px">'+esc(l.description)+'</div>':'')+
+        '</div>'+
+        '<div class="card pad"><div class="sec-title">Log what happened</div>'+
+          '<div class="grid2" style="margin-top:8px">'+
+            '<div><label class="f">Status</label><select id="lgStatus">'+LEAD_STATUS.map(function(x){return '<option value="'+x.v+'"'+(x.v===l.status?' selected':'')+'>'+x.t+'</option>';}).join('')+'</select></div>'+
+            '<div><label class="f">Who called <span class="h">you</span></label><input id="lgActor" value="'+esc(l.owner||'')+'" placeholder="Miguel"/></div>'+
+          '</div>'+
+          '<div class="grid2" style="margin-top:8px"><div><label class="f">Call back on <span class="h">optional</span></label><input id="lgNext" type="date" value="'+esc(l.next_action_at||'')+'"/></div><div></div></div>'+
+          '<label class="f" style="margin-top:8px">Note</label><input id="lgNote" placeholder="Gatekeeper — ask for Dave after 4pm"/>'+
+          '<div class="err" id="lgErr"></div>'+
+          '<div class="row" style="margin-top:12px;gap:8px"><button id="lgSave" data-leadsave="'+esc(l.id)+'">Save call</button><button class="ghost sm" id="lgNoteOnly" data-leadnote="'+esc(l.id)+'">Note only</button></div>'+
+        '</div>'+
+        '<div class="card pad"><div class="sec-title">History</div>'+
+          (acts.length? '<div style="margin-top:8px">'+acts.map(function(x){
+            return '<div class="field"><span class="lab">'+esc(relTime(x.created_at))+'</span><span class="val">'+esc(x.actor||'someone')+' · '+esc(titleCase(x.outcome||x.kind))+(x.note?' — '+esc(x.note):'')+'</span></div>';
+          }).join('')+'</div>' : '<div class="muted" style="font-size:12.5px;margin-top:6px">Nothing logged yet.</div>')+
+        '</div>';
+    });
+  }
+
+  function saveLeadCall(id,kind){
+    var status=$('lgStatus')?$('lgStatus').value:null;
+    var body={ kind:kind||'call', actor:($('lgActor')&&$('lgActor').value.trim())||null, note:($('lgNote')&&$('lgNote').value.trim())||null };
+    if(kind!=='note'){ body.status=status; body.owner=($('lgActor')&&$('lgActor').value.trim())||null; }
+    var next=$('lgNext')?$('lgNext').value:''; if(next) body.next_action_at=next;
+    var btn=$('lgSave'); if(btn){btn.disabled=true;btn.textContent='Saving…';}
+    api('/leads/'+encodeURIComponent(id)+'/activity','POST',body).then(function(res){
+      if(res.status===200){ toast('Saved','ok'); loadLeads(function(){ openLead(id); }); }
+      else { var e=$('lgErr'); if(e)e.textContent=(res.body&&res.body.error)||('Error '+res.status); if(btn){btn.disabled=false;btn.textContent='Save call';} }
+    }).catch(function(){ toast('Network error','err'); if(btn){btn.disabled=false;btn.textContent='Save call';} });
+  }
+
+  function exportLeads(list){
+    var cols=['business_name','phone','email','city','status','owner','next_action_at','attempts','hours','timezone','website','description','notes'];
+    var cell=function(v){ v=v==null?'':String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+    var csv=cols.join(',')+'\n'+list.map(function(l){return cols.map(function(k){return cell(l[k]);}).join(',');}).join('\n');
+    var url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    var a=document.createElement('a'); a.href=url; a.download='dispango-leads-'+today()+'.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
   /* ================= actions ================= */
   function resendLead(callId,btn){
     if(btn){btn.disabled=true;btn.textContent='Sending…';}
@@ -741,7 +897,7 @@
 
   /* ---------- drawers/modals ---------- */
   function openDrawer(d){ $('scrim').classList.add('show'); d.classList.add('show'); }
-  function closeDrawers(){ $('scrim').classList.remove('show'); $('shopDrawer').classList.remove('show'); $('callDrawer').classList.remove('show'); }
+  function closeDrawers(){ $('scrim').classList.remove('show'); $('shopDrawer').classList.remove('show'); $('callDrawer').classList.remove('show'); $('leadDrawer').classList.remove('show'); }
   function openModal(){ $('linkScrim').classList.add('show'); var m=$('linkModal'); m.style.opacity='1'; m.style.transform='translate(-50%,-50%) scale(1)'; }
   function closeModal(){ $('linkScrim').classList.remove('show'); var m=$('linkModal'); m.style.opacity='0'; m.style.transform='translate(-50%,-46%) scale(.98)'; }
 
@@ -754,7 +910,8 @@
   function loadClients(cb){ api('/clients').then(function(res){ if(res.status===401){ localStorage.removeItem(TKEY); showLogin(); return; } if(res.status===200){ state.clients=res.body.clients||[]; if(state.view==='shops') render(); } if(cb)cb(); }); }
   function loadCalls(){ api('/calls?limit=80').then(function(res){ if(res.status===200){ state.calls=res.body.calls||[]; if(state.view==='calls') render(); } }); }
   function loadBanned(){ api('/banned').then(function(res){ if(res.status===200){ state.banned=res.body.banned||[]; if(state.view==='blocked') render(); } }); }
-  function loadAll(){ loadHealth(); loadAnalytics(); loadClients(); loadCalls(); loadBanned(); }
+  function loadLeads(cb){ api('/leads').then(function(res){ if(res.status===200){ state.leads=res.body.leads||[]; var due=state.leads.filter(isDue).length; var b=$('leadsBadge'); if(b){ if(due>0){b.textContent=due;b.classList.remove('hidden');} else b.classList.add('hidden'); } if(state.view==='leads') render(); } if(cb)cb(); }); }
+  function loadAll(){ loadHealth(); loadAnalytics(); loadClients(); loadCalls(); loadBanned(); loadLeads(); }
 
   /* ---------- auth ---------- */
   function showLogin(){ $('login').classList.remove('hidden'); $('app').classList.add('hidden'); }
@@ -774,10 +931,13 @@
   document.addEventListener('click',function(e){
     var t=e.target;
     var sw=t.closest('[data-toggle]'); if(sw){ e.stopPropagation(); toggleActive(sw.getAttribute('data-toggle'),sw); return; }
+    var lr=t.closest('[data-lead]'); if(lr&&!t.closest('a')){ openLead(lr.getAttribute('data-lead')); return; }
     var b=t.closest('button,[data-shop],[data-call]'); if(!b) return;
     var g=function(k){return b.getAttribute(k);};
     if(b.hasAttribute('data-close')){ closeDrawers(); return; }
     if(b.hasAttribute('data-lclose')){ closeModal(); return; }
+    if(g('data-leadsave')){ saveLeadCall(g('data-leadsave'),'call'); return; }
+    if(g('data-leadnote')){ saveLeadCall(g('data-leadnote'),'note'); return; }
     if(g('data-resend')){ resendLead(g('data-resend'),b); return; }
     if(g('data-resendcall')){ resendLead(g('data-resendcall'),b); return; }
     if(g('data-banphone')){ banNumber(g('data-banphone'),'heavy caller',b); return; }
