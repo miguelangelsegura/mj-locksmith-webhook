@@ -4,7 +4,7 @@
 
   ADMIN_API_TOKEN=… python3 scripts/import-legacy-leads.py [--dry-run]
 """
-import csv, json, os, sys, urllib.request
+import csv, json, os, sys, urllib.error, urllib.request
 
 BASE = os.environ.get(
     "ADMIN_API_BASE",
@@ -56,18 +56,25 @@ def main() -> int:
         print(json.dumps(leads[:2], indent=2))
         return 0
 
-    req = urllib.request.Request(
-        f"{BASE}/leads",
-        data=json.dumps({"leads": leads}).encode(),
-        headers={"x-admin-token": TOKEN, "content-type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req) as resp:
-        body = json.load(resp)
-    print(f"created={body['created']} enriched={body['enriched']} skipped={body['skipped']}")
-    for item in body["results"]:
-        if item["action"] in ("error", "duplicate"):
-            print(f"  {item['action']}: {item['business_name']} {item.get('reason','')}")
+    # The API caps a request at 200 leads.
+    for start in range(0, len(leads), 200):
+        batch = leads[start:start + 200]
+        req = urllib.request.Request(
+            f"{BASE}/leads",
+            data=json.dumps({"leads": batch}).encode(),
+            headers={"x-admin-token": TOKEN, "content-type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                body = json.load(resp)
+        except urllib.error.HTTPError as exc:
+            print(f"API returned {exc.code}: {exc.read().decode(errors='replace')}", file=sys.stderr)
+            return 1
+        print(f"created={body['created']} enriched={body['enriched']} skipped={body['skipped']}")
+        for item in body["results"]:
+            if item["action"] in ("error", "duplicate"):
+                print(f"  {item['action']}: {item['business_name']} {item.get('reason','')}")
     return 0
 
 

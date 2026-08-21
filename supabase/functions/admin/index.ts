@@ -844,6 +844,16 @@ function normalizeLeadPhone(value: unknown): string | null {
 
 // One business = one domain. Strip scheme/www/path so "https://www.x.com/contact"
 // and "http://x.com" collide instead of becoming two rows.
+// Directory/social hosts are where we FIND shops, never who a shop IS. Letting one
+// become a lead's dedup key would collapse every Facebook-only shop into one row.
+const NON_IDENTITY_DOMAINS = [
+  "facebook.com", "instagram.com", "twitter.com", "x.com", "linkedin.com",
+  "yelp.ca", "yelp.com", "yellowpages.ca", "yellowpages.com", "kijiji.ca",
+  "thumbtack.com", "bbb.org", "angi.com", "homestars.com", "google.com",
+  "maps.google.com", "business.site", "wixsite.com", "squarespace.com",
+  "threebestrated.ca", "canadacompanies.net", "catalog-online.ca",
+];
+
 function normalizeDomain(website: unknown, explicit: unknown): string | null {
   const candidate = typeof explicit === "string" && explicit.trim()
     ? explicit.trim()
@@ -854,7 +864,9 @@ function normalizeDomain(website: unknown, explicit: unknown): string | null {
     .replace(/^www\./i, "")
     .split(/[/?#]/)[0]
     .toLowerCase();
-  return host.includes(".") ? host : null;
+  if (!host.includes(".")) return null;
+  if (NON_IDENTITY_DOMAINS.some((d) => host === d || host.endsWith(`.${d}`))) return null;
+  return host;
 }
 
 function isIsoDate(value: unknown): boolean {
@@ -946,6 +958,15 @@ async function upsertLeads(body: Record<string, unknown>): Promise<Response> {
     row.business_name = businessName;
     row.domain = normalizeDomain(raw.website, raw.domain);
     row.phone = normalizeLeadPhone(raw.phone);
+    if (raw.phone && !row.phone) {
+      results.push({
+        business_name: businessName,
+        action: "error",
+        reason: `phone ${JSON.stringify(raw.phone)} is not a readable North American number`,
+      });
+      skipped++;
+      continue;
+    }
     if (!row.domain && !row.phone) {
       results.push({ business_name: businessName, action: "error", reason: "needs a website or a usable phone number" });
       skipped++;
@@ -960,13 +981,35 @@ async function upsertLeads(body: Record<string, unknown>): Promise<Response> {
     }
 
     // Dedup on either natural key — a shop found via a directory this run may
-    // already be in the list under its own domain.
-    const filters: string[] = [];
-    if (row.domain) filters.push(`domain.eq.${row.domain}`);
-    if (row.phone) filters.push(`phone.eq.${row.phone}`);
-    const { data: existingRows } = await supabase!
-      .from("leads").select("*").or(filters.join(",")).limit(1);
-    const existing = existingRows?.[0];
+    // already be in the list under its own domain. Queried one key at a time:
+    // a PostgREST `.or()` string would break on a value containing a comma.
+    let existing: Record<string, unknown> | undefined;
+    let lookupError: string | null = null;
+    for (const [key, value] of [["domain", row.domain], ["phone", row.phone]] as const) {
+      if (!value || existing) continue;
+      const { data, error } = await supabase!
+        .from("leads").select("*").eq(key, value).limit(1);
+      if (error) { lookupError = error.message; break; }
+      existing = data?.[0];
+    }
+    if (lookupError) {
+      results.push({ business_name: businessName, action: "error", reason: lookupError });
+      skipped++;
+      continue;
+    }
+
+    // Same number, different website = two businesses behind one answering
+    // service (or a franchise). Say so instead of quietly merging them away.
+    if (existing && row.domain && existing.domain && existing.domain !== row.domain) {
+      results.push({
+        business_name: businessName,
+        id: existing.id,
+        action: "error",
+        reason: `phone ${row.phone} is already on lead "${existing.business_name}" — check whether they share an answering service`,
+      });
+      skipped++;
+      continue;
+    }
 
     if (existing) {
       const fill: Record<string, unknown> = {};
@@ -1040,7 +1083,7 @@ async function logLeadActivity(id: string, body: Record<string, unknown>): Promi
   if (!["call", "email", "note", "status"].includes(kind)) {
     return json({ error: "kind must be call, email, note or status" }, 400);
   }
-  const { data: lead } = await supabase!.from("leads").select("attempts").eq("id", id).limit(1);
+  const { data: lead } = await supabase!.from("leads").select("id").eq("id", id).limit(1);
   if (!lead || lead.length === 0) return json({ error: "not found" }, 404);
 
   const patch: Record<string, unknown> = {};
@@ -1057,11 +1100,22 @@ async function logLeadActivity(id: string, body: Record<string, unknown>): Promi
     patch.next_action_at = body.next_action_at;
   }
   if ("owner" in body) patch.owner = typeof body.owner === "string" ? body.owner.trim() || null : null;
+  if (kind === "call" || kind === "email") patch.last_contacted_at = new Date().toISOString();
+
+  // Move the lead BEFORE writing history: `lead_activity` is append-only, so a
+  // retry after a failed update would leave a duplicate entry behind. The call
+  // counter increments in SQL — three people work this list at once and a
+  // read-then-write would lose one of two simultaneous calls.
+  let updated: Record<string, unknown> | null = null;
   if (kind === "call") {
-    patch.attempts = (lead[0].attempts ?? 0) + 1;
-    patch.last_contacted_at = new Date().toISOString();
+    const { data, error } = await supabase!.rpc("log_lead_call", { p_lead_id: id, p_patch: patch });
+    if (error) return json({ error: error.message }, 400);
+    updated = data ?? null;
+  } else if (Object.keys(patch).length > 0) {
+    const { data, error } = await supabase!.from("leads").update(patch).eq("id", id).select();
+    if (error) return json({ error: error.message }, 400);
+    updated = data?.[0] ?? null;
   }
-  if (kind === "email") patch.last_contacted_at = new Date().toISOString();
 
   const { error: activityError } = await supabase!.from("lead_activity").insert({
     lead_id: id,
@@ -1072,10 +1126,12 @@ async function logLeadActivity(id: string, body: Record<string, unknown>): Promi
   });
   if (activityError) return json({ error: activityError.message }, 400);
 
-  const { data, error } = await supabase!.from("leads").update(patch).eq("id", id).select();
-  if (error) return json({ error: error.message }, 400);
   console.log(`[admin] lead activity id=${id} kind=${kind} status=${patch.status ?? "unchanged"}`);
-  return json({ logged: true, lead: data?.[0] ?? null });
+  if (!updated) {
+    const { data } = await supabase!.from("leads").select("*").eq("id", id).limit(1);
+    updated = data?.[0] ?? null;
+  }
+  return json({ logged: true, lead: updated });
 }
 
 async function deleteLead(id: string): Promise<Response> {

@@ -650,6 +650,9 @@
     {v:'do_not_contact',t:'Do not contact',cls:'bad'}
   ];
   var LEAD_DONE=['won','not_interested','bad_number','do_not_contact'];
+  // A lead's website comes from a scraped page. Only http(s) may reach an href —
+  // a javascript: URL would run in this origin, where the admin token lives.
+  function safeUrl(u){ return /^https?:\/\//i.test(String(u||'')) ? String(u) : null; }
   function leadMeta(v){ return LEAD_STATUS.filter(function(x){return x.v===v;})[0]||{v:v,t:titleCase(v),cls:'off'}; }
   function today(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
   function isDue(l){ return LEAD_DONE.indexOf(l.status)<0 && l.next_action_at && l.next_action_at<=today(); }
@@ -742,7 +745,7 @@
           '<div style="margin-top:10px">'+
           f('Hours',l.hours)+ (clock?'<div class="field"><span class="lab">Their time now</span><span class="val'+(clock.odd?' warn':'')+'">'+esc(clock.label)+(clock.odd?' — probably closed':'')+'</span></div>':'')+
           f('Contact',l.contact_name)+
-          (l.website?'<div class="field"><span class="lab">Website</span><span class="val"><a href="'+esc(l.website)+'" target="_blank" rel="noopener">'+esc(l.domain||l.website)+'</a></span></div>':'')+
+          (safeUrl(l.website)?'<div class="field"><span class="lab">Website</span><span class="val"><a href="'+esc(safeUrl(l.website))+'" target="_blank" rel="noopener">'+esc(l.domain||l.website)+'</a></span></div>':(l.website?'<div class="field"><span class="lab">Website</span><span class="val">'+esc(l.website)+'</span></div>':''))+
           (l.email?'<div class="field"><span class="lab">Email</span><span class="val"><a href="mailto:'+esc(l.email)+'">'+esc(l.email)+'</a> <span class="rowsub">'+esc(l.email_status)+'</span></span></div>':'')+
           f('Attempts',String(l.attempts||0))+
           '</div>'+
@@ -770,7 +773,7 @@
     var status=$('lgStatus')?$('lgStatus').value:null;
     var body={ kind:kind||'call', actor:($('lgActor')&&$('lgActor').value.trim())||null, note:($('lgNote')&&$('lgNote').value.trim())||null };
     if(kind!=='note'){ body.status=status; body.owner=($('lgActor')&&$('lgActor').value.trim())||null; }
-    var next=$('lgNext')?$('lgNext').value:''; if(next) body.next_action_at=next;
+    if($('lgNext')) body.next_action_at=$('lgNext').value||null;   // empty clears the date
     var btn=$('lgSave'); if(btn){btn.disabled=true;btn.textContent='Saving…';}
     api('/leads/'+encodeURIComponent(id)+'/activity','POST',body).then(function(res){
       if(res.status===200){ toast('Saved','ok'); loadLeads(function(){ openLead(id); }); }
