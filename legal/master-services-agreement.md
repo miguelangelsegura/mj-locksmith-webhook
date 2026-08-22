@@ -12,7 +12,7 @@ each a "Party" and together the "Parties".
 
 ---
 
-> **PLAIN-ENGLISH SUMMARY — not part of this Agreement.** We provide an AI receptionist that answers your business phone 24/7, captures job details, and texts them to you. It costs **$199 CAD per month**, billed automatically, and you can cancel with 30 days' notice. Calls are recorded and transcribed so the AI can do its job. The AI is good but not perfect — it will occasionally mishear or miss something, so we can't promise it never makes mistakes, and our financial responsibility is capped at what you've paid us. It is not an emergency service. The binding terms are below.
+> **PLAIN-ENGLISH SUMMARY — not part of this Agreement.** We provide an AI receptionist that answers your business phone 24/7, captures job details, and texts them to you. It costs **$199 CAD per month**, billed automatically, and you can cancel with 30 days' notice. Calls are recorded and transcribed so the AI can do its job. The AI is good but not perfect — it will occasionally mishear or miss something, so we can't promise it never makes mistakes, and our financial responsibility is capped at what you've paid us. It is not an emergency service. Claims have to be raised within a year and are settled by arbitration in Toronto rather than in court. The binding terms are below.
 
 ---
 
@@ -78,6 +78,10 @@ each a "Party" and together the "Parties".
 
 6.5 **AS IS.** Except as expressly stated in this Agreement, the Services are provided **"as is" and "as available"**, and we disclaim all other representations, warranties, conditions and guarantees, express or implied, including implied warranties of merchantability, fitness for a particular purpose, and non-infringement, to the maximum extent permitted by law.
 
+6.6 **No reliance on projections.** You acknowledge that any statement, estimate, projection, demonstration, sample call, case study, testimonial, marketing material or figure regarding call volume, lead volume, conversion, revenue, savings or return on investment — whether made on our website, in a sales conversation, or otherwise — is **illustrative only, is not a representation, warranty or guarantee, and is expressly not relied upon by you** in entering into this Agreement. You have satisfied yourself as to the suitability of the Services for your business.
+
+6.7 **No professional advice.** We do not provide legal, regulatory, privacy or telecommunications-compliance advice, and nothing in the Services constitutes such advice.
+
 ## 7. Limitation of Liability
 
 7.1 **Cap.** To the maximum extent permitted by law, the total aggregate liability of Dispango arising out of or relating to this Agreement or the Services, whether in contract, tort (including negligence), statute or otherwise, will not exceed **the total fees actually paid by you to Dispango in the three (3) months immediately preceding the event giving rise to the claim**.
@@ -88,7 +92,13 @@ each a "Party" and together the "Parties".
 
 7.4 **Allocation of risk.** You acknowledge that the fees reflect this allocation of risk and that we would not enter into this Agreement without these limitations.
 
-7.5 **Nothing excluded that cannot be.** Nothing in this Agreement limits liability for fraud, fraudulent misrepresentation, gross negligence, wilful misconduct, or any liability that cannot be limited or excluded under applicable law.
+7.5 **Benefit of limitations.** Sections 6 and 7 are for the benefit of Dispango and its directors, officers, employees, contractors, affiliates and suppliers, and each of them may enforce those Sections directly. Dispango holds the benefit of those Sections in trust for them.
+
+7.6 **Reformation.** If any limitation or exclusion in Sections 6 or 7 is held unenforceable or excessive, it will be **read down and enforced to the maximum extent permitted by law** rather than struck out entirely, and the balance of those Sections remains in full force.
+
+7.7 **Chargebacks.** You agree to raise any billing dispute with us in writing before initiating a chargeback or payment reversal. Initiating a chargeback without first doing so is a material breach, and you are responsible for our reasonable costs of responding to it.
+
+7.8 **Nothing excluded that cannot be.** Nothing in this Agreement limits liability for fraud, fraudulent misrepresentation, gross negligence, wilful misconduct, or any liability that cannot be limited or excluded under applicable law.
 
 ## 8. Term and Termination
 
@@ -98,39 +108,74 @@ each a "Party" and together the "Parties".
 
 8.3 **Termination by us.** We may terminate on thirty (30) days' written notice, or immediately if you breach this Agreement and fail to cure within ten (10) days of notice, if your payment remains unpaid as described in Section 3.3, or if your use exposes us to legal or regulatory risk.
 
-8.4 **Effect.** On termination, your access to the Services and the Assigned Number ends, subject to Sections 2.2 and 4.5. Sections 4, 6, 7, 9, 10 and 11 survive.
+8.4 **Effect.** On termination, your access to the Services and the Assigned Number ends, subject to Sections 2.2 and 4.5. Sections 4, 6, 7, 9, 10, 11 and 12 survive termination or expiry.
 
-## 9. Confidentiality
+## 9. Client Status, Insurance and Claims
 
-9.1 Each Party will keep the other's non-public information confidential, use it only to perform this Agreement, and protect it with at least reasonable care. This does not apply to information that is public through no fault of the receiving Party, independently developed, or required to be disclosed by law (with notice where lawful).
+9.1 **Business, not consumer.** You represent and warrant that you are entering into this Agreement **in the course of carrying on business**, for business purposes and not as a consumer, and that this is a "business agreement" within the meaning of section 22(5) of the *Limitations Act, 2002* (Ontario). You acknowledge that consumer-protection legislation does not apply to this Agreement.
 
-## 10. Indemnity
+9.2 **Your insurance.** You will maintain, at your own cost, commercial general liability insurance and any other insurance customary for your trade, in amounts adequate to your operations. Our Services do not insure you and are not a substitute for your own coverage.
 
-10.1 **By you.** You will defend, indemnify and hold harmless Dispango and its directors, officers and employees from any third-party claim arising from (a) your breach of Sections 4.2, 5.2 or 6.1, (b) your goods or services or your dealings with any caller or customer, or (c) your unlawful use of the Services.
+9.3 **Contractual limitation period.** Except for claims for unpaid fees, **any claim arising out of or relating to this Agreement or the Services must be commenced within one (1) year** after the date on which the claim was discovered or ought reasonably to have been discovered, failing which it is absolutely barred. The Parties expressly vary the basic limitation period under section 22(5) of the *Limitations Act, 2002* (Ontario).
 
-10.2 **By us.** We will defend, indemnify and hold you harmless from any third-party claim that the Services, as provided by us, infringe that party's Canadian intellectual property rights, subject to the cap in Section 7.1.
+9.4 **Dispute resolution.** Any dispute will be resolved as follows: (a) good-faith negotiation between senior representatives for fifteen (15) days; then (b) mediation before a single mediator in **Toronto, Ontario** for up to thirty (30) days; then (c) **final and binding arbitration** before a single arbitrator in Toronto under the *Arbitration Act, 1991* (Ontario). The arbitration is private and confidential and the award is final. Either Party may seek injunctive relief from a court to protect confidential information or intellectual property without first exhausting this process.
 
-## 11. General
+9.5 **Individual claims only.** Each Party may bring claims only in its individual capacity, and **not as a plaintiff or class member in any class, collective or representative proceeding.**
 
-11.1 **Intellectual property.** We retain all right, title and interest in the Services, including all software, models, prompts and configurations. Nothing transfers ownership to you.
+9.6 **Costs of collection.** You are responsible for our reasonable legal fees and costs, on a substantial indemnity basis, incurred in collecting amounts you owe.
 
-11.2 **Governing law.** This Agreement is governed by the laws of the **Province of Ontario** and the federal laws of Canada applicable in Ontario. The Parties attorn to the exclusive jurisdiction of the courts of **Toronto, Ontario**.
+## 10. Confidentiality
 
-11.3 **Force majeure.** Neither Party is liable for failure to perform (other than payment obligations) caused by events beyond its reasonable control.
+10.1 Each Party will keep the other's non-public information confidential, use it only to perform this Agreement, and protect it with at least reasonable care. This does not apply to information that is public through no fault of the receiving Party, independently developed, or required to be disclosed by law (with notice where lawful).
 
-11.4 **Assignment.** You may not assign this Agreement without our written consent, not to be unreasonably withheld. We may assign it to an affiliate or in connection with a merger, reorganization or sale of substantially all our assets.
+## 11. Indemnity
 
-11.5 **Notices.** Notices to Dispango: hello@dispango.com, and 350 Bay Street, Suite 1300B, Toronto, Ontario M5H 2S6. Notices to you: the email address on your account.
+11.1 **By you.** You will defend, indemnify and hold harmless Dispango and its directors, officers and employees from any third-party claim arising from (a) your breach of Sections 4.2, 5.2 or 6.1, (b) your goods or services or your dealings with any caller or customer, or (c) your unlawful use of the Services.
 
-11.6 **Entire agreement.** This Agreement, together with the Privacy Policy and Terms published at https://dispango.com, is the entire agreement between the Parties and supersedes all prior discussions. In the event of conflict, this Agreement prevails.
+11.2 **By us.** We will defend, indemnify and hold you harmless from any third-party claim that the Services, as provided by us, infringe that party's Canadian intellectual property rights, subject to the cap in Section 7.1.
 
-11.7 **Amendment.** We may amend this Agreement on thirty (30) days' written notice; your continued use after that date constitutes acceptance. Any other amendment must be in writing signed by both Parties.
+## 12. General
 
-11.8 **Severability and waiver.** If any provision is held unenforceable, the remainder continues in force. No failure to enforce is a waiver.
+12.1 **Intellectual property.** We retain all right, title and interest in the Services, including all software, models, prompts and configurations. Nothing transfers ownership to you.
 
-11.9 **Independent contractors.** The Parties are independent contractors. Nothing creates a partnership, joint venture, employment or agency relationship.
+12.2 **Governing law.** This Agreement is governed by the laws of the **Province of Ontario** and the federal laws of Canada applicable in Ontario. The Parties attorn to the exclusive jurisdiction of the courts of **Toronto, Ontario**.
 
-11.10 **Electronic signature and counterparts.** This Agreement may be signed electronically and in counterparts, each of which is an original and all of which together form one agreement, consistent with the *Electronic Commerce Act, 2000* (Ontario) and PIPEDA.
+12.3 **Force majeure.** Neither Party is liable for any failure or delay in performance (other than payment obligations) caused by events beyond its reasonable control, including acts of God, severe weather, fire, flood, epidemic, labour disruption, war, civil unrest, government action, **failure or degradation of telecommunications carriers, internet or cloud-hosting providers, or third-party artificial-intelligence or speech providers**, cyber-attack, denial-of-service attack, or power failure.
+
+12.4 **Assignment.** You may not assign this Agreement without our written consent, not to be unreasonably withheld. We may assign it to an affiliate or in connection with a merger, reorganization or sale of substantially all our assets.
+
+12.5 **Notices.** Notices to Dispango: hello@dispango.com, and 350 Bay Street, Suite 1300B, Toronto, Ontario M5H 2S6. Notices to you: the email address on your account.
+
+12.6 **Entire agreement.** This Agreement, together with the Privacy Policy and Terms published at https://dispango.com, is the entire agreement between the Parties and **supersedes all prior or contemporaneous discussions, proposals, demonstrations, marketing materials and representations, whether oral or written**. Each Party acknowledges that **it has not relied on any statement, representation, warranty or assurance not expressly set out in this Agreement**, and that its only remedy for any statement made without fraud is for breach of this Agreement. In the event of conflict, this Agreement prevails.
+
+12.7 **Amendment.** We may amend this Agreement on thirty (30) days' written notice; your continued use after that date constitutes acceptance. Any other amendment must be in writing signed by both Parties.
+
+12.8 **Severability and waiver.** If any provision is held invalid or unenforceable, it will be **read down or severed to the minimum extent necessary**, and the remainder of this Agreement continues in full force. No failure to enforce is a waiver.
+
+12.9 **Feedback.** If you give us suggestions or feedback about the Services, we may use them without restriction or obligation to you.
+
+12.10 **Publicity.** We may identify you as a customer by business name and logo on our website and in marketing materials. You may withdraw this permission at any time on written notice.
+
+12.11 **Independent legal advice.** Each Party acknowledges that it has had the opportunity to obtain independent legal advice before signing, and has either done so or deliberately chosen not to.
+
+12.12 **English language.** The Parties have required that this Agreement and all related documents be drawn up in English. *Les parties ont exigé que la présente convention et tous les documents connexes soient rédigés en anglais.*
+
+12.13 **Independent contractors.** The Parties are independent contractors. Nothing creates a partnership, joint venture, employment or agency relationship.
+
+12.14 **Electronic signature and counterparts.** This Agreement may be signed electronically and in counterparts, each of which is an original and all of which together form one agreement, consistent with the *Electronic Commerce Act, 2000* (Ontario) and PIPEDA.
+
+---
+
+## ACKNOWLEDGEMENT
+
+**By signing below, you specifically acknowledge that you have read, understood and accepted the following, which have been drawn to your attention:**
+
+1. **The Services are not an emergency service** and do not connect callers to 911 (Section 6.1).
+2. **The Services use artificial intelligence and will not be perfect.** Calls and information may be missed, misheard or captured inaccurately, and **no volume of leads, business or revenue is promised** (Sections 6.2 and 6.6).
+3. **We are not liable for lost business, lost profits, lost revenue, or missed calls or leads**, and our total liability is capped at the fees you paid in the previous three months (Sections 7.1, 7.2 and 7.3).
+4. **Calls are recorded and transcribed**, and you are responsible for your own compliance obligations (Section 4).
+5. **Claims must be brought within one year** and are resolved by arbitration in Toronto, Ontario, individually and not as a class (Sections 9.3, 9.4 and 9.5).
+6. You are entering into this Agreement **as a business, not as a consumer** (Section 9.1).
 
 ---
 
