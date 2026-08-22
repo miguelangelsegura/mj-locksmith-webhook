@@ -130,6 +130,45 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+// Shared Resend send for client-facing mail: one place for the request scaffolding
+// (auth, from/reply_to, error handling) so onboarding/payment copy can't drift the
+// send mechanism. Returns success/failure for inline feedback. Deliverability to
+// arbitrary client addresses requires OPS_FROM_EMAIL's domain verified in Resend.
+async function sendClientEmail(
+  to: string,
+  subject: string,
+  text: string,
+  html: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!RESEND_API_KEY) return { ok: false, error: "email not configured (RESEND_API_KEY unset)" };
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: OPS_FROM_EMAIL,
+        to,
+        ...(OPS_EMAIL ? { reply_to: OPS_EMAIL } : {}),
+        subject,
+        text,
+        html,
+      }),
+    });
+    if (!resp.ok) {
+      const body = await resp.text();
+      console.log(`[client-email] failed ${resp.status}: ${body}`);
+      return { ok: false, error: `resend ${resp.status}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.log(`[client-email] error: ${e}`);
+    return { ok: false, error: String(e) };
+  }
+}
+
 // Client-facing send of the onboarding link via Resend. Unlike notifyOps (an
 // internal fire-and-forget alert), this is triggered by the operator from the
 // admin UI, so it RETURNS success/failure for inline feedback instead of just
@@ -140,7 +179,6 @@ async function sendOnboardingEmail(
   businessName: string,
   url: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  if (!RESEND_API_KEY) return { ok: false, error: "email not configured (RESEND_API_KEY unset)" };
   const forShop = businessName ? ` for ${businessName}` : "";
   const text =
     `Hi,\n\n` +
@@ -160,32 +198,39 @@ async function sendOnboardingEmail(
     `<p>Questions? Just reply to this email.</p>` +
     `<p>— The Dispango team</p>` +
     `</div>`;
-  try {
-    const resp = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: OPS_FROM_EMAIL,
-        to,
-        ...(OPS_EMAIL ? { reply_to: OPS_EMAIL } : {}),
-        subject: "Sign & activate your Dispango AI receptionist",
-        text,
-        html,
-      }),
-    });
-    if (!resp.ok) {
-      const body = await resp.text();
-      console.log(`[onboarding-email] failed ${resp.status}: ${body}`);
-      return { ok: false, error: `resend ${resp.status}` };
-    }
-    return { ok: true };
-  } catch (e) {
-    console.log(`[onboarding-email] error: ${e}`);
-    return { ok: false, error: String(e) };
-  }
+  return await sendClientEmail(to, "Sign & activate your Dispango AI receptionist", text, html);
+}
+
+// Post-sign payment nudge — the durable backstop for the sign→pay hand-off. The
+// primary path is SignWell's browser redirect into Stripe Checkout after signing,
+// but if that redirect doesn't land (not honored, tab closed) the signer is
+// stranded: this webhook otherwise only RECORDS the signature. Emailing the same
+// /pay link the redirect targets guarantees payment is always reachable.
+async function sendPaymentEmail(
+  to: string,
+  businessName: string,
+  url: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const forShop = businessName ? ` for ${businessName}` : "";
+  const text =
+    `Hi,\n\n` +
+    `Thanks for signing your Dispango agreement${forShop} — you're almost done.\n\n` +
+    `The last step is to set up payment. Use this secure link:\n${url}\n\n` +
+    `Once payment is set up, your AI receptionist goes live — nothing else needed on your end.\n\n` +
+    `Questions? Just reply to this email.\n\n` +
+    `— The Dispango team`;
+  const html =
+    `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">` +
+    `<p>Hi,</p>` +
+    `<p>Thanks for signing your Dispango agreement${businessName ? ` for <b>${escapeHtml(businessName)}</b>` : ""} — you're almost done.</p>` +
+    `<p>The last step is to set up payment:</p>` +
+    `<p><a href="${escapeHtml(url)}" style="display:inline-block;background:#4f7cff;color:#fff;text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:600">Set up payment</a></p>` +
+    `<p style="color:#555;font-size:13px">Or paste this link into your browser:<br>${escapeHtml(url)}</p>` +
+    `<p>Once payment is set up, your AI receptionist goes live — nothing else needed on your end.</p>` +
+    `<p>Questions? Just reply to this email.</p>` +
+    `<p>— The Dispango team</p>` +
+    `</div>`;
+  return await sendClientEmail(to, "One more step — set up payment for your Dispango AI receptionist", text, html);
 }
 
 // active = contract signed AND subscription paid. Single source of truth for the
@@ -749,6 +794,39 @@ async function handleSignwellWebhook(rawBody: string): Promise<Response> {
   }
   await recomputeActive(client.id);
   console.log(`[signwell] signed client=${client.id}`);
+
+  // Backstop the sign→pay hand-off: email the payer their /pay link now that the
+  // contract is signed, so a failed post-sign browser redirect can't strand them
+  // (this webhook otherwise only RECORDS the signature). At-most-once via a
+  // conditional claim on payment_link_emailed_at — NOT on contract_status, which
+  // the /pay poll also sets: keying off it would skip this backstop in the exact
+  // case it must cover (redirect reached /pay, marked signed, then checkout
+  // failed/abandoned). The claim also makes concurrent/retried document_completed
+  // deliveries send only one email. Skip once paid. A send failure releases the
+  // claim so a later retry can re-send, and never fails the webhook.
+  if (client.subscription_status !== "active" && client.contact_email && client.onboarding_token && PUBLIC_BASE_URL) {
+    const { data: claim } = await supabase
+      .from("clients")
+      .update({ payment_link_emailed_at: new Date().toISOString() })
+      .eq("id", client.id)
+      .is("payment_link_emailed_at", null)
+      .select();
+    if (claim && claim.length > 0) {
+      const payUrl = `${PUBLIC_BASE_URL}/billing/onboarding/${client.onboarding_token}/pay`;
+      const res = await sendPaymentEmail(client.contact_email, client.business_name || "", payUrl);
+      if (res.ok) {
+        console.log(`[signwell] payment link emailed client=${client.id}`);
+      } else {
+        await supabase.from("clients").update({ payment_link_emailed_at: null }).eq("id", client.id);
+        console.log(`[signwell] payment email failed client=${client.id}: ${res.error}`);
+        await notifyOps(
+          "Payment link email failed after signing",
+          `client=${client.id} signed but the pay-link email failed (${res.error}). Send them ${payUrl} manually.`,
+        );
+      }
+    }
+  }
+
   return json({ received: true });
 }
 
