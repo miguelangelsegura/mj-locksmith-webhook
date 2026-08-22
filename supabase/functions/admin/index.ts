@@ -831,7 +831,7 @@ async function unbanCaller(phone: string): Promise<Response> {
 
 // Scraped numbers arrive as "403-250-5698", "(403) 250 5698", "1-800-...".
 // The column is the dedup key and powers tel: links, so store one shape only.
-function normalizeLeadPhone(value: unknown): string | null {
+function normalizeLeadPhone(value: unknown, lenient = false): string | null {
   if (typeof value !== "string") return null;
   const raw = value.trim();
   if (!raw) return null;
@@ -839,8 +839,34 @@ function normalizeLeadPhone(value: unknown): string | null {
   const digits = raw.replace(/\D/g, "");
   if (digits.length === 10) return `+1${digits}`;
   if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  if (!lenient) return null;
+  // Scraped fields hold two numbers on one line ("403-800-9185 / auto 403-388-8786")
+  // or trailing text. Take the first number — that's the one to ring — and the
+  // caller records the published text so nothing is lost. The lookarounds matter:
+  // without them a longer digit run yields a plausible-looking INVENTED number,
+  // which would then be dialled and used as a dedup key.
+  const first = raw.match(
+    /(?<!\d)(?:\+?1[\s.\-\u2013]?)?\(?\d{3}\)?[\s.\-\u2013]?\d{3}[\s.\-\u2013]?\d{4}(?!\d)/,
+  );
+  if (first) {
+    const found = first[0].replace(/\D/g, "");
+    if (found.length === 10) return `+1${found}`;
+    if (found.length === 11 && found.startsWith("1")) return `+${found}`;
+  }
   return null;
 }
+
+// True when the published text carries digits the `phone` column can't hold — a
+// second number, an extension — so the caller knows to keep the raw text.
+function publishedPhoneHasMore(raw: string, normalized: string): boolean {
+  const rawDigits = raw.replace(/\D/g, "");
+  const dialed = normalized.replace(/\D/g, "").slice(1);
+  const at = rawDigits.indexOf(dialed);
+  if (at < 0) return true;
+  const before = rawDigits.slice(0, at).replace(/^1$/, "");
+  return (before + rawDigits.slice(at + dialed.length)).length > 0;
+}
+
 
 // One business = one domain. Strip scheme/www/path so "https://www.x.com/contact"
 // and "http://x.com" collide instead of becoming two rows.
@@ -964,11 +990,15 @@ async function upsertLeads(body: Record<string, unknown>): Promise<Response> {
     const row = pickLeadFields(raw);
     row.business_name = businessName;
     row.domain = normalizeDomain(raw.website, raw.domain);
-    row.phone = normalizeLeadPhone(raw.phone);
-    // An unreadable number (extension, vanity spelling) shouldn't cost us a lead
-    // that a website already identifies — keep the raw text so a human can fix it.
-    if (raw.phone && !row.phone) {
-      if (!row.domain) {
+    row.phone = normalizeLeadPhone(raw.phone, true);
+    // Keep the published text whenever the column can't hold all of it: an
+    // unreadable number (extension, vanity spelling) shouldn't cost us a lead a
+    // website already identifies, and a second number must not vanish because
+    // only the first one is dialable.
+    const phoneIncomplete = typeof raw.phone === "string" && typeof row.phone === "string" &&
+      publishedPhoneHasMore(raw.phone, row.phone);
+    if (raw.phone && (!row.phone || phoneIncomplete)) {
+      if (!row.phone && !row.domain) {
         results.push({
           business_name: businessName,
           action: "error",
