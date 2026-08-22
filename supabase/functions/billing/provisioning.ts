@@ -7,7 +7,7 @@
 //   2. Registers it with Vapi as a DYNAMIC/server-routed number — server.url points
 //      at the vapi-webhook (+?token), fallbackDestination = the shop's real phone,
 //      and crucially NO static assistantId (or {{vars}} render literally on live calls).
-//   3. Writes inbound_number + the shared vapi_assistant_id + fallback_number to the
+//   3. Writes inbound_number + fallback_number to the
 //      clients row and marks provision_status = 'staged' (NOT live).
 //
 // It NEVER touches clients.active (owned by recomputeActive) and NEVER throws into
@@ -45,7 +45,6 @@ interface ProvisionConfig {
   twilioSid: string;
   twilioToken: string;
   vapiKey: string;
-  vapiAssistantId: string;
   vapiSecret: string;
   webhookBase: string; // e.g. https://<ref>.supabase.co/functions/v1/vapi-webhook
   country: string;
@@ -60,7 +59,6 @@ function loadConfig(): { cfg: ProvisionConfig | null; missing: string[] } {
     twilioSid: Deno.env.get("TWILIO_ACCOUNT_SID") || "",
     twilioToken: Deno.env.get("TWILIO_AUTH_TOKEN") || "",
     vapiKey: Deno.env.get("VAPI_PRIVATE_KEY") || "",
-    vapiAssistantId: Deno.env.get("VAPI_ASSISTANT_ID") || "",
     vapiSecret: Deno.env.get("VAPI_SECRET") || "",
   };
   const missing: string[] = [];
@@ -225,9 +223,13 @@ export async function provisionForClient(
 
     await ensureVapiNumber(cfg, number, businessName, fallback);
 
+    // Deliberately does NOT write vapi_assistant_id. One shared assistant answers
+    // for every shop, so stamping its id on each row (a) collides with the unique
+    // index the moment a second client provisions, and (b) is unusable anyway —
+    // lookupClientId() in vapi-webhook refuses the shared id because it can't
+    // identify a tenant. Routing is by inbound_number.
     const { error } = await supabase.from("clients").update({
       inbound_number: number,
-      vapi_assistant_id: cfg.vapiAssistantId,
       fallback_number: fallback,
       provision_status: "staged",
       provision_error: null,

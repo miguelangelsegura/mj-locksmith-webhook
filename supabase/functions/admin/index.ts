@@ -196,7 +196,9 @@ async function createClientRow(body: Record<string, unknown>): Promise<Response>
   const ownerPhone = normalizePhone(body.owner_phone);
 
   if (!businessName) return json({ error: "business_name is required" }, 400);
-  if (!assistantId) return json({ error: "vapi_assistant_id is required" }, 400);
+  // Optional: one shared assistant answers for every shop and routing is by
+  // inbound_number, so a per-client assistant id is the exception, not the rule.
+  // Requiring it made it impossible to hand-add a second shop.
   if (!dispatchPhone) {
     return json({ error: "dispatch_phone must be E.164, e.g. +14165551234" }, 400);
   }
@@ -204,12 +206,16 @@ async function createClientRow(body: Record<string, unknown>): Promise<Response>
     return json({ error: "owner_phone must be E.164, e.g. +14165551234" }, 400);
   }
 
-  // Reject duplicate assistant before insert for a clean error (the column is
-  // also UNIQUE at the DB level, which is the real guard).
-  const { data: existing } = await supabase!
-    .from("clients").select("id").eq("vapi_assistant_id", assistantId).limit(1);
-  if (existing && existing.length > 0) {
-    return json({ error: "a client with that vapi_assistant_id already exists" }, 409);
+  // Only when a per-client assistant id is actually supplied: reject a duplicate
+  // before insert for a clean error (the column is also UNIQUE at the DB level,
+  // which is the real guard; Postgres permits many NULLs, so shared-assistant
+  // clients simply leave it empty).
+  if (assistantId) {
+    const { data: existing } = await supabase!
+      .from("clients").select("id").eq("vapi_assistant_id", assistantId).limit(1);
+    if (existing && existing.length > 0) {
+      return json({ error: "a client with that vapi_assistant_id already exists" }, 409);
+    }
   }
 
   const row = pickWritable(body);
@@ -219,7 +225,9 @@ async function createClientRow(body: Record<string, unknown>): Promise<Response>
     row.fallback_number = fb;
   }
   row.business_name = businessName;
-  row.vapi_assistant_id = assistantId;
+  // NULL, not "", when omitted — Postgres allows many NULLs in a unique index but
+  // only one empty string, so writing "" would recreate the collision this fixes.
+  row.vapi_assistant_id = assistantId || null;
   row.dispatch_phone = dispatchPhone;
   row.owner_phone = ownerPhone;
   // New clients start inactive: the billing flow (sign + pay) flips active=true
