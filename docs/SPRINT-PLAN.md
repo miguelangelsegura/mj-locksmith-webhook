@@ -76,7 +76,9 @@ broke the live system twice." Automating it makes onboarding instant and fully s
 
 **Current state / gap:** No code anywhere calls the Twilio or Vapi APIs to *create* numbers/assistants —
 it's all read/consume. On payment, `billing`'s Stripe webhook (`checkout.session.completed`) currently
-just emails ops "provision now." The shared Vapi assistant (`VAPI_ASSISTANT_ID`) serves everyone; per-shop
+just emails ops "provision now." **NEVER write the shared assistant id onto a client row** — the
+column is UNIQUE, so the second client to provision fails with a duplicate-key error (this shipped
+and broke provisioning). Routing is by `inbound_number`. The shared Vapi assistant (`VAPI_ASSISTANT_ID`) serves everyone; per-shop
 identity is injected per call via `assistantOverrides.variableValues` in `handleAssistantRequest`. Numbers
 are BYO Twilio imported into Vapi. Spec for this work: `docs/ADMIN-DASHBOARD-SPEC.md` §B.
 
@@ -87,7 +89,7 @@ are BYO Twilio imported into Vapi. Spec for this work: `docs/ADMIN-DASHBOARD-SPE
    attaching **no static assistantId** — it must use **dynamic/server routing** (a `server.url` on the
    number pointing at the vapi-webhook `?token=<VAPI_SECRET>`), plus a `fallbackDestination`. (If the
    number has no assistant *and* no server URL, calls don't connect — see `CLAUDE.md`.)
-3. **Write the row:** set `inbound_number` (+ `vapi_assistant_id` = the shared assistant) on the client's
+3. **Write the row:** set `inbound_number` on the client's
    `clients` row so the webhook resolves them. Keep `active` governed solely by `recomputeActive`.
 4. **Trigger:** run this routine when `subscription_status` + `contract_status` both reach done — cleanest
    is inside the `checkout.session.completed` handler in `billing` (replace the "email ops" step), or a

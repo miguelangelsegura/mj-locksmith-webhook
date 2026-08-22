@@ -105,7 +105,7 @@ Confirm alerts reach your phone + email.
 `checkout.session.completed` **after** `recomputeActive`, reusing `stripe_events` idempotency so it
 never double-runs. It buys/selects a Twilio number (area code near the shop where possible), registers
 it with Vapi as a **dynamic/server-routed** number (server URL + `?token` + `fallbackDestination` = the
-shop's real phone), and writes `inbound_number` (+ shared `vapi_assistant_id`) to the `clients` row as
+shop's real phone), and writes `inbound_number` to the `clients` row as
 **`provision_status='staged'`** (not live). (2) **One-click Activate:** alert you (SMS/email +
 admin-ui button); tapping Activate flips `provision_status`→`active`. **Never touch `clients.active`
 outside `recomputeActive`** — provisioning uses its own `provision_status`. (3) Idempotent +

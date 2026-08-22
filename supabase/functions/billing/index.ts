@@ -587,7 +587,7 @@ async function onboardingPay(token: string): Promise<Response> {
   // so a client-side meta-refresh wouldn't run — the rescue has to be server-side.)
   let signed = client.contract_status === "signed";
   if (!signed && client.contract_request_id) {
-    for (let i = 0; i < 10 && !signed; i++) {
+    for (let i = 0; i < 2 && !signed; i++) {
       const status = await signwellGetStatus(client.contract_request_id);
       if (isCompletedStatus(status)) {
         await supabase.from("clients").update({ contract_status: "signed", signed_at: new Date().toISOString() })
@@ -596,18 +596,13 @@ async function onboardingPay(token: string): Promise<Response> {
         signed = true;
         break;
       }
-      if (i < 9) await new Promise((r) => setTimeout(r, 2000));
+      if (i < 1) await new Promise((r) => setTimeout(r, 1500));
     }
   }
   if (!signed) {
-    // Rendered as PLAIN TEXT by the edge runtime — no markup, and the URL must be
-    // readable so a stranded signer can still reach payment by hand.
-    return new Response(
-      "We haven't received your signed contract yet.\n\n" +
-      "If you just signed, wait about 30 seconds and open this link again:\n" +
-      `${signingPageUrl(token)}\n`,
-      { status: 409, headers: { "Content-Type": "text/plain; charset=utf-8", ...CORS } },
-    );
+    // Never dead-end. The signing page on our own site keeps polling (and can
+    // render real HTML, which this route cannot), so hand them back to it.
+    return Response.redirect(signingPageUrl(token), 302);
   }
 
   // Already paid? Send them to the confirmation rather than charging twice.
@@ -657,6 +652,33 @@ function onboardingDone(): Response {
 // Tokenized read for the /welcome page. The onboarding token is a bearer secret
 // the payer already holds (it gates /pay), so we return just the public-facing
 // provisioning state — enough to show them their assigned number. No secrets leave.
+// Polled by the /signing page every couple of seconds. Checks our own row first
+// (cheap), and only when it still says unsigned does it ask SignWell — ONE call
+// per poll, not a burst — promoting the row the moment SignWell says Completed.
+// This is what closes the webhook-lag race the signing page exists for.
+async function onboardingStatus(token: string): Promise<Response> {
+  if (!supabase) return json({ error: "service unavailable" }, 503);
+  const { data } = await supabase
+    .from("clients")
+    .select("id, contract_status, subscription_status, contract_request_id")
+    .eq("onboarding_token", token).limit(1);
+  const c = data?.[0];
+  if (!c) return json({ error: "not found" }, 404);
+
+  let contract = c.contract_status ?? "none";
+  if (contract !== "signed" && c.contract_request_id) {
+    const status = await signwellGetStatus(c.contract_request_id);
+    if (isCompletedStatus(status)) {
+      await supabase.from("clients").update({
+        contract_status: "signed", signed_at: new Date().toISOString(),
+      }).eq("id", c.id);
+      await recomputeActive(c.id);
+      contract = "signed";
+    }
+  }
+  return json({ contract_status: contract, subscription_status: c.subscription_status ?? "none" });
+}
+
 async function welcomeInfo(token: string): Promise<Response> {
   if (!supabase) return json({ error: "service unavailable" }, 503);
   const { data } = await supabase
@@ -939,6 +961,9 @@ Deno.serve(async (req) => {
     if (req.method === "GET" && doneMatch) return onboardingDone();
 
     // Public tokenized read for the /welcome page (token is the auth).
+    const statusMatch = path.match(/^\/onboarding\/([^/]+)\/status$/);
+    if (req.method === "GET" && statusMatch) return await onboardingStatus(statusMatch[1]);
+
     const welcomeMatch = path.match(/^\/welcome-info\/([^/]+)$/);
     if (req.method === "GET" && welcomeMatch) return await welcomeInfo(welcomeMatch[1]);
 

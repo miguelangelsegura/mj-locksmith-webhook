@@ -22,7 +22,7 @@ function Signing() {
     async function poll() {
       if (stop) return;
       try {
-        const res = await fetch(`${BILLING_URL}/welcome-info/${encodeURIComponent(token)}`);
+        const res = await fetch(`${BILLING_URL}/onboarding/${encodeURIComponent(token)}/status`);
         if (res.ok) {
           const info = await res.json();
           if (info.subscription_status === "active") { window.location.href = `/welcome?token=${encodeURIComponent(token)}`; return; }
@@ -30,9 +30,12 @@ function Signing() {
         }
       } catch { /* keep waiting — a transient network blip shouldn't strand them */ }
       tries += 1;
-      // Give up gracefully after ~60s and let them continue by hand.
-      if (tries > 30) { setState("slow"); return; }
-      setTimeout(poll, 2000);
+      // Surface a manual button after ~30s, but KEEP POLLING for ~10 minutes —
+      // a signature that lands late must still carry them through rather than
+      // stranding a customer who intended to pay.
+      if (tries === 15) setState("slow");
+      setTimeout(poll, tries < 15 ? 2000 : 4000);
+      if (tries > 160) return;
     }
     poll();
     return () => { stop = true; };
@@ -44,15 +47,15 @@ function Signing() {
   if (state === "slow") {
     return (
       <Msg title="Taking longer than usual">
-        Your signature hasn't come through yet. You can continue to payment here:
-        <a className="mt-4 inline-block rounded-lg bg-brand px-5 py-3 font-semibold text-white" href={payUrl}>Continue to payment</a>
+        <p>Your signature hasn&apos;t come through yet. We&apos;re still checking — or continue to payment now:</p>
+        <a className="mt-5 block rounded-lg bg-brand px-5 py-3 font-semibold text-white" href={payUrl}>Continue to payment</a>
       </Msg>
     );
   }
   return (
     <Msg title="Finalizing your contract…">
-      One moment — we're confirming your signature, then we'll take you to payment.
-      <a className="mt-4 inline-block text-sm underline" href={payUrl}>Continue now</a>
+      <p>One moment — we&apos;re confirming your signature, then we&apos;ll take you to payment.</p>
+      <a className="mt-5 block text-sm underline" href={payUrl}>Continue now</a>
     </Msg>
   );
 }

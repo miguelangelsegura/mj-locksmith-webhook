@@ -196,9 +196,13 @@ async function createClientRow(body: Record<string, unknown>): Promise<Response>
   const ownerPhone = normalizePhone(body.owner_phone);
 
   if (!businessName) return json({ error: "business_name is required" }, 400);
-  // Optional: one shared assistant answers for every shop and routing is by
-  // inbound_number, so a per-client assistant id is the exception, not the rule.
-  // Requiring it made it impossible to hand-add a second shop.
+  // A per-client assistant id is the exception (one shared assistant answers for
+  // every shop), so it is optional — but a shop with NEITHER routing key is
+  // unroutable and would look healthy until a live call failed.
+  const inboundForRouting = normalizePhone(body.inbound_number);
+  if (!assistantId && !inboundForRouting) {
+    return json({ error: "inbound_number (or a per-client vapi_assistant_id) is required so calls can be routed" }, 400);
+  }
   if (!dispatchPhone) {
     return json({ error: "dispatch_phone must be E.164, e.g. +14165551234" }, 400);
   }
