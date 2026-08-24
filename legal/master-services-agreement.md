@@ -112,11 +112,11 @@ each a "Party" and together the "Parties".
 
 ## 9. Client Status, Insurance and Claims
 
-9.1 **Business, not consumer.** You represent and warrant that you are entering into this Agreement **in the course of carrying on business**, for business purposes and not as a consumer, and that this is a "business agreement" within the meaning of section 22(5) of the *Limitations Act, 2002* (Ontario). You acknowledge that consumer-protection legislation does not apply to this Agreement.
+9.1 **Business, not consumer.** You represent and warrant that you are entering into this Agreement **in the course of carrying on business**, for business purposes and not as a consumer, and that this is a "business agreement" within the meaning of section 22 of the *Limitations Act, 2002* (Ontario). You acknowledge that consumer-protection legislation does not apply to this Agreement.
 
 9.2 **Your insurance.** You will maintain, at your own cost, commercial general liability insurance and any other insurance customary for your trade, in amounts adequate to your operations. Our Services do not insure you and are not a substitute for your own coverage.
 
-9.3 **Contractual limitation period.** Except for claims for unpaid fees, **any claim arising out of or relating to this Agreement or the Services must be commenced within one (1) year** after the date on which the claim was discovered or ought reasonably to have been discovered, failing which it is absolutely barred. The Parties expressly vary the basic limitation period under section 22(5) of the *Limitations Act, 2002* (Ontario).
+9.3 **Contractual limitation period.** Except for claims for unpaid fees, **any claim arising out of or relating to this Agreement or the Services must be commenced within one (1) year** after the date on which the claim was discovered or ought reasonably to have been discovered, failing which it is absolutely barred. The Parties expressly vary the basic limitation period as permitted by section 22 of the *Limitations Act, 2002* (Ontario) for business agreements.
 
 9.4 **Dispute resolution.** Any dispute will be resolved as follows: (a) good-faith negotiation between senior representatives for fifteen (15) days; then (b) mediation before a single mediator in **Toronto, Ontario** for up to thirty (30) days; then (c) **final and binding arbitration** before a single arbitrator in Toronto under the *Arbitration Act, 1991* (Ontario). The arbitration is private and confidential and the award is final. Either Party may seek injunctive relief from a court to protect confidential information or intellectual property without first exhausting this process.
 
@@ -183,10 +183,11 @@ each a "Party" and together the "Parties".
 
 **JAM WORKS INC.**, operating as Dispango
 
-By: ______________________________
-Name: Abdulrahman Kassem
-Title: Director
-Date: August 22, 2026
+Per: **Abdulrahman Kassem**, Director, duly authorized
+
+Jam Works Inc. accepts this Agreement, and it becomes binding on Jam Works Inc.,
+upon Dispango making the Services available to the Client. No further signature
+by Jam Works Inc. is required.
 
 **CLIENT**
 

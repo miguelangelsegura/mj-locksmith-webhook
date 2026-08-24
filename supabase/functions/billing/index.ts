@@ -42,7 +42,6 @@ const stripeCrypto = Stripe.createSubtleCryptoProvider();
 if (!stripe) console.log("[startup] STRIPE_SECRET_KEY not set — Stripe disabled");
 
 const SIGNWELL_API_KEY = Deno.env.get("SIGNWELL_API_KEY");
-const SIGNWELL_TEMPLATE_ID = Deno.env.get("SIGNWELL_TEMPLATE_ID");
 // SignWell signs each webhook with HMAC-SHA256 over "{type}@{time}" keyed by the
 // Webhook ID (from the create-webhook response), delivered as `event.hash` in the body.
 const SIGNWELL_WEBHOOK_ID = Deno.env.get("SIGNWELL_WEBHOOK_ID");
@@ -281,7 +280,12 @@ async function signwellCreateDocument(client: any, token: string): Promise<{ url
   // previous one sat in one founder's account with nine unfilled blanks in it.
   // Field placement uses SignWell TEXT TAGS embedded in the document, so editing
   // the contract can never strand a signature box on the wrong page.
-  const filled = CONTRACT_HTML.replaceAll("%%BUSINESS_NAME%%", escapeHtml(businessName));
+  // The business name comes from a PUBLIC signup form, and text_tags is on, so a
+  // name containing "{{signature:2}}" would inject real fields into the client's
+  // own contract. Strip the tag delimiters, then substitute via a function so
+  // replacement patterns like "$&" in a name can't mangle the document either.
+  const safeName = escapeHtml(businessName).replace(/[{}]/g, "");
+  const filled = CONTRACT_HTML.replaceAll("%%BUSINESS_NAME%%", () => safeName);
   const fileBase64 = base64Encode(new TextEncoder().encode(filled));
 
   const resp = await fetch("https://www.signwell.com/api/v1/documents", {
@@ -361,7 +365,7 @@ async function signwellVerify(event: any): Promise<boolean> {
 
 async function createOnboarding(body: Record<string, unknown>): Promise<Response> {
   if (!supabase) return json({ error: "supabase not configured" }, 503);
-  if (!SIGNWELL_API_KEY || !SIGNWELL_TEMPLATE_ID) return json({ error: "e-sign not configured" }, 503);
+  if (!SIGNWELL_API_KEY) return json({ error: "e-sign not configured" }, 503);
   if (!PUBLIC_BASE_URL) return json({ error: "PUBLIC_BASE_URL not set" }, 503);
 
   const clientId = String(body.client_id ?? "").trim();
@@ -499,7 +503,7 @@ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
 
 async function handleSignup(req: Request, body: Record<string, unknown>): Promise<Response> {
   if (!supabase) return json({ error: "service unavailable" }, 503);
-  if (!SIGNWELL_API_KEY || !SIGNWELL_TEMPLATE_ID || !PUBLIC_BASE_URL) {
+  if (!SIGNWELL_API_KEY || !PUBLIC_BASE_URL) {
     return json({ error: "signup temporarily unavailable" }, 503);
   }
 
