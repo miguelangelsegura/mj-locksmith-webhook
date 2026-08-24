@@ -55,7 +55,6 @@ is smart-retrying the card); revoked only on `canceled` / `unpaid` / subscriptio
 | Secret | What |
 |---|---|
 | `VAPI_PRIVATE_KEY` | Vapi REST bearer (from `.env.local`). Used to register the number with Vapi. |
-| `VAPI_ASSISTANT_ID` | the **shared** Vapi assistant id written to every provisioned client's row |
 | `VAPI_SECRET` | billing needs its **own** copy (same value as the webhook's) to build the number's `server.url` `?token=` |
 | `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` | the live Twilio account that owns the numbers (same account the webhook texts from) |
 | `TWILIO_NUMBER_COUNTRY` | optional, default `CA`. Country to buy numbers in; area code is matched to the shop's phone. |
@@ -65,7 +64,7 @@ is smart-retrying the card); revoked only on `canceled` / `unpaid` / subscriptio
 `recomputeActive`, reusing the `stripe_events` idempotency claim so it never double-runs):
 buys a Twilio number → registers it with Vapi as a **dynamic/server-routed** number
 (`server.url` → vapi-webhook `?token`, `fallbackDestination` = the shop's real phone, **no
-static `assistantId`**) → writes `inbound_number` + `vapi_assistant_id` + `fallback_number`
+static `assistantId`**) → writes `inbound_number` + `fallback_number`
 and sets **`provision_status='staged'`** (NOT live). It **never** touches `clients.active`
 (owned solely by `recomputeActive`). Idempotent + partial-failure safe: never re-buys once
 `inbound_number` is set. The operator taps **Activate** (admin-ui / `POST /provision/:id/activate`)

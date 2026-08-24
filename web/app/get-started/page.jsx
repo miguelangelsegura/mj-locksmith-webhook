@@ -13,7 +13,6 @@ const BILLING_URL =
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
 const TRADES = ["Locksmith", "Plumber", "HVAC", "Electrician", "Contractor", "Garage Doors", "Roofer", "Other"];
-const VOICES = ["No preference", "Elliot", "Ava", "Cole", "Harper"];
 const LINE_TYPES = ["Mobile", "Landline", "VoIP / internet phone", "Not sure"];
 
 function Logo() {
@@ -35,7 +34,7 @@ const label = "block text-sm font-semibold text-ink";
 const field = "mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink outline-none focus:border-brand";
 
 export default function GetStarted() {
-  const [form, setForm] = useState({ business_name: "", contact_email: "", phone: "", trade: TRADES[0], voice: VOICES[0], phone_type: LINE_TYPES[0], company_url: "" });
+  const [form, setForm] = useState({ business_name: "", contact_email: "", phone: "", trade: TRADES[0], phone_type: LINE_TYPES[0], company_url: "" });
   const [status, setStatus] = useState("idle"); // idle | submitting | error
   const [error, setError] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
@@ -124,19 +123,11 @@ export default function GetStarted() {
             <input id="phone" type="tel" className={field} value={form.phone} onChange={set("phone")} required placeholder="(647) 555-0198" />
             <p className="mt-1 text-xs text-muted">Where we text every captured job. This isn&apos;t a forwarding number — we&apos;ll give you your Dispango number after checkout. Canadian/US numbers.</p>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <label className={label} htmlFor="trade">Your trade</label>
-              <select id="trade" className={field} value={form.trade} onChange={set("trade")}>
-                {TRADES.map((t) => <option key={t}>{t}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={label} htmlFor="voice">Receptionist voice</label>
-              <select id="voice" className={field} value={form.voice} onChange={set("voice")}>
-                {VOICES.map((v) => <option key={v}>{v}</option>)}
-              </select>
-            </div>
+          <div>
+            <label className={label} htmlFor="trade">Your trade</label>
+            <select id="trade" className={field} value={form.trade} onChange={set("trade")}>
+              {TRADES.map((t) => <option key={t}>{t}</option>)}
+            </select>
           </div>
           <div>
             <label className={label} htmlFor="phone_type">The business line you&apos;ll forward to us</label>

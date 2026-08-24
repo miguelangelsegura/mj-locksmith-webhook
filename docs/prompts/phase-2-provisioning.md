@@ -17,7 +17,7 @@ Terms → get a working number, with a human confirm step.
   2. Registers it with **Vapi** as a **dynamic/server-routed** phone-number resource: `server.url` →
      the vapi-webhook `?token=<VAPI_SECRET>`, plus a `fallbackDestination` = the shop's real phone.
      **No static `assistantId`** on the number (or `{{vars}}` render literally on live calls).
-  3. Writes `inbound_number` (+ shared `vapi_assistant_id`) to the `clients` row with a **new
+  3. Writes `inbound_number` to the `clients` row with a **new
      `provision_status='staged'`** column — NOT live yet.
 - **One-click Activate:** alert the operator (SMS/email + an admin-ui button); tapping Activate flips
   `provision_status`→`active`. **NEVER set `clients.active` here** — that flag is owned solely by

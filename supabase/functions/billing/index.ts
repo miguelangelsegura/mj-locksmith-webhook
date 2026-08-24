@@ -67,6 +67,17 @@ function donePageUrl(token: string): string {
     : `${PUBLIC_BASE_URL}/billing/onboarding/${token}/done`;
 }
 
+// Where SignWell returns the signer after they sign. Must be a page on our own
+// site: this used to point straight at the /pay route on *.supabase.co, where
+// the edge runtime rewrites text/html → text/plain, so a signer who arrived a
+// beat before the webhook saw raw markup on a blank page and had no way forward.
+// The site page waits for the signature and carries them to payment.
+function signingPageUrl(token: string): string {
+  return PUBLIC_SITE_URL
+    ? `${PUBLIC_SITE_URL}/signing?token=${encodeURIComponent(token)}`
+    : `${PUBLIC_BASE_URL}/billing/onboarding/${token}/pay`;
+}
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -253,7 +264,7 @@ async function recomputeActive(clientId: string): Promise<void> {
 // --- SignWell -------------------------------------------------------------
 
 async function signwellCreateDocument(client: any, token: string): Promise<{ url: string; documentId: string }> {
-  const redirectUrl = `${PUBLIC_BASE_URL}/billing/onboarding/${token}/pay`;
+  const redirectUrl = signingPageUrl(token);
   // Create FROM TEMPLATE: this endpoint pulls the file + fields + placeholders
   // from the template. (The from-scratch /documents endpoint ignores template_id
   // and demands inline files/fields — that produced the 422 "no files / no fields".)
@@ -621,7 +632,7 @@ async function onboardingPay(token: string): Promise<Response> {
   // so a client-side meta-refresh wouldn't run — the rescue has to be server-side.)
   let signed = client.contract_status === "signed";
   if (!signed && client.contract_request_id) {
-    for (let i = 0; i < 4 && !signed; i++) {
+    for (let i = 0; i < 2 && !signed; i++) {
       const status = await signwellGetStatus(client.contract_request_id);
       if (isCompletedStatus(status)) {
         await supabase.from("clients").update({ contract_status: "signed", signed_at: new Date().toISOString() })
@@ -630,11 +641,13 @@ async function onboardingPay(token: string): Promise<Response> {
         signed = true;
         break;
       }
-      if (i < 3) await new Promise((r) => setTimeout(r, 1500));
+      if (i < 1) await new Promise((r) => setTimeout(r, 1500));
     }
   }
   if (!signed) {
-    return html("<p>Please finish signing the contract first. If you just signed, refresh this page in a moment.</p>", 409);
+    // Never dead-end. The signing page on our own site keeps polling (and can
+    // render real HTML, which this route cannot), so hand them back to it.
+    return Response.redirect(signingPageUrl(token), 302);
   }
 
   // Already paid? Send them to the confirmation rather than charging twice.
@@ -684,11 +697,38 @@ function onboardingDone(): Response {
 // Tokenized read for the /welcome page. The onboarding token is a bearer secret
 // the payer already holds (it gates /pay), so we return just the public-facing
 // provisioning state — enough to show them their assigned number. No secrets leave.
+// Polled by the /signing page every couple of seconds. Checks our own row first
+// (cheap), and only when it still says unsigned does it ask SignWell — ONE call
+// per poll, not a burst — promoting the row the moment SignWell says Completed.
+// This is what closes the webhook-lag race the signing page exists for.
+async function onboardingStatus(token: string): Promise<Response> {
+  if (!supabase) return json({ error: "service unavailable" }, 503);
+  const { data } = await supabase
+    .from("clients")
+    .select("id, contract_status, subscription_status, contract_request_id")
+    .eq("onboarding_token", token).limit(1);
+  const c = data?.[0];
+  if (!c) return json({ error: "not found" }, 404);
+
+  let contract = c.contract_status ?? "none";
+  if (contract !== "signed" && c.contract_request_id) {
+    const status = await signwellGetStatus(c.contract_request_id);
+    if (isCompletedStatus(status)) {
+      await supabase.from("clients").update({
+        contract_status: "signed", signed_at: new Date().toISOString(),
+      }).eq("id", c.id);
+      await recomputeActive(c.id);
+      contract = "signed";
+    }
+  }
+  return json({ contract_status: contract, subscription_status: c.subscription_status ?? "none" });
+}
+
 async function welcomeInfo(token: string): Promise<Response> {
   if (!supabase) return json({ error: "service unavailable" }, 503);
   const { data } = await supabase
     .from("clients")
-    .select("business_name, inbound_number, fallback_number, provision_status")
+    .select("business_name, inbound_number, fallback_number, provision_status, contract_status, subscription_status")
     .eq("onboarding_token", token).limit(1);
   const c = data?.[0];
   if (!c) return json({ error: "not found" }, 404);
@@ -697,6 +737,8 @@ async function welcomeInfo(token: string): Promise<Response> {
     inbound_number: c.inbound_number ?? null,
     fallback_number: c.fallback_number ?? null,
     provision_status: c.provision_status ?? "none",
+    contract_status: c.contract_status ?? "none",
+    subscription_status: c.subscription_status ?? "none",
   });
 }
 
@@ -997,6 +1039,9 @@ Deno.serve(async (req) => {
     if (req.method === "GET" && doneMatch) return onboardingDone();
 
     // Public tokenized read for the /welcome page (token is the auth).
+    const statusMatch = path.match(/^\/onboarding\/([^/]+)\/status$/);
+    if (req.method === "GET" && statusMatch) return await onboardingStatus(statusMatch[1]);
+
     const welcomeMatch = path.match(/^\/welcome-info\/([^/]+)$/);
     if (req.method === "GET" && welcomeMatch) return await welcomeInfo(welcomeMatch[1]);
 
