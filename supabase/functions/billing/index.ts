@@ -20,6 +20,7 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import Stripe from "npm:stripe";
 import { provisionForClient, provisioningEnabled } from "./provisioning.ts";
+import { CONTRACT_HTML } from "./contract-template.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -263,44 +264,44 @@ async function recomputeActive(clientId: string): Promise<void> {
 
 // --- SignWell -------------------------------------------------------------
 
+function base64Encode(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+
 async function signwellCreateDocument(client: any, token: string): Promise<{ url: string; documentId: string }> {
   const redirectUrl = signingPageUrl(token);
-  // Create FROM TEMPLATE: this endpoint pulls the file + fields + placeholders
-  // from the template. (The from-scratch /documents endpoint ignores template_id
-  // and demands inline files/fields — that produced the 422 "no files / no fields".)
-  // Recipient maps to the template slot via `placeholder_name`; `id` is just our
-  // own handle for the recipient. `template_fields` prefill by `api_id` alone.
-  const resp = await fetch("https://www.signwell.com/api/v1/document_templates/documents", {
+  const businessName = String(client.business_name ?? "").trim() || "Client";
+
+  // Built from OUR OWN versioned contract (legal/master-services-agreement.md ->
+  // contract-template.ts) rather than a SignWell dashboard template. Two reasons:
+  // this account's API key is not authorized to create templates (401), and a
+  // dashboard template is an unversioned copy that drifts from the repo — the
+  // previous one sat in one founder's account with nine unfilled blanks in it.
+  // Field placement uses SignWell TEXT TAGS embedded in the document, so editing
+  // the contract can never strand a signature box on the wrong page.
+  const filled = CONTRACT_HTML.replaceAll("%%BUSINESS_NAME%%", escapeHtml(businessName));
+  const fileBase64 = base64Encode(new TextEncoder().encode(filled));
+
+  const resp = await fetch("https://www.signwell.com/api/v1/documents", {
     method: "POST",
     headers: { "X-Api-Key": SIGNWELL_API_KEY!, "Content-Type": "application/json" },
     body: JSON.stringify({
-      template_id: SIGNWELL_TEMPLATE_ID,
+      name: `Dispango Master Services Agreement — ${businessName}`,
       test_mode: (Deno.env.get("SIGNWELL_TEST_MODE") || "true") === "true",
+      draft: false,
+      with_signature_page: false,
+      text_tags: true,
       embedded_signing: false,
       redirect_url: redirectUrl,
       metadata: { onboarding_token: token, client_id: client.id },
-      // SignWell requires a recipient for EVERY template placeholder. The
-      // "Document Sender" placeholder has no signing fields (it's a preassigned
-      // copy slot), so exclude it per-document — leaving the Client as the sole
-      // recipient, so the doc completes on the Client's signature alone.
-      // (case-sensitive — must match the template's placeholder name exactly.)
-      exclude_placeholders: ["Document Sender"],
-      recipients: [{
-        id: "1",
-        placeholder_name: "Client",
-        name: client.business_name || "Client",
-        email: client.contact_email,
-      }],
-      template_fields: [{
-        api_id: "business_name",
-        value: client.business_name || "",
-      }],
+      files: [{ name: "Dispango-Master-Services-Agreement.html", file_base64: fileBase64 }],
+      recipients: [{ id: "1", name: businessName, email: client.contact_email }],
     }),
   });
   if (!resp.ok) throw new Error(`signwell create ${resp.status}: ${await resp.text()}`);
   const doc = await resp.json();
-  // Match the Client recipient by the id we assigned (response keeps it) rather
-  // than by index, so we never hand back the wrong recipient's URL.
   const client_recipient = (doc?.recipients ?? []).find((r: any) => r?.id === "1");
   const signingUrl = client_recipient?.signing_url ?? doc?.embedded_signing_url ?? null;
   if (!signingUrl) throw new Error("signwell: no signing_url in response");

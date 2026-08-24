@@ -190,11 +190,11 @@ Date: August 22, 2026
 
 **CLIENT**
 
-Business name: [business_name]
+Business name: %%BUSINESS_NAME%%
 
-By: [client_signature]
+By: {{signature}}
 
-Date: [DateField_1]
+Date: {{date}}
 
 ---
 
