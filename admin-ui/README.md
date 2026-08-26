@@ -41,4 +41,7 @@ as opposed to Shops (already live on the product). It is a phone-first call shee
   note. History is **append-only** — your note never overwrites a teammate's.
 - **Export CSV** downloads whatever the current filters show.
 
-Leads are created by the `/locksmith-outreach` skill in Claude Code, not by hand here.
+**Currently hidden.** The prospect list moved to a shared Google Sheet, and this page is
+only password-protected, so the Leads nav entry is commented out (see the comment in the
+`<nav>` block to restore it). The `leads` tables and admin API routes are untouched — the
+`/locksmith-outreach` skill still writes there, which is what keeps reruns from duplicating.
