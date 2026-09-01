@@ -21,3 +21,4 @@ supabase/.branches/
 outreach/contacted.csv
 .gstack/
 node_modules/
+.vercel
