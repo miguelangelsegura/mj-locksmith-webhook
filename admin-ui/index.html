@@ -32,6 +32,32 @@
   }
   .mono { font-family:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",monospace; }
   .tnum { font-variant-numeric:tabular-nums; }
+  /* One-tap outcome buttons — the whole point is logging a call with a thumb,
+     while still holding the phone. 44px is the minimum comfortable tap target. */
+  .qgrid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:10px; }
+  /* NB: the base `button` rule paints white-on-accent, and `button.ok` forces a
+     green fill — so these need their own colour AND must not reuse .ok/.warn/.bad. */
+  .qbtn, .qbtn:hover { background:#fff; }
+  .qbtn { min-height:46px; border:1px solid var(--gray-300); border-radius:var(--r-sm);
+          font-size:14px; font-weight:600; cursor:pointer; padding:10px 8px; color:var(--gray-900); }
+  .qbtn:hover { border-color:var(--gray-400); }
+  .qbtn.q-warn { border-color:#f0c36d; color:#8a5a00; }
+  .qbtn.q-ok { border-color:#8fd0a6; color:#1a6b3d; }
+  .qbtn.q-bad { border-color:#e6a3a3; color:#8a2020; }
+  .whobar { display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--gray-600); }
+  .whobar b { color:var(--gray-900); }
+  .chip { padding:6px 11px; border:1px solid var(--gray-300); border-radius:999px; background:#fff;
+          font-size:13px; cursor:pointer; }
+  .chip.on { background:var(--gray-900); color:#fff; border-color:var(--gray-900); }
+  .m-meta { display:none; }
+  /* Phones: drop the desktop-only columns and fold them into a line under the name,
+     so a row stays readable without sideways scrolling. */
+  @media (max-width:760px) {
+    .leadtbl .col-desk { display:none; }
+    .leadtbl .m-meta { display:block; margin-top:3px; }
+    .leadtbl td { padding-top:12px; padding-bottom:12px; }
+    .qgrid { grid-template-columns:1fr; }
+  }
   .btn-call { display:inline-block; padding:9px 14px; border-radius:var(--r-sm); background:var(--gray-900); color:#fff; font-size:13.5px; font-weight:600; text-decoration:none; }
   ::selection { background:var(--accent-tint); }
 
@@ -312,7 +338,7 @@
   var TKEY='dispango_admin_token';
   var $=function(id){return document.getElementById(id);};
   var esc=function(v){return v==null?'':String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
-  var state={ view:'overview', health:null, clients:[], analytics:null, banned:[], calls:[], callFilter:'', shopQuery:'', callQuery:'', leads:[], leadQuery:'', leadCity:'', leadStatus:'open' };
+  var state={ view:'overview', health:null, clients:[], analytics:null, banned:[], calls:[], callFilter:'', shopQuery:'', callQuery:'', leads:[], leadQuery:'', leadCity:'', leadProv:'', leadStatus:'open', leadWho:'all' };
 
   function token(){return localStorage.getItem(TKEY)||'';}
   function api(path,method,body,base){
@@ -653,6 +679,14 @@
   // A lead's website comes from a scraped page. Only http(s) may reach an href —
   // a javascript: URL would run in this origin, where the admin token lives.
   function safeUrl(u){ return /^https?:\/\//i.test(String(u||'')) ? String(u) : null; }
+  // Who is calling, remembered per browser. It pre-fills every log entry and powers
+  // the "Mine" filter, so two people never work the same lead by accident.
+  function me(){ return localStorage.getItem('dispango_caller')||''; }
+  function askWho(then){
+    var v=prompt('Your name (so the team can see who called):', me()||'');
+    if(v && v.trim()){ localStorage.setItem('dispango_caller', v.trim()); if(then)then(); render(); }
+  }
+  function tomorrow(){ var d=new Date(Date.now()+864e5); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
   function leadMeta(v){ return LEAD_STATUS.filter(function(x){return x.v===v;})[0]||{v:v,t:titleCase(v),cls:'off'}; }
   function today(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
   function isDue(l){ return LEAD_DONE.indexOf(l.status)<0 && l.next_action_at && l.next_action_at<=today(); }
@@ -679,110 +713,171 @@
   }
 
   function renderLeads(c,a){
-    var all=state.leads;
+    var all=state.leads, who=me();
     a.innerHTML='<button class="ghost sm" id="leadCsv">Export CSV</button>';
 
-    var cities={}; all.forEach(function(l){ if(l.city) cities[l.city]=(cities[l.city]||0)+1; });
+    var provs={}, cities={};
+    all.forEach(function(l){ if(l.province) provs[l.province]=(provs[l.province]||0)+1; });
+    all.forEach(function(l){ if(l.city && (!state.leadProv||l.province===state.leadProv)) cities[l.city]=(cities[l.city]||0)+1; });
+    var provOpts='<option value="">All provinces</option>'+Object.keys(provs).sort().map(function(x){return '<option value="'+esc(x)+'"'+(state.leadProv===x?' selected':'')+'>'+esc(x)+' ('+provs[x]+')</option>';}).join('');
     var cityOpts='<option value="">All cities</option>'+Object.keys(cities).sort().map(function(x){return '<option value="'+esc(x)+'"'+(state.leadCity===x?' selected':'')+'>'+esc(x)+' ('+cities[x]+')</option>';}).join('');
     var statusOpts='<option value="open"'+(state.leadStatus==='open'?' selected':'')+'>Still open</option><option value=""'+(state.leadStatus===''?' selected':'')+'>Everything</option>'+
       LEAD_STATUS.map(function(x){return '<option value="'+x.v+'"'+(state.leadStatus===x.v?' selected':'')+'>'+x.t+'</option>';}).join('');
 
     var q=state.leadQuery.toLowerCase();
     var list=all.filter(function(l){
+      if(state.leadProv&&l.province!==state.leadProv) return false;
       if(state.leadCity&&l.city!==state.leadCity) return false;
+      if(state.leadWho==='mine'&&(l.owner||'').toLowerCase()!==who.toLowerCase()) return false;
+      if(state.leadWho==='free'&&l.owner) return false;
       if(state.leadStatus==='open'){ if(LEAD_DONE.indexOf(l.status)>=0) return false; }
       else if(state.leadStatus&&l.status!==state.leadStatus) return false;
-      if(q&&(String(l.business_name||'')+' '+String(l.phone||'')+' '+String(l.owner||'')).toLowerCase().indexOf(q)<0) return false;
+      if(q&&(String(l.business_name||'')+' '+String(l.phone||'')+' '+String(l.city||'')+' '+String(l.owner||'')).toLowerCase().indexOf(q)<0) return false;
       return true;
     }).sort(leadSort);
 
+    var t=today();
     var due=all.filter(isDue).length;
     var untouched=all.filter(function(l){return l.status==='new';}).length;
+    var todayCalls=all.filter(function(l){return (l.last_contacted_at||'').slice(0,10)===t;}).length;
     var warm=all.filter(function(l){return ['interested','demo_booked','callback'].indexOf(l.status)>=0;}).length;
-    var won=all.filter(function(l){return l.status==='won';}).length;
     var stat=function(n,lab,m){return '<div class="tile"><div class="k">'+esc(lab)+'</div><div class="v tnum">'+n+'</div><div class="m">'+esc(m)+'</div></div>';};
 
+    var whobar = who
+      ? '<div class="whobar">Calling as <b>'+esc(who)+'</b> <button class="ghost sm" id="leadWhoBtn">change</button></div>'
+      : '<div class="whobar"><button class="sm" id="leadWhoBtn">Tell us your name</button> so the team can see who called what</div>';
+
     var rows=list.length? list.map(function(l){
-      var m=leadMeta(l.status); var clock=localClock(l.timezone);
-      var when=isDue(l)?'<span class="pill warn">due '+esc(l.next_action_at)+'</span>':(l.next_action_at?'<span class="rowsub">'+esc(l.next_action_at)+'</span>':'<span class="rowsub">—</span>');
-      var tel=l.phone?'<a class="mono" href="tel:'+esc(l.phone)+'" onclick="event.stopPropagation()">'+esc(l.phone)+'</a>':'<span class="rowsub">no number</span>';
-      return '<tr data-lead="'+esc(l.id)+'" style="cursor:pointer"><td><div>'+esc(l.business_name)+'</div><div class="rowsub">'+esc(l.city||'—')+(l.attempts?' · '+l.attempts+' call'+(l.attempts>1?'s':''):'')+'</div></td>'+
+      var m=leadMeta(l.status), clock=localClock(l.timezone);
+      var when=isDue(l)?'<span class="pill warn">due '+esc(l.next_action_at)+'</span>':(l.next_action_at?'<span class="rowsub">'+esc(l.next_action_at)+'</span>':'<span class="rowsub">\u2014</span>');
+      var tel=l.phone?'<a class="mono" href="tel:'+esc(l.phone)+'" data-dial="'+esc(l.id)+'" onclick="event.stopPropagation()">'+esc(l.phone)+'</a>':'<span class="rowsub">no number</span>';
+      var meta=[l.city||'', l.attempts?l.attempts+' call'+(l.attempts>1?'s':''):'', l.owner?'\u2192 '+l.owner:'', clock?clock.label+' there':''].filter(Boolean).join(' \u00b7 ');
+      return '<tr data-lead="'+esc(l.id)+'" style="cursor:pointer"><td><div>'+esc(l.business_name)+'</div>'+
+        '<div class="rowsub m-meta">'+esc(meta)+'</div>'+
+        '<div class="rowsub col-desk">'+esc(l.city||'\u2014')+(l.attempts?' \u00b7 '+l.attempts+' call'+(l.attempts>1?'s':''):'')+'</div></td>'+
         '<td>'+tel+'</td>'+
-        '<td>'+(clock?'<span'+(clock.odd?' class="pill warn"':'')+'>'+esc(clock.label)+'</span>':'<span class="rowsub">—</span>')+'</td>'+
+        '<td class="col-desk">'+(clock?'<span'+(clock.odd?' class="pill warn"':'')+'>'+esc(clock.label)+'</span>':'<span class="rowsub">\u2014</span>')+'</td>'+
         '<td><span class="pill '+m.cls+'">'+esc(m.t)+'</span></td>'+
-        '<td>'+esc(l.owner||'—')+'</td><td>'+when+'</td></tr>';
+        '<td class="col-desk">'+esc(l.owner||'\u2014')+'</td><td class="col-desk">'+when+'</td></tr>';
     }).join('')
-      : '<tr><td colspan="6"><div class="empty"><div class="e-ic">📇</div><div class="e-t">No leads here</div><div>Run <span class="mono">/locksmith-outreach &lt;city&gt;</span> in Claude Code to fill this list.</div></div></td></tr>';
+      : '<tr><td colspan="6"><div class="empty"><div class="e-ic">\ud83d\udcc7</div><div class="e-t">Nothing matches</div><div>Try clearing the filters above.</div></div></td></tr>';
+
+    var chip=function(v,t){return '<button class="chip'+(state.leadWho===v?' on':'')+'" data-leadwho="'+v+'">'+t+'</button>';};
 
     c.innerHTML='<div class="stack">'+
-      '<div class="tiles">'+stat(due,'Due today','callbacks owed now')+stat(untouched,'Never called','fresh leads waiting')+stat(warm,'Warm','interested or booked')+stat(won,'Signed up','closed deals')+'</div>'+
+      '<div class="tiles">'+stat(due,'Call back today','promised callbacks')+stat(untouched,'Never called','fresh leads')+stat(todayCalls,'Called today','across the team')+stat(warm,'Warm','interested or booked')+'</div>'+
+      whobar+
       '<div class="row" style="gap:8px;flex-wrap:wrap">'+
-        '<div class="search" style="max-width:280px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="leadSearch" placeholder="Search name, number, owner" value="'+esc(state.leadQuery)+'"/></div>'+
-        '<select id="leadCityF" style="max-width:200px">'+cityOpts+'</select>'+
-        '<select id="leadStatusF" style="max-width:200px">'+statusOpts+'</select>'+
+        '<div class="search" style="max-width:260px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="leadSearch" placeholder="Search name, number, city" value="'+esc(state.leadQuery)+'"/></div>'+
+        '<select id="leadProvF" style="max-width:170px">'+provOpts+'</select>'+
+        '<select id="leadCityF" style="max-width:190px">'+cityOpts+'</select>'+
+        '<select id="leadStatusF" style="max-width:180px">'+statusOpts+'</select>'+
       '</div>'+
-      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Business</th><th>Phone</th><th>Their time</th><th>Status</th><th>Owner</th><th>Next step</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+      '<div class="row" style="gap:8px;flex-wrap:wrap">'+chip('all','Everyone')+chip('mine','Mine')+chip('free','Unclaimed')+
+        '<span class="rowsub" style="align-self:center">'+list.length+' shown</span></div>'+
+      '<div class="card"><div class="tbl-wrap"><table class="leadtbl"><thead><tr><th>Business</th><th>Phone</th><th class="col-desk">Their time</th><th>Status</th><th class="col-desk">Owner</th><th class="col-desk">Next step</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
 
     var si=$('leadSearch'); if(si){ si.addEventListener('input',function(){ state.leadQuery=si.value; var pos=si.selectionStart; renderLeads(c,a); var n=$('leadSearch'); if(n){n.focus(); try{n.setSelectionRange(pos,pos);}catch(e){}} }); }
+    var pf=$('leadProvF'); if(pf) pf.addEventListener('change',function(){ state.leadProv=pf.value; state.leadCity=''; renderLeads(c,a); });
     var cf=$('leadCityF'); if(cf) cf.addEventListener('change',function(){ state.leadCity=cf.value; renderLeads(c,a); });
     var sf=$('leadStatusF'); if(sf) sf.addEventListener('change',function(){ state.leadStatus=sf.value; renderLeads(c,a); });
+    var wb=$('leadWhoBtn'); if(wb) wb.addEventListener('click',function(){ askWho(); });
     var cv=$('leadCsv'); if(cv) cv.addEventListener('click',function(){ exportLeads(list); });
   }
 
   function openLead(id){
     var d=$('leadDrawer');
-    d.innerHTML='<div class="drawer-head"><div><h2>Lead</h2></div><button class="x" data-close>×</button></div><div class="drawer-body"><div class="muted"><span class="spin"></span> Loading…</div></div>';
+    d.innerHTML='<div class="drawer-head"><div><h2>Lead</h2></div><button class="x" data-close>\u00d7</button></div><div class="drawer-body"><div class="muted"><span class="spin"></span> Loading\u2026</div></div>';
     openDrawer(d);
     api('/leads/'+encodeURIComponent(id)).then(function(res){
       if(res.status!==200){ d.querySelector('.drawer-body').innerHTML='<div class="err">'+esc((res.body&&res.body.error)||'Error')+'</div>'; return; }
       var l=res.body.lead, acts=res.body.activity||[];
-      var m=leadMeta(l.status), clock=localClock(l.timezone);
+      var m=leadMeta(l.status), clock=localClock(l.timezone), who=me();
       var f=function(lab,val){return val?'<div class="field"><span class="lab">'+lab+'</span><span class="val">'+esc(val)+'</span></div>':'';};
-      d.querySelector('.drawer-head').innerHTML='<div><h2>'+esc(l.business_name)+'</h2><div class="sub">'+esc(l.city||'')+(l.trade?' · '+esc(l.trade):'')+'</div></div><button class="x" data-close>×</button>';
-      d.querySelector('.drawer-body').innerHTML=
+      d.querySelector('.drawer-head').innerHTML='<div><h2>'+esc(l.business_name)+'</h2><div class="sub">'+esc([l.city,l.province].filter(Boolean).join(', '))+'</div></div><button class="x" data-close>\u00d7</button>';
+
+      var flag='';
+      var n=(l.notes||'').toLowerCase();
+      if(n.indexOf('lead-gen')>=0||n.indexOf('verify')>=0||n.indexOf('parked')>=0)
+        flag='<div class="banner bad" style="margin-bottom:10px"><div class="ic">!</div><div><b>Check this one before dialling</b><div class="bsub">'+esc(l.notes)+'</div></div></div>';
+
+      d.querySelector('.drawer-body').innerHTML= flag+
         '<div class="card pad"><div class="between"><span class="pill '+m.cls+'">'+esc(m.t)+'</span>'+
-          (l.phone?'<a class="btn-call" href="tel:'+esc(l.phone)+'">📞 Call '+esc(l.phone)+'</a>':'<span class="pill bad">no number</span>')+'</div>'+
+          (l.phone?'<a class="btn-call" href="tel:'+esc(l.phone)+'" data-dial="'+esc(l.id)+'">\ud83d\udcde Call '+esc(l.phone)+'</a>':'<span class="pill bad">no number</span>')+'</div>'+
           '<div style="margin-top:10px">'+
-          f('Hours',l.hours)+ (clock?'<div class="field"><span class="lab">Their time now</span><span class="val'+(clock.odd?' warn':'')+'">'+esc(clock.label)+(clock.odd?' — probably closed':'')+'</span></div>':'')+
-          f('Contact',l.contact_name)+
-          (safeUrl(l.website)?'<div class="field"><span class="lab">Website</span><span class="val"><a href="'+esc(safeUrl(l.website))+'" target="_blank" rel="noopener">'+esc(l.domain||l.website)+'</a></span></div>':(l.website?'<div class="field"><span class="lab">Website</span><span class="val">'+esc(l.website)+'</span></div>':''))+
-          (l.email?'<div class="field"><span class="lab">Email</span><span class="val"><a href="mailto:'+esc(l.email)+'">'+esc(l.email)+'</a> <span class="rowsub">'+esc(l.email_status)+'</span></span></div>':'')+
-          f('Attempts',String(l.attempts||0))+
+          f('Hours',l.hours)+
+          (clock?'<div class="field"><span class="lab">Their time now</span><span class="val">'+esc(clock.label)+(clock.odd?' \u2014 probably closed':'')+'</span></div>':'')+
+          f('Contact',l.contact_name)+ f('Worked by',l.owner)+ f('Attempts',String(l.attempts||0))+
+          (safeUrl(l.website)?'<div class="field"><span class="lab">Website</span><span class="val"><a href="'+esc(safeUrl(l.website))+'" target="_blank" rel="noopener">'+esc(l.domain||l.website)+'</a></span></div>':'')+
+          (l.email?'<div class="field"><span class="lab">Email</span><span class="val"><a href="mailto:'+esc(l.email)+'">'+esc(l.email)+'</a></span></div>':'')+
           '</div>'+
           (l.description?'<div style="margin-top:10px;font-size:13px">'+esc(l.description)+'</div>':'')+
         '</div>'+
-        '<div class="card pad"><div class="sec-title">Log what happened</div>'+
-          '<div class="grid2" style="margin-top:8px">'+
-            '<div><label class="f">Status</label><select id="lgStatus">'+LEAD_STATUS.map(function(x){return '<option value="'+x.v+'"'+(x.v===l.status?' selected':'')+'>'+x.t+'</option>';}).join('')+'</select></div>'+
-            '<div><label class="f">Who called <span class="h">you</span></label><input id="lgActor" value="'+esc(l.owner||'')+'" placeholder="Miguel"/></div>'+
+
+        '<div class="card pad"><div class="sec-title">How did the call go?</div>'+
+          (who?'':'<div class="err" style="margin-top:6px">Add your name first so we know who called \u2014 <button class="ghost sm" id="lgWho">set my name</button></div>')+
+          '<div class="qgrid">'+
+            '<button class="qbtn q-warn" data-quick="no_answer" data-qid="'+esc(l.id)+'">No answer</button>'+
+            '<button class="qbtn q-warn" data-quick="voicemail" data-qid="'+esc(l.id)+'">Left voicemail</button>'+
+            '<button class="qbtn" data-quick="callback" data-qid="'+esc(l.id)+'">Call back tomorrow</button>'+
+            '<button class="qbtn q-ok" data-quick="interested" data-qid="'+esc(l.id)+'">Interested!</button>'+
           '</div>'+
-          '<div class="grid2" style="margin-top:8px"><div><label class="f">Call back on <span class="h">optional</span></label><input id="lgNext" type="date" value="'+esc(l.next_action_at||'')+'"/></div><div></div></div>'+
-          '<label class="f" style="margin-top:8px">Note</label><input id="lgNote" placeholder="Gatekeeper — ask for Dave after 4pm"/>'+
-          '<div class="err" id="lgErr"></div>'+
-          '<div class="row" style="margin-top:12px;gap:8px"><button id="lgSave" data-leadsave="'+esc(l.id)+'">Save call</button><button class="ghost sm" id="lgNoteOnly" data-leadnote="'+esc(l.id)+'">Note only</button></div>'+
+          '<div style="margin-top:14px"><label class="f">Or set it manually</label>'+
+            '<div class="grid2" style="margin-top:6px">'+
+              '<select id="lgStatus">'+LEAD_STATUS.map(function(x){return '<option value="'+x.v+'"'+(x.v===l.status?' selected':'')+'>'+x.t+'</option>';}).join('')+'</select>'+
+              '<input id="lgNext" type="date" value="'+esc(l.next_action_at||'')+'"/>'+
+            '</div>'+
+            '<input id="lgNote" style="margin-top:8px" placeholder="Note \u2014 e.g. gatekeeper, ask for Dave after 4pm"/>'+
+            '<input id="lgActor" type="hidden" value="'+esc(who||l.owner||'')+'"/>'+
+            '<div class="err" id="lgErr"></div>'+
+            '<div class="row" style="margin-top:10px;gap:8px"><button id="lgSave" data-leadsave="'+esc(l.id)+'">Save</button><button class="ghost sm" data-leadnote="'+esc(l.id)+'">Note only</button></div>'+
+          '</div>'+
         '</div>'+
+
         '<div class="card pad"><div class="sec-title">History</div>'+
           (acts.length? '<div style="margin-top:8px">'+acts.map(function(x){
-            return '<div class="field"><span class="lab">'+esc(relTime(x.created_at))+'</span><span class="val">'+esc(x.actor||'someone')+' · '+esc(titleCase(x.outcome||x.kind))+(x.note?' — '+esc(x.note):'')+'</span></div>';
+            return '<div class="field"><span class="lab">'+esc(relTime(x.created_at))+'</span><span class="val">'+esc(x.actor||'someone')+' \u00b7 '+esc(titleCase(x.outcome||x.kind))+(x.note?' \u2014 '+esc(x.note):'')+'</span></div>';
           }).join('')+'</div>' : '<div class="muted" style="font-size:12.5px;margin-top:6px">Nothing logged yet.</div>')+
         '</div>';
+      var wb=$('lgWho'); if(wb) wb.addEventListener('click',function(){ askWho(function(){ openLead(id); }); });
     });
   }
 
+  // One tap = one logged call. Fills in the caller and, for a callback, a date,
+  // so nobody has to fight a form while holding a phone to their ear.
+  function quickLog(id,status,btn){
+    if(!me()){ askWho(function(){ quickLog(id,status,btn); }); return; }
+    if(btn){ btn.disabled=true; btn.textContent='Saving\u2026'; }
+    var body={kind:'call', actor:me(), owner:me(), status:status};
+    if(status==='callback') body.next_action_at=tomorrow();
+    api('/leads/'+encodeURIComponent(id)+'/activity','POST',body).then(function(res){
+      if(res.status===200){ toast(leadMeta(status).t+' \u2014 saved','ok'); loadLeads(function(){ openLead(id); }); }
+      else { toast((res.body&&res.body.error)||'Error','err'); if(btn){btn.disabled=false;} }
+    }).catch(function(){ toast('Network error','err'); if(btn){btn.disabled=false;} });
+  }
+
+  // Tapping the number claims the lead for you, so two people can't both work it.
+  function claimLead(id){
+    var who=me(); if(!who) return;
+    var l=state.leads.filter(function(x){return x.id===id;})[0];
+    if(!l||l.owner) return;
+    api('/leads/'+encodeURIComponent(id),'PATCH',{owner:who,actor:who}).then(function(){ loadLeads(); });
+  }
+
   function saveLeadCall(id,kind){
-    var status=$('lgStatus')?$('lgStatus').value:null;
-    var body={ kind:kind||'call', actor:($('lgActor')&&$('lgActor').value.trim())||null, note:($('lgNote')&&$('lgNote').value.trim())||null };
-    if(kind!=='note'){ body.status=status; body.owner=($('lgActor')&&$('lgActor').value.trim())||null; }
-    if($('lgNext')) body.next_action_at=$('lgNext').value||null;   // empty clears the date
-    var btn=$('lgSave'); if(btn){btn.disabled=true;btn.textContent='Saving…';}
+    var body={ kind:kind||'call', actor:me()||($('lgActor')&&$('lgActor').value.trim())||null,
+               note:($('lgNote')&&$('lgNote').value.trim())||null };
+    if(kind!=='note'){ body.status=$('lgStatus')?$('lgStatus').value:null; if(me()) body.owner=me(); }
+    if($('lgNext')) body.next_action_at=$('lgNext').value||null;
+    var btn=$('lgSave'); if(btn){btn.disabled=true;btn.textContent='Saving\u2026';}
     api('/leads/'+encodeURIComponent(id)+'/activity','POST',body).then(function(res){
       if(res.status===200){ toast('Saved','ok'); loadLeads(function(){ openLead(id); }); }
-      else { var e=$('lgErr'); if(e)e.textContent=(res.body&&res.body.error)||('Error '+res.status); if(btn){btn.disabled=false;btn.textContent='Save call';} }
-    }).catch(function(){ toast('Network error','err'); if(btn){btn.disabled=false;btn.textContent='Save call';} });
+      else { var e=$('lgErr'); if(e)e.textContent=(res.body&&res.body.error)||('Error '+res.status); if(btn){btn.disabled=false;btn.textContent='Save';} }
+    }).catch(function(){ toast('Network error','err'); if(btn){btn.disabled=false;btn.textContent='Save';} });
   }
 
   function exportLeads(list){
-    var cols=['business_name','phone','email','city','status','owner','next_action_at','attempts','hours','timezone','website','description','notes'];
+    var cols=['business_name','phone','city','province','status','owner','next_action_at','attempts','hours','contact_name','email','website','description','notes'];
     var cell=function(v){ v=v==null?'':String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
     var csv=cols.join(',')+'\n'+list.map(function(l){return cols.map(function(k){return cell(l[k]);}).join(',');}).join('\n');
     var url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
@@ -934,6 +1029,9 @@
   document.addEventListener('click',function(e){
     var t=e.target;
     var sw=t.closest('[data-toggle]'); if(sw){ e.stopPropagation(); toggleActive(sw.getAttribute('data-toggle'),sw); return; }
+    var dial=t.closest('[data-dial]'); if(dial){ claimLead(dial.getAttribute('data-dial')); return; }
+    var qb=t.closest('[data-quick]'); if(qb){ quickLog(qb.getAttribute('data-qid'), qb.getAttribute('data-quick'), qb); return; }
+    var wc=t.closest('[data-leadwho]'); if(wc){ state.leadWho=wc.getAttribute('data-leadwho'); render(); return; }
     var lr=t.closest('[data-lead]'); if(lr&&!t.closest('a')){ openLead(lr.getAttribute('data-lead')); return; }
     var b=t.closest('button,[data-shop],[data-call]'); if(!b) return;
     var g=function(k){return b.getAttribute(k);};
