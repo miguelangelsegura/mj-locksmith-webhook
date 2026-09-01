@@ -338,7 +338,7 @@
   var TKEY='dispango_admin_token';
   var $=function(id){return document.getElementById(id);};
   var esc=function(v){return v==null?'':String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
-  var state={ view:'overview', health:null, clients:[], analytics:null, banned:[], calls:[], callFilter:'', shopQuery:'', callQuery:'', leads:[], leadQuery:'', leadCity:'', leadProv:'', leadStatus:'open', leadWho:'all' };
+  var state={ view:'overview', health:null, clients:[], analytics:null, banned:[], calls:[], callFilter:'', shopQuery:'', callQuery:'', leads:[], leadQuery:'', leadCity:'', leadProv:'', leadStatus:'open', leadWho:'all', leadFocus:'' };
 
   function token(){return localStorage.getItem(TKEY)||'';}
   function api(path,method,body,base){
@@ -710,7 +710,6 @@
   function getPending(){ try{ return JSON.parse(localStorage.getItem('dispango_pending')||'null'); }catch(e){ return null; } }
   function clearPending(){ try{ localStorage.removeItem('dispango_pending'); }catch(e){} }
 
-  function tomorrow(){ var d=new Date(Date.now()+864e5); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
   function leadMeta(v){ return LEAD_STATUS.filter(function(x){return x.v===v;})[0]||{v:v,t:titleCase(v),cls:'off'}; }
   function today(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
   function isDue(l){ return LEAD_DONE.indexOf(l.status)<0 && l.next_action_at && l.next_action_at<=today(); }
@@ -754,7 +753,12 @@
       if(state.leadCity&&l.city!==state.leadCity) return false;
       if(state.leadWho==='mine'&&(l.owner||'').toLowerCase()!==who.toLowerCase()) return false;
       if(state.leadWho==='free'&&l.owner) return false;
-      if(state.leadStatus==='open'){ if(LEAD_DONE.indexOf(l.status)>=0) return false; }
+      // A tile's filter must select exactly the set its number counted, or the
+      // count and the list disagree the moment someone taps it.
+      if(state.leadFocus==='due'){ if(!isDue(l)) return false; }
+      else if(state.leadFocus==='new'){ if(l.status!=='new') return false; }
+      else if(state.leadFocus==='warm'){ if(['interested','demo_booked','callback'].indexOf(l.status)<0) return false; }
+      else if(state.leadStatus==='open'){ if(LEAD_DONE.indexOf(l.status)>=0) return false; }
       else if(state.leadStatus&&l.status!==state.leadStatus) return false;
       if(q&&(String(l.business_name||'')+' '+String(l.phone||'')+' '+String(l.city||'')+' '+String(l.owner||'')).toLowerCase().indexOf(q)<0) return false;
       return true;
@@ -765,7 +769,7 @@
     var untouched=all.filter(function(l){return l.status==='new';}).length;
     var todayCalls=all.filter(function(l){return (l.last_contacted_at||'').slice(0,10)===t;}).length;
     var warm=all.filter(function(l){return ['interested','demo_booked','callback'].indexOf(l.status)>=0;}).length;
-    var stat=function(n,lab,m,f){return '<div class="tile'+(f?' tap':'')+'"'+(f?' data-leadtile="'+f+'"':'')+' style="cursor:'+(f?'pointer':'default')+'"><div class="k">'+esc(lab)+'</div><div class="v tnum">'+n+'</div><div class="m">'+esc(m)+'</div></div>';};
+    var stat=function(n,lab,m,f){return '<div class="tile'+(f?'':'')+'"'+(f?' data-leadtile="'+f+'"':'')+' style="cursor:'+(f?'pointer':'default')+'"><div class="k">'+esc(lab)+'</div><div class="v tnum">'+n+'</div><div class="m">'+esc(m)+'</div></div>';};
 
     var whobar = who
       ? '<div class="whobar">Calling as <b>'+esc(who)+'</b> <button class="ghost sm" id="leadWhoBtn">change</button></div>'
@@ -777,7 +781,9 @@
       // No stopPropagation here: the delegated handler checks data-dial BEFORE
       // data-lead and returns, so the row won't also open. Stopping the event
       // would skip the handler entirely and the call would never be recorded.
-      var tel=l.phone?'<a class="mono" href="tel:'+esc(l.phone)+'" data-dial="'+esc(l.id)+'">'+esc(l.phone)+'</a>':'<span class="rowsub">no number</span>';
+      var tel=(l.status==='do_not_contact')
+        ? '<span class="rowsub">do not call</span>'
+        : (l.phone?'<a class="mono" href="tel:'+esc(l.phone)+'" data-dial="'+esc(l.id)+'">'+esc(l.phone)+'</a>':'<span class="rowsub">no number</span>');
       var meta=[l.city||'', l.attempts?'tried '+l.attempts+'x':'', l.owner?'last called by '+l.owner:'',
                 clock?'now '+clock.label+' there':''].filter(Boolean).join(' \u00b7 ');
       var warn = l.status==='do_not_contact' ? '<span class="pill bad">do not call</span> '
@@ -795,7 +801,7 @@
     var chip=function(v,t){return '<button class="chip'+(state.leadWho===v?' on':'')+'" data-leadwho="'+v+'">'+t+'</button>';};
 
     c.innerHTML='<div class="stack">'+
-      '<div class="tiles">'+stat(due,'Call these first','you promised to ring back','callback')+stat(untouched,'Not called yet','nobody has tried these','new')+stat(todayCalls,'Calls made today','by the whole team')+stat(warm,'Interested','said yes or want a demo','warm')+'</div>'+
+      '<div class="tiles">'+stat(due,'Call these first','you promised to ring back','due')+stat(untouched,'Not called yet','nobody has tried these','new')+stat(todayCalls,'Calls made today','by the whole team')+stat(warm,'Interested','said yes or want a demo','warm')+'</div>'+
       whobar+
       (localStorage.getItem('dispango_seen_howto')?'':
         '<div class="banner good"><div class="ic">\u2192</div><div><b>How this works</b><div class="bsub">Tap a shop in <b>Call these first</b>, hit the black Call button, then come straight back and tap what happened. That\u2019s the whole job.</div></div><button class="ghost sm" id="howtoOk">Got it</button></div>')+
@@ -809,16 +815,16 @@
         '<span class="rowsub" style="align-self:center">'+list.length+' shown</span></div>'+
       '<div class="card"><div class="tbl-wrap"><table class="leadtbl"><thead><tr><th>Business</th><th>Phone</th><th class="col-desk">Their time</th><th>Status</th><th class="col-desk">Owner</th><th class="col-desk">Next step</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
 
-    var si=$('leadSearch'); if(si){ si.addEventListener('input',function(){ state.leadQuery=si.value; var pos=si.selectionStart; renderLeads(c,a); var n=$('leadSearch'); if(n){n.focus(); try{n.setSelectionRange(pos,pos);}catch(e){}} }); }
-    var pf=$('leadProvF'); if(pf) pf.addEventListener('change',function(){ state.leadProv=pf.value; state.leadCity=''; renderLeads(c,a); });
-    var cf=$('leadCityF'); if(cf) cf.addEventListener('change',function(){ state.leadCity=cf.value; renderLeads(c,a); });
-    var sf=$('leadStatusF'); if(sf) sf.addEventListener('change',function(){ state.leadStatus=sf.value; renderLeads(c,a); });
+    var si=$('leadSearch'); if(si){ si.addEventListener('input',function(){ state.leadQuery=si.value; state.leadFocus=''; var pos=si.selectionStart; renderLeads(c,a); var n=$('leadSearch'); if(n){n.focus(); try{n.setSelectionRange(pos,pos);}catch(e){}} }); }
+    var pf=$('leadProvF'); if(pf) pf.addEventListener('change',function(){ state.leadProv=pf.value; state.leadFocus=''; state.leadCity=''; renderLeads(c,a); });
+    var cf=$('leadCityF'); if(cf) cf.addEventListener('change',function(){ state.leadCity=cf.value; state.leadFocus=''; renderLeads(c,a); });
+    var sf=$('leadStatusF'); if(sf) sf.addEventListener('change',function(){ state.leadStatus=sf.value; state.leadFocus=''; renderLeads(c,a); });
     var wb=$('leadWhoBtn'); if(wb) wb.addEventListener('click',function(){ askWho(); });
     [].forEach.call(c.querySelectorAll('[data-leadtile]'),function(el){
       el.addEventListener('click',function(){
-        var k=el.getAttribute('data-leadtile');
-        state.leadStatus = (k==='warm') ? 'interested' : k;
-        state.leadWho='all'; renderLeads(c,a);
+        state.leadFocus=el.getAttribute('data-leadtile');
+        state.leadWho='all'; state.leadProv=''; state.leadCity=''; state.leadQuery='';
+        renderLeads(c,a);
       });
     });
     var cv=$('leadCsv'); if(cv) cv.addEventListener('click',function(){ exportLeads(list); });
@@ -872,7 +878,7 @@
             '<button class="qbtn" data-quick="callback" data-qid="'+esc(l.id)+'">Call back in a few days</button>'+
             '<button class="qbtn q-bad" data-quick="do_not_contact" data-qid="'+esc(l.id)+'">Told us to stop calling</button>'+
           '</div>'+
-          '<div style="margin-top:10px;font-size:12.5px;color:var(--gray-600)">Said a specific day? Set it below and hit Save.</div>'+
+          '<div style="margin-top:10px;font-size:12.5px;color:var(--gray-600)">Tap one of those to record the call. Use the boxes below only to correct details or set an exact call-back day \u2014 they don\u2019t count as another call.</div>'+
           '<div style="margin-top:14px"><label class="f">Or set it manually</label>'+
             '<div class="grid2" style="margin-top:6px">'+
               '<select id="lgStatus">'+LEAD_STATUS.map(function(x){return '<option value="'+x.v+'"'+(x.v===l.status?' selected':'')+'>'+x.t+'</option>';}).join('')+'</select>'+
@@ -881,7 +887,7 @@
             '<input id="lgNote" style="margin-top:8px" placeholder="Note \u2014 e.g. gatekeeper, ask for Dave after 4pm"/>'+
             '<input id="lgActor" type="hidden" value="'+esc(who||l.owner||'')+'"/>'+
             '<div class="err" id="lgErr"></div>'+
-            '<div class="row" style="margin-top:10px;gap:8px"><button id="lgSave" data-leadsave="'+esc(l.id)+'">Save</button><button class="ghost sm" data-leadnote="'+esc(l.id)+'">Note only</button></div>'+
+            '<div class="row" style="margin-top:10px;gap:8px"><button id="lgSave" data-leadsave="'+esc(l.id)+'">Save details</button><button class="ghost sm" data-leadnote="'+esc(l.id)+'">Note only</button></div>'+
           '</div>'+
         '</div>'+
 
@@ -899,7 +905,9 @@
   function quickLog(id,status,btn){
     if(!me()){ askWho(function(){ quickLog(id,status,btn); }); return; }
     if(btn){ btn.disabled=true; btn.textContent='Saving\u2026'; }
-    var body={kind:'call', actor:me(), owner:me(), status:status};
+    var held=(state.leads.filter(function(x){return x.id===id;})[0]||{}).owner;
+    var body={kind:'call', actor:me(), status:status};
+    if(!held||held.toLowerCase()===me().toLowerCase()) body.owner=me();   // don't steal an active claim
     if(status==='callback') body.next_action_at=inDays(2);   // spacing beats hammering
     api('/leads/'+encodeURIComponent(id)+'/activity','POST',body).then(function(res){
       if(res.status===200){ clearPending(); toast('Saved: '+leadMeta(status).t+'. Wrong button? Just tap another one.','ok'); loadLeads(function(){ openLead(id); }); }
@@ -920,14 +928,18 @@
   }
 
   function saveLeadCall(id,kind){
-    var body={ kind:kind||'call', actor:me()||($('lgActor')&&$('lgActor').value.trim())||null,
+    var body={ kind:kind||'status', actor:me()||($('lgActor')&&$('lgActor').value.trim())||null,
                note:($('lgNote')&&$('lgNote').value.trim())||null };
-    if(kind!=='note'){ body.status=$('lgStatus')?$('lgStatus').value:null; if(me()) body.owner=me(); }
+    if(kind!=='note'){
+      body.status=$('lgStatus')?$('lgStatus').value:null;
+      var h=(state.leads.filter(function(x){return x.id===id;})[0]||{}).owner;
+      if(me()&&(!h||h.toLowerCase()===me().toLowerCase())) body.owner=me();
+    }
     if($('lgNext')) body.next_action_at=$('lgNext').value||null;
     var btn=$('lgSave'); if(btn){btn.disabled=true;btn.textContent='Saving\u2026';}
     api('/leads/'+encodeURIComponent(id)+'/activity','POST',body).then(function(res){
       if(res.status===200){ toast('Saved','ok'); loadLeads(function(){ openLead(id); }); }
-      else { var e=$('lgErr'); if(e)e.textContent=(res.body&&res.body.error)||('Error '+res.status); if(btn){btn.disabled=false;btn.textContent='Save';} }
+      else { var e=$('lgErr'); if(e)e.textContent=(res.body&&res.body.error)||('Error '+res.status); if(btn){btn.disabled=false;btn.textContent='Save details';} }
     }).catch(function(){ toast('Network error','err'); if(btn){btn.disabled=false;btn.textContent='Save';} });
   }
 
@@ -1081,10 +1093,16 @@
   // it is most likely to be lost. Reopen that lead and ask, rather than hoping.
   function askPending(){
     var p=getPending(); if(!p) return;
-    if(Date.now()-p.at < 8000) return;               // still dialling
-    if(Date.now()-p.at > 6*3600e3){ clearPending(); return; }
+    if($('app').classList.contains('hidden')) return;          // not logged in yet
+    if(Date.now()-p.at > 45*60e3){ clearPending(); return; }   // too old to trust
     if($('leadDrawer').classList.contains('show')) return;
-    if(state.view!=='leads') go('leads');
+    if(p.asked){                                               // ask once, then just nudge
+      if(state.view==='leads') toast('Still need the result for '+p.name);
+      return;
+    }
+    // Never drag someone off another screen mid-form; nudge instead.
+    if(state.view!=='leads'){ toast('You called '+p.name+' \u2014 open Leads to log it'); return; }
+    p.asked=true; try{ localStorage.setItem('dispango_pending', JSON.stringify(p)); }catch(e){}
     toast('You called '+p.name+' \u2014 tap what happened');
     openLead(p.id);
   }
@@ -1101,13 +1119,15 @@
     var sw=t.closest('[data-toggle]'); if(sw){ e.stopPropagation(); toggleActive(sw.getAttribute('data-toggle'),sw); return; }
     var dial=t.closest('[data-dial]'); if(dial){ claimLead(dial.getAttribute('data-dial')); return; }
     var qb=t.closest('[data-quick]'); if(qb){ quickLog(qb.getAttribute('data-qid'), qb.getAttribute('data-quick'), qb); return; }
-    var wc=t.closest('[data-leadwho]'); if(wc){ state.leadWho=wc.getAttribute('data-leadwho'); render(); return; }
+    var wc=t.closest('[data-leadwho]'); if(wc){ state.leadWho=wc.getAttribute('data-leadwho'); state.leadFocus=''; render(); return; }
     var lr=t.closest('[data-lead]'); if(lr&&!t.closest('a')){ openLead(lr.getAttribute('data-lead')); return; }
     var b=t.closest('button,[data-shop],[data-call]'); if(!b) return;
     var g=function(k){return b.getAttribute(k);};
     if(b.hasAttribute('data-close')){ closeDrawers(); return; }
     if(b.hasAttribute('data-lclose')){ closeModal(); return; }
-    if(g('data-leadsave')){ saveLeadCall(g('data-leadsave'),'call'); return; }
+    // 'status', not 'call': only the one-tap outcome buttons count a call attempt,
+    // otherwise correcting a note after logging inflates the attempt count.
+    if(g('data-leadsave')){ saveLeadCall(g('data-leadsave'),'status'); return; }
     if(g('data-leadnote')){ saveLeadCall(g('data-leadnote'),'note'); return; }
     if(g('data-resend')){ resendLead(g('data-resend'),b); return; }
     if(g('data-resendcall')){ resendLead(g('data-resendcall'),b); return; }
