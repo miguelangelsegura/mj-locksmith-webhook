@@ -1118,8 +1118,19 @@ async function updateLead(id: string, body: Record<string, unknown>): Promise<Re
   const { data: before } = await supabase!.from("leads").select("status").eq("id", id).limit(1);
   if (!before || before.length === 0) return json({ error: "not found" }, 404);
 
-  const { data, error } = await supabase!.from("leads").update(patch).eq("id", id).select();
+  // Claiming a lead must be atomic. Two people can open the list and tap the same
+  // top row within the same second; a plain update would let both "claim" it and
+  // both dial the shop. `claim_if_free` makes the write conditional on the lead
+  // still being unowned, so the second one loses and is told who has it.
+  const claimIfFree = body.claim_if_free === true;
+  let query = supabase!.from("leads").update(patch).eq("id", id);
+  if (claimIfFree) query = query.is("owner", null);
+  const { data, error } = await query.select();
   if (error) return json({ error: error.message }, 400);
+  if (claimIfFree && (!data || data.length === 0)) {
+    const { data: held } = await supabase!.from("leads").select("owner").eq("id", id).limit(1);
+    return json({ claimed: false, owner: held?.[0]?.owner ?? null }, 409);
+  }
 
   // A status change is history: record it so the team can see who moved it and when.
   if (patch.status && patch.status !== before[0].status) {
