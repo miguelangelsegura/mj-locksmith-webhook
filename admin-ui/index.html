@@ -769,7 +769,7 @@
     var untouched=all.filter(function(l){return l.status==='new';}).length;
     var todayCalls=all.filter(function(l){return (l.last_contacted_at||'').slice(0,10)===t;}).length;
     var warm=all.filter(function(l){return ['interested','demo_booked','callback'].indexOf(l.status)>=0;}).length;
-    var stat=function(n,lab,m,f){return '<div class="tile'+(f?'':'')+'"'+(f?' data-leadtile="'+f+'"':'')+' style="cursor:'+(f?'pointer':'default')+'"><div class="k">'+esc(lab)+'</div><div class="v tnum">'+n+'</div><div class="m">'+esc(m)+'</div></div>';};
+    var stat=function(n,lab,m,f){return '<div class="tile"'+(f?' data-leadtile="'+f+'"':'')+' style="cursor:'+(f?'pointer':'default')+'"><div class="k">'+esc(lab)+'</div><div class="v tnum">'+n+'</div><div class="m">'+esc(m)+'</div></div>';};
 
     var whobar = who
       ? '<div class="whobar">Calling as <b>'+esc(who)+'</b> <button class="ghost sm" id="leadWhoBtn">change</button></div>'
@@ -811,6 +811,9 @@
         '<select id="leadCityF" style="max-width:190px">'+cityOpts+'</select>'+
         '<select id="leadStatusF" style="max-width:180px">'+statusOpts+'</select>'+
       '</div>'+
+      (state.leadFocus?'<div class="row" style="gap:8px"><span class="pill info">Showing: '+
+        esc({due:'Call these first',new:'Not called yet',warm:'Interested'}[state.leadFocus]||state.leadFocus)+
+        '</span><button class="ghost sm" id="leadFocusClear">Show all leads</button></div>':'')+
       '<div class="row" style="gap:8px;flex-wrap:wrap">'+chip('all','Everyone')+chip('mine','Mine')+chip('free','Nobody called yet')+
         '<span class="rowsub" style="align-self:center">'+list.length+' shown</span></div>'+
       '<div class="card"><div class="tbl-wrap"><table class="leadtbl"><thead><tr><th>Business</th><th>Phone</th><th class="col-desk">Their time</th><th>Status</th><th class="col-desk">Owner</th><th class="col-desk">Next step</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
@@ -828,6 +831,7 @@
       });
     });
     var cv=$('leadCsv'); if(cv) cv.addEventListener('click',function(){ exportLeads(list); });
+    var fc=$('leadFocusClear'); if(fc) fc.addEventListener('click',function(){ state.leadFocus=''; state.leadStatus='open'; renderLeads(c,a); });
     var hk=$('howtoOk'); if(hk) hk.addEventListener('click',function(){ localStorage.setItem('dispango_seen_howto','1'); renderLeads(c,a); });
   }
 
@@ -856,7 +860,7 @@
           f('Hours',l.hours)+
           (clock?'<div class="field"><span class="lab">Time there right now</span><span class="val">'+esc(clock.label)+
              (win?' \u2014 '+esc(win.label):(clock.odd?' \u2014 probably closed':''))+'</span></div>':'')+
-          f('Ask for',l.contact_name)+ f('Last called by',l.owner)+
+          f('Ask for',l.contact_name)+ f('Last worked by',l.owner)+
           (l.attempts?'<div class="field"><span class="lab">Times tried</span><span class="val">'+l.attempts+
              (l.attempts>=MAX_ATTEMPTS?' \u2014 most shops that answer do so within 5; consider parking this one':'')+'</span></div>':'')+
           (safeUrl(l.website)?'<div class="field"><span class="lab">Website</span><span class="val"><a href="'+esc(safeUrl(l.website))+'" target="_blank" rel="noopener">'+esc(l.domain||l.website)+'</a></span></div>':'')+
@@ -905,9 +909,7 @@
   function quickLog(id,status,btn){
     if(!me()){ askWho(function(){ quickLog(id,status,btn); }); return; }
     if(btn){ btn.disabled=true; btn.textContent='Saving\u2026'; }
-    var held=(state.leads.filter(function(x){return x.id===id;})[0]||{}).owner;
-    var body={kind:'call', actor:me(), status:status};
-    if(!held||held.toLowerCase()===me().toLowerCase()) body.owner=me();   // don't steal an active claim
+    var body={kind:'call', actor:me(), owner:me(), status:status};
     if(status==='callback') body.next_action_at=inDays(2);   // spacing beats hammering
     api('/leads/'+encodeURIComponent(id)+'/activity','POST',body).then(function(res){
       if(res.status===200){ clearPending(); toast('Saved: '+leadMeta(status).t+'. Wrong button? Just tap another one.','ok'); loadLeads(function(){ openLead(id); }); }
@@ -931,16 +933,23 @@
     var body={ kind:kind||'status', actor:me()||($('lgActor')&&$('lgActor').value.trim())||null,
                note:($('lgNote')&&$('lgNote').value.trim())||null };
     if(kind!=='note'){
+      var cur=state.leads.filter(function(x){return x.id===id;})[0]||{};
       body.status=$('lgStatus')?$('lgStatus').value:null;
-      var h=(state.leads.filter(function(x){return x.id===id;})[0]||{}).owner;
-      if(me()&&(!h||h.toLowerCase()===me().toLowerCase())) body.owner=me();
+      // Picking an outcome the one-tap buttons don't cover ("Spoke to them",
+      // "Demo booked", "Wrong number") is still a call and must count. Only an
+      // edit that leaves the status alone is a details-only save.
+      if(body.status && body.status!=='new' && body.status!==cur.status) body.kind='call';
+      // Whoever logged the outcome is who actually spoke to the shop, so they
+      // become the owner. The atomic claim's job is to stop two simultaneous
+      // dials; once a call has happened, accurate attribution wins.
+      if(me()) body.owner=me();
     }
     if($('lgNext')) body.next_action_at=$('lgNext').value||null;
     var btn=$('lgSave'); if(btn){btn.disabled=true;btn.textContent='Saving\u2026';}
     api('/leads/'+encodeURIComponent(id)+'/activity','POST',body).then(function(res){
-      if(res.status===200){ toast('Saved','ok'); loadLeads(function(){ openLead(id); }); }
+      if(res.status===200){ clearPending(); toast('Saved','ok'); loadLeads(function(){ openLead(id); }); }
       else { var e=$('lgErr'); if(e)e.textContent=(res.body&&res.body.error)||('Error '+res.status); if(btn){btn.disabled=false;btn.textContent='Save details';} }
-    }).catch(function(){ toast('Network error','err'); if(btn){btn.disabled=false;btn.textContent='Save';} });
+    }).catch(function(){ toast('Network error','err'); if(btn){btn.disabled=false;btn.textContent='Save details';} });
   }
 
   function exportLeads(list){
@@ -1094,6 +1103,7 @@
   function askPending(){
     var p=getPending(); if(!p) return;
     if($('app').classList.contains('hidden')) return;          // not logged in yet
+    if(Date.now()-p.at < 6000) return;                         // dial cancelled, not a call
     if(Date.now()-p.at > 45*60e3){ clearPending(); return; }   // too old to trust
     if($('leadDrawer').classList.contains('show')) return;
     if(p.asked){                                               // ask once, then just nudge
@@ -1101,7 +1111,10 @@
       return;
     }
     // Never drag someone off another screen mid-form; nudge instead.
-    if(state.view!=='leads'){ toast('You called '+p.name+' \u2014 open Leads to log it'); return; }
+    if(state.view!=='leads'){
+      p.asked=true; try{ localStorage.setItem('dispango_pending', JSON.stringify(p)); }catch(e){}
+      toast('You called '+p.name+' \u2014 open Leads to log it'); return;
+    }
     p.asked=true; try{ localStorage.setItem('dispango_pending', JSON.stringify(p)); }catch(e){}
     toast('You called '+p.name+' \u2014 tap what happened');
     openLead(p.id);
